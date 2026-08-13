@@ -7,11 +7,109 @@ struct ContentView: View {
                 HomeView()
             }
             .tabItem {
-                Label("Domů 🏠", systemImage: "house.fill")
+                Label("Domů", systemImage: "house.fill")
+            }
+            NavigationStack {
+                CreditsView()
+            }
+            .tabItem {
+                Label("Kredity", systemImage: "heart.text.square.fill")
             }
         }
     }
 }
+
+struct CreditsView: View {
+    var body: some View {
+        List {
+            // MARK: - Hlavička s logem 📱✨
+            Section {
+                VStack(spacing: 12) {
+                    Image(systemName: "heart.text.square.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundStyle(.tint)
+                        .shadow(radius: 4)
+                    
+                    Text("iOsApp")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .listRowBackground(Color.clear)
+            }
+            
+            // MARK: - Tým & Vývojáři 👨‍💻👩‍💻
+            Section(header: Text("Tým 👥")) {
+                HStack {
+                    Label("Vývojář", systemImage: "code.line.horizontal.base")
+                    Spacer()
+                    Text("Autor")
+                        .foregroundStyle(.secondary)
+                }
+                
+                HStack {
+                    Label("UI/UX Design", systemImage: "paintpalette")
+                    Spacer()
+                    Text("Designér")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            // MARK: - Použité knihovny & Poděkování 📚🙏
+            Section(header: Text("Poděkování a open-source 💖")) {
+                Link(destination: URL(string: "https://github.com")!) {
+                    HStack {
+                        Label("Open-Source knihovny", systemImage: "shippingbox.fill")
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                
+                Link(destination: URL(string: "https://developer.apple.com/sf-symbols/")!) {
+                    HStack {
+                        Label("SF Symbols", systemImage: "star.fill")
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+            
+            // MARK: - Odkazy & Kontakt 🌐📧
+            Section(header: Text("Kde nás najdete 🔗")) {
+                Link(destination: URL(string: "https://example.com")!) {
+                    Label("Oficiální web", systemImage: "globe")
+                }
+                
+                Link(destination: URL(string: "mailto:pernicekcute@gmail.com")!) {
+                    Label("Napsat na podporu", systemImage: "envelope.fill")
+                }
+            }
+            
+            // MARK: - Copyright 📜
+            Section {
+                HStack {
+                    Spacer()
+                    Text("© 2026 Všechna práva vyhrazena 🎉")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Kredity")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 
 // MARK: - Home View
 struct HomeView: View {
@@ -83,7 +181,7 @@ struct HomeView: View {
             // Tlačítko vpravo nahoře s ikonou Settings ⚙️
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                         .font(.title2)
                 }
             }
