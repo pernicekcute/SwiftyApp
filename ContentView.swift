@@ -42,24 +42,24 @@ struct CreditsView: View {
             }
             
             // MARK: - Tým & Vývojáři 👨‍💻👩‍💻
-            Section(header: Text("Tým 👥")) {
+            Section(header: Text("Tým")) {
                 HStack {
                     Label("Vývojář", systemImage: "code.line.horizontal.base")
                     Spacer()
-                    Text("Autor")
+                    Text("iOSondyhop ")
                         .foregroundStyle(.secondary)
                 }
                 
                 HStack {
                     Label("UI/UX Design", systemImage: "paintpalette")
                     Spacer()
-                    Text("Designér")
+                    Text("Shadow_ROBLOX")
                         .foregroundStyle(.secondary)
                 }
             }
             
             // MARK: - Použité knihovny & Poděkování 📚🙏
-            Section(header: Text("Poděkování a open-source 💖")) {
+            Section(header: Text("Poděkování a open-source")) {
                 Link(destination: URL(string: "https://github.com")!) {
                     HStack {
                         Label("Open-Source knihovny", systemImage: "shippingbox.fill")
@@ -123,7 +123,7 @@ struct HomeView: View {
                 
                 // Switch / Toggle 🎚️
                 Toggle(isOn: $isToggleOn) {
-                    Text("Přepínač (Switch) 🔘")
+                    Text("Přepínač (Switch)")
                         .font(.headline)
                 }
                 .padding()
@@ -132,7 +132,7 @@ struct HomeView: View {
 
                 // Slider 🎛️
                 VStack(alignment: .leading) {
-                    Text("Slider hodnota: \(Int(sliderValue)) 📊")
+                    Text("Slider hodnota: \(Int(sliderValue))")
                         .font(.headline)
                     Slider(value: $sliderValue, in: 0...100)
                 }
@@ -142,14 +142,14 @@ struct HomeView: View {
 
                 // Loading Spinner 🌀
                 VStack(spacing: 10) {
-                    Text("Loading Spinner ⏳")
+                    Text("Loading Spinner")
                         .font(.headline)
                     
                     if isLoading {
                         ProgressView()
                             .controlSize(.large)
                     } else {
-                        Text("Stiskni tlačítko níže pro načítání 👇")
+                        Text("Stiskni tlačítko níže pro načítání")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -176,7 +176,7 @@ struct HomeView: View {
             }
             .padding()
         }
-        .navigationTitle("Domů 🏠")
+        .navigationTitle("Domů")
         .toolbar {
             // Tlačítko vpravo nahoře s ikonou Settings ⚙️
             ToolbarItem(placement: .navigationBarTrailing) {
