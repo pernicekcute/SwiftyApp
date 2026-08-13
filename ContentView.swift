@@ -120,25 +120,25 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Ikona v záhlaví
+                // Ikona v záhlaví 🖼️
                 Image(systemName: "house.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 70, height: 70)
                     .foregroundColor(.gray)
 
-                // Switch / Toggle
+                // Přepínač / Toggle 🎚️
                 Toggle(isOn: $isToggleOn) {
-                    Label("Prepinač", systemImage: "switch.2")
+                    Label("Přepínač", systemImage: "switch.2")
                         .font(.headline)
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Slider
+                // Posuvník / Slider 🎛️
                 VStack(alignment: .leading, spacing: 10) {
-                    Label("Slider hodnota: \(Int(sliderValue))", systemImage: "slider.horizontal.3")
+                    Label("Hodnota posuvníku: \(Int(sliderValue))", systemImage: "slider.horizontal.3")
                         .font(.headline)
                     Slider(value: $sliderValue, in: 0...100)
                 }
@@ -146,16 +146,16 @@ struct HomeView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Loading Spinner
+                // Indikátor načítání 🌀
                 VStack(spacing: 10) {
-                    Label("Nacitani", systemImage: "arrow.triangle.2.circlepath")
+                    Label("Načítání", systemImage: "arrow.triangle.2.circlepath")
                         .font(.headline)
                     
                     if isLoading {
                         ProgressView()
                             .controlSize(.large)
                     } else {
-                        Text("Stiskni tlacitko nize pro nacitani")
+                        Text("Stiskněte tlačítko níže pro spuštění")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -165,7 +165,7 @@ struct HomeView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Button
+                // Tlačítko 👆
                 Button(action: {
                     withAnimation {
                         isLoading.toggle()
@@ -182,7 +182,7 @@ struct HomeView: View {
             }
             .padding()
         }
-        .navigationTitle("Domu")
+        .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -194,6 +194,7 @@ struct HomeView: View {
         }
     }
 }
+
 
 
 // MARK: - Settings View ⚙️
