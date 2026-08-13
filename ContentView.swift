@@ -83,7 +83,7 @@ struct HomeView: View {
             // Tlačítko vpravo nahoře s ikonou Settings ⚙️
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape.fill")
+                    Image(systemName: "gearshape.2")
                         .font(.title2)
                 }
             }
