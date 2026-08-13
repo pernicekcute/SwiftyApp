@@ -199,18 +199,18 @@ struct SettingsView: View {
                 .frame(width: 70, height: 70)
                 .foregroundColor(.gray)
 
-            Text("Nastavení ⚙️")
+            Text("Nastavení")
                 .font(.largeTitle)
                 .bold()
 
-            Text("Tohle je stránka nastavení aplikace! 🛠️✨")
+            Text("Tohle je stránka nastavení aplikace!")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
             Spacer()
         }
         .padding()
-        .navigationTitle("Nastavení ⚙️")
+        .navigationTitle("Nastavení")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
