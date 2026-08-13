@@ -1,8 +1,10 @@
-name: Build iOS App 🚀
+name: Build iOsApp IPA 🚀
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -13,21 +15,31 @@ jobs:
       - name: Checkout repozitáře 📥
         uses: actions/checkout@v4
 
-      - name: Nastavení Xcode 🛠️
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      - name: Instalace XcodeGen 🛠️
+        run: brew install xcodegen
 
-      - name: Sestavení iOS aplikace (.ipa / .app) 🏗️
+      - name: Generování Xcode Projektu (iOsApp.xcodeproj) 🏗️
+        run: xcodegen generate
+
+      - name: Sestavení iOS aplikace (.app) 📱
         run: |
           xcodebuild build \
-            -scheme "MyApp" \
+            -project iOsApp.xcodeproj \
+            -scheme iOsApp \
             -sdk iphoneos \
             -configuration Release \
-            CODE_SIGNING_ALLOWED=NO
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
 
-      - name: Nahrání artefaktu do GitHub Releases / Artifacts 📤
+      - name: Vytvoření iOsApp.ipa balíčku 📦
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/iOsApp.app Payload/
+          zip -r iOsApp.ipa Payload
+
+      - name: Nahrání iOsApp.ipa do GitHub Artifacts 📤
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-App-Build
-          path: build/Release-iphoneos/*.app
+          name: iOsApp-IPA
+          path: iOsApp.ipa
