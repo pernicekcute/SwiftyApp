@@ -1,0 +1,20 @@
+name: iOsApp
+options:
+  bundleIdPrefix: com.quacky
+  deploymentTarget:
+    iOS: 16.0
+  xcodeVersion: "15.0"
+
+targets:
+  MyApp:
+    type: application
+    platform: iOS
+    deploymentTarget: 16.0
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
