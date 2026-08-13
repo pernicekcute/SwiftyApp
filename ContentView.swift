@@ -119,20 +119,26 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 25) {
-                
-                // Switch / Toggle 🎚️
+            VStack(spacing: 20) {
+                // Ikona v záhlaví
+                Image(systemName: "house.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                    .foregroundColor(.gray)
+
+                // Switch / Toggle
                 Toggle(isOn: $isToggleOn) {
-                    Text("Přepínač (Switch)")
+                    Label("Prepinač", systemImage: "switch.2")
                         .font(.headline)
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Slider 🎛️
-                VStack(alignment: .leading) {
-                    Text("Slider hodnota: \(Int(sliderValue))")
+                // Slider
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("Slider hodnota: \(Int(sliderValue))", systemImage: "slider.horizontal.3")
                         .font(.headline)
                     Slider(value: $sliderValue, in: 0...100)
                 }
@@ -140,16 +146,16 @@ struct HomeView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Loading Spinner 🌀
+                // Loading Spinner
                 VStack(spacing: 10) {
-                    Text("Loading Spinner")
+                    Label("Nacitani", systemImage: "arrow.triangle.2.circlepath")
                         .font(.headline)
                     
                     if isLoading {
                         ProgressView()
                             .controlSize(.large)
                     } else {
-                        Text("Stiskni tlačítko níže pro načítání")
+                        Text("Stiskni tlacitko nize pro nacitani")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -159,13 +165,13 @@ struct HomeView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
 
-                // Button 👆
+                // Button
                 Button(action: {
                     withAnimation {
                         isLoading.toggle()
                     }
                 }) {
-                    Text(isLoading ? "Zastavit Spinner" : "Spustit Spinner")
+                    Label(isLoading ? "Zastavit" : "Spustit", systemImage: isLoading ? "stop.fill" : "play.fill")
                         .fontWeight(.bold)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -176,9 +182,9 @@ struct HomeView: View {
             }
             .padding()
         }
-        .navigationTitle("Domů")
+        .navigationTitle("Domu")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Tlačítko vpravo nahoře s ikonou Settings ⚙️
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
                     Image(systemName: "gear")
@@ -188,6 +194,7 @@ struct HomeView: View {
         }
     }
 }
+
 
 // MARK: - Settings View ⚙️
 struct SettingsView: View {
