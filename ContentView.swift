@@ -44,7 +44,7 @@ struct CreditsView: View {
             // MARK: - Tým & Vývojáři 👨‍💻👩‍💻
             Section(header: Text("Tým")) {
                 HStack {
-                    Label("Vývojář", systemImage: "code.line.horizontal.base")
+                    Label("Vývojář", systemImage: "hammer.fill")
                     Spacer()
                     Text("iOSondyhop ")
                         .foregroundStyle(.secondary)
@@ -82,7 +82,7 @@ struct CreditsView: View {
             }
             
             // MARK: - Odkazy & Kontakt 🌐📧
-            Section(header: Text("Kde nás najdete 🔗")) {
+            Section(header: Text("Kde nás najdete")) {
                 Link(destination: URL(string: "https://example.com")!) {
                     Label("Oficiální web", systemImage: "globe")
                 }
@@ -96,7 +96,7 @@ struct CreditsView: View {
             Section {
                 HStack {
                     Spacer()
-                    Text("© 2026 Všechna práva vyhrazena 🎉")
+                    Text("© 2026 Všechna práva vyhrazena")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                     Spacer()
@@ -165,7 +165,7 @@ struct HomeView: View {
                         isLoading.toggle()
                     }
                 }) {
-                    Text(isLoading ? "Zastavit Spinner 🛑" : "Spustit Spinner 🚀")
+                    Text(isLoading ? "Zastavit Spinner" : "Spustit Spinner")
                         .fontWeight(.bold)
                         .padding()
                         .frame(maxWidth: .infinity)
