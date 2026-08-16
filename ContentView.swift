@@ -239,7 +239,7 @@ struct HomeView: View {
                     NavigationLink(destination: AdminPanelView()) {
                         Image(systemName: "shield.fill")
                             .font(.title3)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.primary)
                     }
                     
                     NavigationLink(destination: SettingsView()) {
