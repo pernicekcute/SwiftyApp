@@ -1,107 +1,134 @@
 import SwiftUI
 import Combine
 
-// MARK: - Reálný Správce Systému & Admin Dat 🛡️📊
-class AdminManager: ObservableObject {
-    @Published var userCount: Int = 1248
-    @Published var uptimeSeconds: Int = 86400
-    @Published var cpuUsage: Double = 32.0
-    @Published var errorCount: Int = 0
-    @Published var debugLogs: Bool = true
-    @Published var selectedServer: String = "EU-Central"
-    @Published var apiRateLimit: Double = 250.0
-    @Published var auditLogs: [AuditLog] = []
-    
-    @Published var maintenanceMode: Bool = false {
-        didSet {
-            addLog(
-                title: maintenanceMode ? "Režim údržby ZAPNUT 🛠️" : "Režim údržby VYPNUT 🟢",
-                type: maintenanceMode ? .warning : .info
-            )
-        }
-    }
+// MARK: - Reálná Nativní Telemetrie & Diagnostika Zařízení 🛡️📱
+class RealSystemAdminManager: ObservableObject {
+    @Published var batteryLevel: Int = 0
+    @Published var batteryState: String = "Neznámý"
+    @Published var freeStorageGB: Double = 0.0
+    @Published var totalStorageGB: Double = 0.0
+    @Published var appMemoryMB: Double = 0.0
+    @Published var totalDeviceRAMGB: Double = 0.0
+    @Published var thermalStateName: String = "Normální 🟢"
+    @Published var thermalColor: Color = .green
+    @Published var systemUptime: String = "0h 0m 0s"
+    @Published var actionMessage: String? = nil
+
+    // Informace o aplikaci & iOS ℹ️
+    let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+    let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    let bundleID = Bundle.main.bundleIdentifier ?? "com.local.app"
+    let deviceModel = UIDevice.current.model
+    let systemVersion = UIDevice.current.systemVersion
+    let deviceName = UIDevice.current.name
 
     private var timer: Timer?
 
     init() {
-        // Výchozí logy 📝
-        auditLogs = [
-            AuditLog(title: "Záloha databáze dokončena 💾", timestamp: "Dnes, 08:15", type: .success),
-            AuditLog(title: "Nový Admin přidán: Shadow_ROBLOX 👨‍💻", timestamp: "Včera, 22:40", type: .info)
-        ]
-        startLiveSimulation()
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        fetchRealDeviceMetrics()
+        startTelemetryLoop()
     }
 
-    // Živá simulace měnících se dat (CPU, Uptime, Uživatelé) 🔄
-    private func startLiveSimulation() {
-        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
+    // Čtení reálných dat z hardware zařízení ⚡
+    func fetchRealDeviceMetrics() {
+        // 1. Reálná baterie 🔋
+        let rawLevel = UIDevice.current.batteryLevel
+        self.batteryLevel = rawLevel >= 0 ? Int(rawLevel * 100) : 100
+        
+        switch UIDevice.current.batteryState {
+        case .charging: self.batteryState = "Nabíjí se ⚡"
+        case .full: self.batteryState = "Plně nabito 🔌"
+        case .unplugged: self.batteryState = "Na baterii 🔋"
+        default: self.batteryState = "Neznámý ❓"
+        }
+
+        // 2. Skutečné úložiště disku 💾
+        let homeURL = URL(fileURLWithPath: NSHomeDirectory())
+        if let values = try? homeURL.resourceValues(forKeys: [.volumeAvailableCapacityKey, .volumeTotalCapacityKey]) {
+            if let free = values.volumeAvailableCapacity, let total = values.volumeTotalCapacity {
+                self.freeStorageGB = Double(free) / 1_073_741_824.0
+                self.totalStorageGB = Double(total) / 1_073_741_824.0
+            }
+        }
+
+        // 3. Reálná spotřeba RAM paměti aplikace 🧠
+        var stats = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
+            }
+        }
+        if kerr == KERN_SUCCESS {
+            self.appMemoryMB = Double(stats.resident_size) / 1024.0 / 1024.0
+        }
+        self.totalDeviceRAMGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824.0
+
+        // 4. Teplota / Thermal State zařízení 🌡️
+        switch ProcessInfo.processInfo.thermalState {
+        case .nominal:
+            self.thermalStateName = "Normální 🟢"
+            self.thermalColor = .green
+        case .fair:
+            self.thermalStateName = "Mírně teplé 🟡"
+            self.thermalColor = .yellow
+        case .serious:
+            self.thermalStateName = "Horké 🟠"
+            self.thermalColor = .orange
+        case .critical:
+            self.thermalStateName = "Kritické 🔴"
+            self.thermalColor = .red
+        @unknown default:
+            self.thermalStateName = "Neznámé ⚪"
+            self.thermalColor = .gray
+        }
+
+        // 5. Reálný Uptime systému ⏱️
+        let uptime = ProcessInfo.processInfo.systemUptime
+        let hours = Int(uptime) / 3600
+        let minutes = (Int(uptime) % 3600) / 60
+        let seconds = Int(uptime) % 60
+        self.systemUptime = String(format: "%02dh %02dm %02ds", hours, minutes, seconds)
+    }
+
+    private func startTelemetryLoop() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
-                self.uptimeSeconds += 2
-                self.cpuUsage = Double.random(in: 18...42).rounded()
-                if Int.random(in: 1...4) == 2 {
-                    self.userCount += Int.random(in: -1...3)
-                }
+                self?.fetchRealDeviceMetrics()
             }
         }
     }
 
-    func addLog(title: String, type: AuditLog.LogType) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
-        let timeStr = "Dnes, " + formatter.string(from: Date())
-        let newLog = AuditLog(title: title, timestamp: timeStr, type: type)
-        auditLogs.insert(newLog, at: 0)
-    }
-
-    func clearCache() {
-        addLog(title: "Databázová cache byla vyčištěna 🔄", type: .info)
-    }
-
-    func clearLogs() {
-        auditLogs.removeAll()
-        addLog(title: "Audit logy byly vymazány 🧹", type: .warning)
-    }
-
-    func restartServer() {
-        cpuUsage = 5.0
-        errorCount = 0
-        addLog(title: "Server byl restartován administrátorem ⚠️", type: .error)
-    }
-
-    var formattedUptime: String {
-        let hours = uptimeSeconds / 3600
-        let minutes = (uptimeSeconds % 3600) / 60
-        let secs = uptimeSeconds % 60
-        return String(format: "%02dh %02dm %02ds", hours, minutes, secs)
-    }
-}
-
-// MARK: - Model Logu 📜
-struct AuditLog: Identifiable {
-    let id = UUID()
-    let title: String
-    let timestamp: String
-    let type: LogType
-
-    enum LogType {
-        case info, success, warning, error
-
-        var color: Color {
-            switch self {
-            case .info: return .blue
-            case .success: return .green
-            case .warning: return .orange
-            case .error: return .red
+    // 🧹 Skutečné vyčištění Cache složky z paměti telefonu!
+    func clearRealCache() {
+        guard let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
+        do {
+            let files = try FileManager.default.contentsOfDirectory(at: cacheURL, includingPropertiesForKeys: nil)
+            for file in files {
+                try FileManager.default.removeItem(at: file)
             }
+            fetchRealDeviceMetrics()
+            showAction("Složka Cache byla smazána z disku! 🧹💾")
+        } catch {
+            showAction("Chyba při mazání cache: \(error.localizedDescription) ⚠️")
         }
+    }
 
-        var icon: String {
-            switch self {
-            case .info: return "info.circle.fill"
-            case .success: return "checkmark.circle.fill"
-            case .warning: return "exclamationmark.triangle.fill"
-            case .error: return "xmark.octagon.fill"
+    // 📳 Vyvolání haptické odezvy zařízení
+    func triggerHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .heavy)
+        generator.impactOccurred()
+        showAction("Haptický motor aktivován! 📳✨")
+    }
+
+    private func showAction(_ text: String) {
+        withAnimation {
+            self.actionMessage = text
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            withAnimation {
+                self.actionMessage = nil
             }
         }
     }
@@ -109,7 +136,7 @@ struct AuditLog: Identifiable {
 
 // MARK: - Hlavní Kontajner Aplikace 📱
 struct ContentView: View {
-    @StateObject private var adminManager = AdminManager()
+    @StateObject private var adminManager = RealSystemAdminManager()
 
     var body: some View {
         TabView {
@@ -133,7 +160,7 @@ struct ContentView: View {
 
 // MARK: - Home View 🏠
 struct HomeView: View {
-    @EnvironmentObject var adminManager: AdminManager
+    @EnvironmentObject var adminManager: RealSystemAdminManager
     @State private var isToggleOn = false
     @State private var sliderValue = 50.0
     @State private var isLoading = false
@@ -206,7 +233,7 @@ struct HomeView: View {
         .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Obě ikony vpravo nahoře v jednom HStacku! 🔝🛡️⚙️
+            // Ikony Admin Panelu 🛡️ i Nastavení ⚙️ vpravo nahoře!
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
                     NavigationLink(destination: AdminPanelView()) {
@@ -226,114 +253,108 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Admin Panel View 🛡️👑
+// MARK: - Admin Panel View (Skutečná Diagnostika) 🛡️👑
 struct AdminPanelView: View {
-    @EnvironmentObject var adminManager: AdminManager
-    @State private var newAdminName: String = ""
+    @EnvironmentObject var adminManager: RealSystemAdminManager
 
     var body: some View {
         List {
-            // MARK: - Živá Metrika 📊
-            Section(header: Text("Živý Systémový Přehled 📈")) {
+            // Oznámení o provedené akci 🔔
+            if let msg = adminManager.actionMessage {
+                Section {
+                    Text(msg)
+                        .font(.subheadline)
+                        .bold()
+                        .foregroundColor(.green)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+
+            // MARK: - Reálný Stav Hardware ⚡
+            Section(header: Text("Reálný Stav Zařízení 📊")) {
                 Grid(horizontalSpacing: 12, verticalSpacing: 12) {
                     GridRow {
-                        MetricCard(title: "Aktivní Uživatelé", value: "\(adminManager.userCount)", icon: "person.3.fill", color: .blue)
-                        MetricCard(title: "Uptime", value: adminManager.formattedUptime, icon: "server.rack", color: .green)
+                        MetricCard(title: "Baterie", value: "\(adminManager.batteryLevel)%", icon: "battery.100", color: adminManager.batteryLevel > 20 ? .green : .red)
+                        MetricCard(title: "Volné Místo", value: String(format: "%.1f GB", adminManager.freeStorageGB), icon: "internaldrive", color: .blue)
                     }
                     GridRow {
-                        MetricCard(title: "Zátěž CPU", value: "\(Int(adminManager.cpuUsage))%", icon: "cpu", color: adminManager.cpuUsage > 35 ? .orange : .green)
-                        MetricCard(title: "Chyby", value: "\(adminManager.errorCount)", icon: "exclamationmark.triangle.fill", color: adminManager.errorCount > 0 ? .red : .gray)
+                        MetricCard(title: "RAM Aplikace", value: String(format: "%.1f MB", adminManager.appMemoryMB), icon: "memorychip", color: .purple)
+                        MetricCard(title: "Teplota HW", value: adminManager.thermalStateName, icon: "thermometer.medium", color: adminManager.thermalColor)
                     }
                 }
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
             }
 
-            // MARK: - Správa Serveru & Údržba 🎛️
-            Section(header: Text("Správa Systému 🎛️")) {
-                Toggle(isOn: $adminManager.maintenanceMode) {
-                    Label("Režim údržby 🛠️", systemImage: "wrench.and.screwdriver.fill")
-                }
-                
-                Toggle(isOn: $adminManager.debugLogs) {
-                    Label("Podrobné Logování 📜", systemImage: "terminal.fill")
-                }
-
-                Picker("Aktivní Server 🌐", selection: $adminManager.selectedServer) {
-                    Text("EU-Central (Praha) 🇨🇿").tag("EU-Central")
-                    Text("US-East (Virginia) 🇺🇸").tag("US-East")
-                    Text("AP-East (Tokyo) 🇯🇵").tag("AP-East")
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Label("API Rate Limit ⚡", systemImage: "speedometer")
-                        Spacer()
-                        Text("\(Int(adminManager.apiRateLimit)) req/min")
-                            .bold()
-                            .foregroundStyle(.secondary)
-                    }
-                    Slider(value: $adminManager.apiRateLimit, in: 50...1000, step: 50)
-                }
-                .padding(.vertical, 4)
-            }
-
-            // MARK: - Přidání nového Admina 👨‍💻
-            Section(header: Text("Přidat Správce 👤")) {
+            // MARK: - Informace o Systému & Telefonu 📱
+            Section(header: Text("Systémové Informace ℹ️")) {
                 HStack {
-                    TextField("Jméno nového admina...", text: $newAdminName)
-                    Button("Přidat") {
-                        guard !newAdminName.isEmpty else { return }
-                        adminManager.addLog(title: "Nový admin přidal: \(newAdminName) 👨‍💻", type: .info)
-                        newAdminName = ""
-                    }
-                    .bold()
-                    .disabled(newAdminName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Label("Název Zařízení 📱", systemImage: "iphone")
+                    Spacer()
+                    Text(adminManager.deviceName).foregroundStyle(.secondary)
+                }
+                HStack {
+                    Label("Verze iOS 🍏", systemImage: "apple.logo")
+                    Spacer()
+                    Text("iOS \(adminManager.systemVersion)").foregroundStyle(.secondary)
+                }
+                HStack {
+                    Label("Stav Baterie 🔌", systemImage: "bolt.fill")
+                    Spacer()
+                    Text(adminManager.batteryState).foregroundStyle(.secondary)
+                }
+                HStack {
+                    Label("Uptime Telefonu ⏱️", systemImage: "clock.fill")
+                    Spacer()
+                    Text(adminManager.systemUptime).bold().monospacedDigit()
+                }
+                HStack {
+                    Label("Celková RAM HW 🧠", systemImage: "cpu")
+                    Spacer()
+                    Text(String(format: "%.1f GB RAM", adminManager.totalDeviceRAMGB)).foregroundStyle(.secondary)
+                }
+                HStack {
+                    Label("Celková Kapacita 💾", systemImage: "sdcard")
+                    Spacer()
+                    Text(String(format: "%.1f GB", adminManager.totalStorageGB)).foregroundStyle(.secondary)
                 }
             }
 
-            // MARK: - Rychlé Admin Akce ⚡
-            Section(header: Text("Akce Serveru 🚀")) {
-                Button(action: {
-                    adminManager.clearCache()
-                }) {
-                    Label("Obnovit Databázovou Cache 🔄", systemImage: "arrow.clockwise.circle.fill")
-                }
-
-                Button(action: {
-                    adminManager.clearLogs()
-                }) {
-                    Label("Vymazat Logy 🧹", systemImage: "trash.fill")
-                }
-
-                Button(role: .destructive, action: {
-                    adminManager.restartServer()
-                }) {
-                    Label("Restartovat Server ⚠️", systemImage: "power")
-                }
-            }
-
-            // MARK: - Živý Audit Log 📝
-            Section(header: Text("Živý Audit Log (\(adminManager.auditLogs.count)) 📜")) {
-                if adminManager.auditLogs.isEmpty {
-                    Text("Žádné záznamy v logu")
+            // MARK: - Informace o Aplikaci 📦
+            Section(header: Text("Metadata Buildu 📦")) {
+                HStack {
+                    Label("Bundle ID 🆔", systemImage: "shippingbox")
+                    Spacer()
+                    Text(adminManager.bundleID)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                } else {
-                    ForEach(adminManager.auditLogs) { log in
-                        HStack(spacing: 12) {
-                            Image(systemName: log.type.icon)
-                                .foregroundColor(log.type.color)
-                                .font(.title3)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(log.title)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                Text(log.timestamp)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
+                }
+                HStack {
+                    Label("Verze Aplikace 🏷️", systemImage: "tag.fill")
+                    Spacer()
+                    Text("\(adminManager.appVersion) (\(adminManager.buildNumber))").foregroundStyle(.secondary)
+                }
+            }
+
+            // MARK: - Reálné Správcovské Akce 🚀
+            Section(header: Text("Nativní Akce 🛠️")) {
+                Button(action: {
+                    adminManager.clearRealCache()
+                }) {
+                    Label("Smazat Reálnou Cache z Disku 🧹", systemImage: "trash.fill")
+                        .foregroundColor(.red)
+                }
+
+                Button(action: {
+                    adminManager.triggerHapticFeedback()
+                }) {
+                    Label("Test Haptiky (Vibrace) 📳", systemImage: "waveform")
+                }
+
+                Button(action: {
+                    adminManager.fetchRealDeviceMetrics()
+                }) {
+                    Label("Obnovit Telemetrii 🔄", systemImage: "arrow.clockwise")
                 }
             }
         }
@@ -361,8 +382,10 @@ struct MetricCard: View {
                 Spacer()
             }
             Text(value)
-                .font(.title)
+                .font(.title3)
                 .bold()
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
