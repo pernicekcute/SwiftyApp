@@ -237,7 +237,7 @@ struct HomeView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
                     NavigationLink(destination: AdminPanelView()) {
-                        Image(systemName: "shield.gearshape.fill")
+                        Image(systemName: "shield.fill")
                             .font(.title3)
                             .foregroundColor(.blue)
                     }
