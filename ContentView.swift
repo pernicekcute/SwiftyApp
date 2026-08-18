@@ -3,6 +3,72 @@ import UIKit
 import Darwin
 import MachO
 
+// MARK: - Chybějící Glass Komponenty 🪟✨
+
+struct GlassMaterial {
+    var tint: Color = .clear
+    
+    static var regular: GlassMaterial { GlassMaterial() }
+    
+    func tint(_ color: Color) -> GlassMaterial {
+        var copy = self
+        copy.tint = color
+        return copy
+    }
+}
+
+extension View {
+    func glassEffect<S: Shape>(_ material: GlassMaterial, in shape: S) -> some View {
+        self.background(.ultraThinMaterial, in: shape)
+            .background(material.tint, in: shape)
+            .overlay(shape.stroke(Color.white.opacity(0.2), lineWidth: 0.5))
+    }
+}
+
+struct GlassButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding()
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2), lineWidth: 0.5))
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.spring(), value: configuration.isPressed)
+    }
+}
+
+struct GlassProminentButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding()
+            .background(Color.accentColor.opacity(0.8), in: RoundedRectangle(cornerRadius: 16))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.3), lineWidth: 1))
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.spring(), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == GlassButtonStyle {
+    static var glass: GlassButtonStyle { GlassButtonStyle() }
+}
+
+extension ButtonStyle where Self == GlassProminentButtonStyle {
+    static var glassProminent: GlassProminentButtonStyle { GlassProminentButtonStyle() }
+}
+
+struct GlassEffectContainer<Content: View>: View {
+    var spacing: CGFloat = 16
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(spacing: spacing) {
+            content()
+        }
+    }
+}
+
 // MARK: - Reálná Nativní Telemetrie & Diagnostika Zařízení 🛡️📱
 
 @MainActor
@@ -45,7 +111,6 @@ final class RealSystemAdminManager: ObservableObject {
     func fetchRealDeviceMetrics() {
 
         // MARK: Battery
-
         let rawLevel = UIDevice.current.batteryLevel
 
         batteryLevel =
@@ -65,7 +130,6 @@ final class RealSystemAdminManager: ObservableObject {
         }
 
         // MARK: Storage
-
         let homeURL = URL(
             fileURLWithPath: NSHomeDirectory()
         )
@@ -88,7 +152,6 @@ final class RealSystemAdminManager: ObservableObject {
         }
 
         // MARK: RAM
-
         var info = mach_task_basic_info()
 
         var count = mach_msg_type_number_t(
@@ -100,11 +163,11 @@ final class RealSystemAdminManager: ObservableObject {
                 $0.withMemoryRebound(
                     to: integer_t.self,
                     capacity: Int(count)
-                ) {
+                ) { ptr in
                     task_info(
                         mach_task_self_,
                         task_flavor_t(MACH_TASK_BASIC_INFO),
-                        $0,
+                        ptr,
                         &count
                     )
                 }
@@ -122,7 +185,6 @@ final class RealSystemAdminManager: ObservableObject {
             / 1_073_741_824
 
         // MARK: Thermal State
-
         switch ProcessInfo.processInfo.thermalState {
         case .nominal:
             thermalStateName = "Normální 🟢"
@@ -146,7 +208,6 @@ final class RealSystemAdminManager: ObservableObject {
         }
 
         // MARK: Uptime
-
         let uptime = ProcessInfo.processInfo.systemUptime
         let totalSeconds = Int(uptime)
 
@@ -163,12 +224,10 @@ final class RealSystemAdminManager: ObservableObject {
     }
 
     private func startTelemetryLoop() {
-
         timer = Timer.scheduledTimer(
             withTimeInterval: 1,
             repeats: true
         ) { [weak self] _ in
-
             Task { @MainActor in
                 self?.fetchRealDeviceMetrics()
             }
@@ -176,7 +235,6 @@ final class RealSystemAdminManager: ObservableObject {
     }
 
     func clearRealCache() {
-
         guard let cacheURL =
             FileManager.default.urls(
                 for: .cachesDirectory,
@@ -187,7 +245,6 @@ final class RealSystemAdminManager: ObservableObject {
         }
 
         do {
-
             let files =
                 try FileManager.default.contentsOfDirectory(
                     at: cacheURL,
@@ -207,7 +264,6 @@ final class RealSystemAdminManager: ObservableObject {
             )
 
         } catch {
-
             showAction(
                 "Chyba při mazání cache: \(error.localizedDescription)"
             )
@@ -215,7 +271,6 @@ final class RealSystemAdminManager: ObservableObject {
     }
 
     func triggerHapticFeedback() {
-
         let generator =
             UIImpactFeedbackGenerator(
                 style: .heavy
@@ -230,15 +285,14 @@ final class RealSystemAdminManager: ObservableObject {
     }
 
     private func showAction(_ text: String) {
-
-        withAnimation(.spring) {
+        withAnimation(.spring()) {
             actionMessage = text
         }
 
         DispatchQueue.main.asyncAfter(
             deadline: .now() + 3
         ) {
-            withAnimation(.spring) {
+            withAnimation(.spring()) {
                 self.actionMessage = nil
             }
         }
@@ -248,7 +302,6 @@ final class RealSystemAdminManager: ObservableObject {
         timer?.invalidate()
     }
 }
-
 
 // MARK: - Content View 📱
 
@@ -286,14 +339,12 @@ struct ContentView: View {
     }
 }
 
-
 // MARK: - Home View 🫧
 
 struct HomeView: View {
 
     @EnvironmentObject
-    private var adminManager:
-        RealSystemAdminManager
+    private var adminManager: RealSystemAdminManager
 
     @State private var isToggleOn = false
     @State private var sliderValue = 50.0
@@ -301,7 +352,6 @@ struct HomeView: View {
     @State private var selectedTint = 0
 
     private var selectedColor: Color {
-
         switch selectedTint {
         case 0: return .blue
         case 1: return .purple
@@ -320,215 +370,93 @@ struct HomeView: View {
                 VStack(spacing: 18) {
 
                     // MARK: Hero
-
                     VStack(spacing: 14) {
-
-                        Image(
-                            systemName: "sparkles"
-                        )
-                        .font(
-                            .system(
-                                size: 42,
-                                weight: .semibold
-                            )
-                        )
-                        .foregroundStyle(.white)
-                        .frame(
-                            width: 86,
-                            height: 86
-                        )
-                        .glassEffect(
-                            .regular.tint(
-                                selectedColor.opacity(0.45)
-                            ),
-                            in: .circle
-                        )
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 42, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 86, height: 86)
+                            .glassEffect(.regular.tint(selectedColor.opacity(0.45)), in: .circle)
 
                         Text("Liquid Glass")
                             .font(.largeTitle)
                             .fontWeight(.bold)
 
-                        Text(
-                            "Full interactive playground"
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        Text("Full interactive playground")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
 
-
                     // MARK: Device Status
-
                     HStack(spacing: 12) {
-
                         Circle()
-                            .fill(
-                                adminManager.thermalColor
-                            )
-                            .frame(
-                                width: 10,
-                                height: 10
-                            )
+                            .fill(adminManager.thermalColor)
+                            .frame(width: 10, height: 10)
 
-                        VStack(
-                            alignment: .leading,
-                            spacing: 2
-                        ) {
-
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("Stav zařízení")
                                 .font(.caption)
-                                .foregroundStyle(
-                                    .secondary
-                                )
+                                .foregroundStyle(.secondary)
 
-                            Text(
-                                adminManager
-                                    .thermalStateName
-                            )
-                            .fontWeight(.semibold)
+                            Text(adminManager.thermalStateName)
+                                .fontWeight(.semibold)
                         }
 
                         Spacer()
 
-                        Image(
-                            systemName:
-                                "battery.75percent"
-                        )
+                        Image(systemName: "battery.75percent")
 
-                        Text(
-                            "\(adminManager.batteryLevel)%"
-                        )
-                        .fontWeight(.semibold)
-                        .monospacedDigit()
+                        Text("\(adminManager.batteryLevel)%")
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
                     }
-                    .padding(
-                        .horizontal,
-                        18
-                    )
-                    .padding(
-                        .vertical,
-                        14
-                    )
-                    .glassEffect(
-                        .regular.tint(
-                            adminManager
-                                .thermalColor
-                                .opacity(0.16)
-                        ),
-                        in: .capsule
-                    )
-
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+                    .glassEffect(.regular.tint(adminManager.thermalColor.opacity(0.16)), in: .capsule)
 
                     // MARK: Toggle
-
-                    VStack(
-                        alignment: .leading,
-                        spacing: 16
-                    ) {
-
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack {
-
-                            Label(
-                                "Glass Toggle",
-                                systemImage:
-                                    "switch.2"
-                            )
-                            .font(.headline)
+                            Label("Glass Toggle", systemImage: "switch.2")
+                                .font(.headline)
 
                             Spacer()
 
-                            Text(
-                                isToggleOn
-                                ? "ON"
-                                : "OFF"
-                            )
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .padding(
-                                .horizontal,
-                                10
-                            )
-                            .padding(
-                                .vertical,
-                                6
-                            )
-                            .glassEffect(
-                                isToggleOn
-                                ? .regular.tint(
-                                    .green.opacity(0.3)
-                                )
-                                : .regular,
-                                in: .capsule
-                            )
+                            Text(isToggleOn ? "ON" : "OFF")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .glassEffect(isToggleOn ? .regular.tint(.green.opacity(0.3)) : .regular, in: .capsule)
                         }
 
-                        Toggle(
-                            "Interaktivní přepínač",
-                            isOn: $isToggleOn
-                        )
-                        .tint(.blue)
+                        Toggle("Interaktivní přepínač", isOn: $isToggleOn)
+                            .tint(.blue)
                     }
                     .padding(20)
-                    .glassEffect(
-                        isToggleOn
-                        ? .regular.tint(
-                            .blue.opacity(0.18)
-                        )
-                        : .regular,
-                        in: .rect(
-                            cornerRadius: 28
-                        )
-                    )
-
+                    .glassEffect(isToggleOn ? .regular.tint(.blue.opacity(0.18)) : .regular, in: .rect(cornerRadius: 28))
 
                     // MARK: Slider
-
-                    VStack(
-                        alignment: .leading,
-                        spacing: 16
-                    ) {
-
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack {
-
-                            Label(
-                                "Glass Slider",
-                                systemImage:
-                                    "slider.horizontal.3"
-                            )
-                            .font(.headline)
+                            Label("Glass Slider", systemImage: "slider.horizontal.3")
+                                .font(.headline)
 
                             Spacer()
 
-                            Text(
-                                "\(Int(sliderValue))"
-                            )
-                            .font(.headline)
-                            .monospacedDigit()
-                            .padding(
-                                .horizontal,
-                                12
-                            )
-                            .padding(
-                                .vertical,
-                                7
-                            )
-                            .glassEffect(
-                                .regular.tint(
-                                    .purple.opacity(0.25)
-                                ),
-                                in: .capsule
-                            )
+                            Text("\(Int(sliderValue))")
+                                .font(.headline)
+                                .monospacedDigit()
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
+                                .glassEffect(.regular.tint(.purple.opacity(0.25)), in: .capsule)
                         }
 
-                        Slider(
-                            value: $sliderValue,
-                            in: 0...100
-                        )
-                        .tint(.purple)
+                        Slider(value: $sliderValue, in: 0...100)
+                            .tint(.purple)
 
                         HStack {
-
                             Text("0")
                             Spacer()
                             Text("50")
@@ -536,289 +464,120 @@ struct HomeView: View {
                             Text("100")
                         }
                         .font(.caption)
-                        .foregroundStyle(
-                            .secondary
-                        )
+                        .foregroundStyle(.secondary)
                     }
                     .padding(20)
-                    .glassEffect(
-                        .regular.tint(
-                            .purple.opacity(0.14)
-                        ),
-                        in: .rect(
-                            cornerRadius: 28
-                        )
-                    )
-
+                    .glassEffect(.regular.tint(.purple.opacity(0.14)), in: .rect(cornerRadius: 28))
 
                     // MARK: Tint Playground
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Glass Tint", systemImage: "paintpalette.fill")
+                            .font(.headline)
 
-                    VStack(
-                        alignment: .leading,
-                        spacing: 16
-                    ) {
-
-                        Label(
-                            "Glass Tint",
-                            systemImage:
-                                "paintpalette.fill"
-                        )
-                        .font(.headline)
-
-                        HStack(
-                            spacing: 12
-                        ) {
-
-                            tintButton(
-                                color: .blue,
-                                index: 0
-                            )
-
-                            tintButton(
-                                color: .purple,
-                                index: 1
-                            )
-
-                            tintButton(
-                                color: .pink,
-                                index: 2
-                            )
-
-                            tintButton(
-                                color: .orange,
-                                index: 3
-                            )
-
-                            tintButton(
-                                color: .green,
-                                index: 4
-                            )
+                        HStack(spacing: 12) {
+                            tintButton(color: .blue, index: 0)
+                            tintButton(color: .purple, index: 1)
+                            tintButton(color: .pink, index: 2)
+                            tintButton(color: .orange, index: 3)
+                            tintButton(color: .green, index: 4)
                         }
                     }
                     .padding(20)
-                    .glassEffect(
-                        .regular.tint(
-                            selectedColor.opacity(0.14)
-                        ),
-                        in: .rect(
-                            cornerRadius: 28
-                        )
-                    )
-
+                    .glassEffect(.regular.tint(selectedColor.opacity(0.14)), in: .rect(cornerRadius: 28))
 
                     // MARK: Loading
-
                     VStack(spacing: 14) {
+                        Image(systemName: isLoading ? "arrow.triangle.2.circlepath" : "checkmark.circle.fill")
+                            .font(.system(size: 34, weight: .medium))
+                            .foregroundStyle(isLoading ? .orange : .green)
 
-                        Image(
-                            systemName:
-                                isLoading
-                                ? "arrow.triangle.2.circlepath"
-                                : "checkmark.circle.fill"
-                        )
-                        .font(
-                            .system(
-                                size: 34,
-                                weight: .medium
-                            )
-                        )
-                        .foregroundStyle(
-                            isLoading
-                            ? .orange
-                            : .green
-                        )
+                        Text(isLoading ? "Probíhá operace…" : "Připraveno")
+                            .font(.headline)
 
-                        Text(
-                            isLoading
-                            ? "Probíhá operace…"
-                            : "Připraveno"
-                        )
-                        .font(.headline)
-
-                        Text(
-                            isLoading
-                            ? "Liquid Glass playground pracuje."
-                            : "Všechny systémy jsou připravené."
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(
-                            .center
-                        )
+                        Text(isLoading ? "Liquid Glass playground pracuje." : "Všechny systémy jsou připravené.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
 
                         if isLoading {
-
                             ProgressView()
                                 .controlSize(.large)
                         }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(24)
-                    .glassEffect(
-                        isLoading
-                        ? .regular.tint(
-                            .orange.opacity(0.18)
-                        )
-                        : .regular.tint(
-                            .green.opacity(0.12)
-                        ),
-                        in: .rect(
-                            cornerRadius: 30
-                        )
-                    )
-
+                    .glassEffect(isLoading ? .regular.tint(.orange.opacity(0.18)) : .regular.tint(.green.opacity(0.12)), in: .rect(cornerRadius: 30))
 
                     // MARK: Main Liquid Glass Button
-
                     Button {
-
-                        withAnimation(
-                            .spring(
-                                response: 0.35,
-                                dampingFraction: 0.75
-                            )
-                        ) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             isLoading.toggle()
                         }
-
                     } label: {
-
-                        Label(
-                            isLoading
-                            ? "Zastavit"
-                            : "Spustit",
-                            systemImage:
-                                isLoading
-                                ? "stop.fill"
-                                : "play.fill"
-                        )
-                        .font(.headline)
-                        .frame(
-                            maxWidth: .infinity
-                        )
+                        Label(isLoading ? "Zastavit" : "Spustit", systemImage: isLoading ? "stop.fill" : "play.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(
-                        .glassProminent
-                    )
-                    .tint(
-                        isLoading
-                        ? .red
-                        : .blue
-                    )
+                    .buttonStyle(.glassProminent)
+                    .tint(isLoading ? .red : .blue)
                     .controlSize(.large)
 
-
                     // MARK: Quick Actions
-
                     HStack(spacing: 12) {
-
-                        glassAction(
-                            icon: "waveform"
-                        ) {
-                            adminManager
-                                .triggerHapticFeedback()
+                        glassAction(icon: "waveform") {
+                            adminManager.triggerHapticFeedback()
                         }
 
-                        glassAction(
-                            icon: "arrow.clockwise"
-                        ) {
-                            adminManager
-                                .fetchRealDeviceMetrics()
+                        glassAction(icon: "arrow.clockwise") {
+                            adminManager.fetchRealDeviceMetrics()
                         }
 
                         NavigationLink {
                             AdminPanelView()
                         } label: {
-
-                            Image(
-                                systemName:
-                                    "shield.fill"
-                            )
-                            .font(.title3)
+                            Image(systemName: "shield.fill")
+                                .font(.title3)
                         }
                         .buttonStyle(.glass)
-                        .frame(
-                            width: 56,
-                            height: 56
-                        )
+                        .frame(width: 56, height: 56)
 
                         NavigationLink {
                             SettingsView()
                         } label: {
-
-                            Image(
-                                systemName:
-                                    "gear"
-                            )
-                            .font(.title3)
+                            Image(systemName: "gear")
+                                .font(.title3)
                         }
                         .buttonStyle(.glass)
-                        .frame(
-                            width: 56,
-                            height: 56
-                        )
+                        .frame(width: 56, height: 56)
                     }
 
-
                     // MARK: Metrics
-
                     HStack(spacing: 12) {
-
                         miniMetric(
                             title: "RAM",
-                            value: String(
-                                format: "%.1f GB",
-                                adminManager
-                                    .totalDeviceRAMGB
-                            ),
+                            value: String(format: "%.1f GB", adminManager.totalDeviceRAMGB),
                             icon: "memorychip",
                             color: .purple
                         )
 
                         miniMetric(
                             title: "Volné místo",
-                            value: String(
-                                format: "%.1f GB",
-                                adminManager
-                                    .freeStorageGB
-                            ),
+                            value: String(format: "%.1f GB", adminManager.freeStorageGB),
                             icon: "internaldrive",
                             color: .blue
                         )
                     }
 
-
                     // MARK: Action Message
-
-                    if let message =
-                        adminManager.actionMessage {
-
+                    if let message = adminManager.actionMessage {
                         Text(message)
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .multilineTextAlignment(
-                                .center
-                            )
-                            .padding(
-                                .horizontal,
-                                18
-                            )
-                            .padding(
-                                .vertical,
-                                12
-                            )
-                            .glassEffect(
-                                .regular.tint(
-                                    .green.opacity(0.2)
-                                ),
-                                in: .capsule
-                            )
-                            .transition(
-                                .scale
-                                    .combined(
-                                        with: .opacity
-                                    )
-                            )
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 12)
+                            .glassEffect(.regular.tint(.green.opacity(0.2)), in: .capsule)
+                            .transition(.scale.combined(with: .opacity))
                     }
                 }
                 .padding()
@@ -826,7 +585,6 @@ struct HomeView: View {
         }
         .scrollIndicators(.hidden)
         .background {
-
             LinearGradient(
                 colors: [
                     .blue.opacity(0.12),
@@ -842,30 +600,19 @@ struct HomeView: View {
         .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-
-            ToolbarItem(
-                placement: .topBarTrailing
-            ) {
-
+            ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 8) {
-
                     NavigationLink {
                         AdminPanelView()
                     } label: {
-                        Image(
-                            systemName:
-                                "shield.fill"
-                        )
+                        Image(systemName: "shield.fill")
                     }
                     .buttonStyle(.glass)
 
                     NavigationLink {
                         SettingsView()
                     } label: {
-                        Image(
-                            systemName:
-                                "gear"
-                        )
+                        Image(systemName: "gear")
                     }
                     .buttonStyle(.glass)
                 }
@@ -874,39 +621,21 @@ struct HomeView: View {
     }
 
     // MARK: Tint Button
-
     @ViewBuilder
-    private func tintButton(
-        color: Color,
-        index: Int
-    ) -> some View {
-
+    private func tintButton(color: Color, index: Int) -> some View {
         Button {
-
-            withAnimation(.spring) {
+            withAnimation(.spring()) {
                 selectedTint = index
             }
-
         } label: {
-
             Circle()
                 .fill(color.gradient)
-                .frame(
-                    width: 40,
-                    height: 40
-                )
+                .frame(width: 40, height: 40)
                 .overlay {
-
                     if selectedTint == index {
-
-                        Image(
-                            systemName:
-                                "checkmark"
-                        )
-                        .font(
-                            .caption.bold()
-                        )
-                        .foregroundStyle(.white)
+                        Image(systemName: "checkmark")
+                            .font(.caption.bold())
+                            .foregroundStyle(.white)
                     }
                 }
         }
@@ -914,51 +643,28 @@ struct HomeView: View {
     }
 
     // MARK: Glass Action
-
     @ViewBuilder
-    private func glassAction(
-        icon: String,
-        action: @escaping () -> Void
-    ) -> some View {
-
+    private func glassAction(icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-
             Image(systemName: icon)
                 .font(.title3)
         }
         .buttonStyle(.glass)
-        .frame(
-            width: 56,
-            height: 56
-        )
+        .frame(width: 56, height: 56)
     }
 
     // MARK: Mini Metric
-
     @ViewBuilder
-    private func miniMetric(
-        title: String,
-        value: String,
-        icon: String,
-        color: Color
-    ) -> some View {
-
+    private func miniMetric(title: String, value: String, icon: String, color: Color) -> some View {
         HStack(spacing: 10) {
-
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundStyle(color)
 
-            VStack(
-                alignment: .leading,
-                spacing: 2
-            ) {
-
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(
-                        .secondary
-                    )
+                    .foregroundStyle(.secondary)
 
                 Text(value)
                     .font(.headline)
@@ -969,257 +675,120 @@ struct HomeView: View {
         }
         .padding(15)
         .frame(maxWidth: .infinity)
-        .glassEffect(
-            .regular.tint(
-                color.opacity(0.14)
-            ),
-            in: .rect(
-                cornerRadius: 24
-            )
-        )
+        .glassEffect(.regular.tint(color.opacity(0.14)), in: .rect(cornerRadius: 24))
     }
 }
-
 
 // MARK: - Admin Panel 🛡️
 
 struct AdminPanelView: View {
 
     @EnvironmentObject
-    private var adminManager:
-        RealSystemAdminManager
+    private var adminManager: RealSystemAdminManager
 
     var body: some View {
 
         List {
 
-            if let message =
-                adminManager.actionMessage {
-
+            if let message = adminManager.actionMessage {
                 Section {
-
                     Text(message)
                         .font(.subheadline)
                         .fontWeight(.bold)
                         .foregroundStyle(.green)
-                        .frame(
-                            maxWidth: .infinity
-                        )
+                        .frame(maxWidth: .infinity)
                 }
             }
 
-            Section(
-                "Reálný Stav Zařízení 📊"
-            ) {
-
-                Grid(
-                    horizontalSpacing: 12,
-                    verticalSpacing: 12
-                ) {
-
+            Section("Reálný Stav Zařízení 📊") {
+                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
                     GridRow {
-
                         MetricCard(
                             title: "Baterie",
-                            value:
-                                "\(adminManager.batteryLevel)%",
-                            icon:
-                                "battery.100",
-                            color:
-                                adminManager
-                                    .batteryLevel > 20
-                                ? .green
-                                : .red
+                            value: "\(adminManager.batteryLevel)%",
+                            icon: "battery.100",
+                            color: adminManager.batteryLevel > 20 ? .green : .red
                         )
 
                         MetricCard(
                             title: "Volné Místo",
-                            value: String(
-                                format: "%.1f GB",
-                                adminManager
-                                    .freeStorageGB
-                            ),
-                            icon:
-                                "internaldrive",
+                            value: String(format: "%.1f GB", adminManager.freeStorageGB),
+                            icon: "internaldrive",
                             color: .blue
                         )
                     }
 
                     GridRow {
-
                         MetricCard(
                             title: "RAM Aplikace",
-                            value: String(
-                                format: "%.1f MB",
-                                adminManager
-                                    .appMemoryMB
-                            ),
-                            icon:
-                                "memorychip",
+                            value: String(format: "%.1f MB", adminManager.appMemoryMB),
+                            icon: "memorychip",
                             color: .purple
                         )
 
                         MetricCard(
                             title: "Teplota HW",
-                            value:
-                                adminManager
-                                    .thermalStateName,
-                            icon:
-                                "thermometer.medium",
-                            color:
-                                adminManager
-                                    .thermalColor
+                            value: adminManager.thermalStateName,
+                            icon: "thermometer.medium",
+                            color: adminManager.thermalColor
                         )
                     }
                 }
-                .listRowInsets(
-                    EdgeInsets()
-                )
-                .listRowBackground(
-                    Color.clear
-                )
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
 
-            Section(
-                "Systémové Informace ℹ️"
-            ) {
-
-                infoRow(
-                    "Název Zařízení",
-                    "iphone",
-                    adminManager.deviceName
-                )
-
-                infoRow(
-                    "Verze iOS",
-                    "apple.logo",
-                    "iOS \(adminManager.systemVersion)"
-                )
-
-                infoRow(
-                    "Stav Baterie",
-                    "bolt.fill",
-                    adminManager.batteryState
-                )
-
-                infoRow(
-                    "Uptime Telefonu",
-                    "clock.fill",
-                    adminManager.systemUptime
-                )
-
-                infoRow(
-                    "Celková RAM HW",
-                    "cpu",
-                    String(
-                        format: "%.1f GB RAM",
-                        adminManager
-                            .totalDeviceRAMGB
-                    )
-                )
-
-                infoRow(
-                    "Celková Kapacita",
-                    "sdcard",
-                    String(
-                        format: "%.1f GB",
-                        adminManager
-                            .totalStorageGB
-                    )
-                )
+            Section("Systémové Informace ℹ️") {
+                infoRow("Název Zařízení", "iphone", adminManager.deviceName)
+                infoRow("Verze iOS", "apple.logo", "iOS \(adminManager.systemVersion)")
+                infoRow("Stav Baterie", "bolt.fill", adminManager.batteryState)
+                infoRow("Uptime Telefonu", "clock.fill", adminManager.systemUptime)
+                infoRow("Celková RAM HW", "cpu", String(format: "%.1f GB RAM", adminManager.totalDeviceRAMGB))
+                infoRow("Celková Kapacita", "sdcard", String(format: "%.1f GB", adminManager.totalStorageGB))
             }
 
-            Section(
-                "Metadata Buildu 📦"
-            ) {
-
-                infoRow(
-                    "Bundle ID",
-                    "shippingbox",
-                    adminManager.bundleID
-                )
-
-                infoRow(
-                    "Verze Aplikace",
-                    "tag.fill",
-                    "\(adminManager.appVersion) (\(adminManager.buildNumber))"
-                )
+            Section("Metadata Buildu 📦") {
+                infoRow("Bundle ID", "shippingbox", adminManager.bundleID)
+                infoRow("Verze Aplikace", "tag.fill", "\(adminManager.appVersion) (\(adminManager.buildNumber))")
             }
 
-            Section(
-                "Nativní Akce 🛠️"
-            ) {
-
+            Section("Nativní Akce 🛠️") {
                 Button {
                     adminManager.clearRealCache()
                 } label: {
-
-                    Label(
-                        "Smazat Reálnou Cache",
-                        systemImage:
-                            "trash.fill"
-                    )
+                    Label("Smazat Reálnou Cache", systemImage: "trash.fill")
                 }
                 .foregroundStyle(.red)
 
                 Button {
-                    adminManager
-                        .triggerHapticFeedback()
+                    adminManager.triggerHapticFeedback()
                 } label: {
-
-                    Label(
-                        "Test Haptiky",
-                        systemImage:
-                            "waveform"
-                    )
+                    Label("Test Haptiky", systemImage: "waveform")
                 }
 
                 Button {
-                    adminManager
-                        .fetchRealDeviceMetrics()
+                    adminManager.fetchRealDeviceMetrics()
                 } label: {
-
-                    Label(
-                        "Obnovit Telemetrii",
-                        systemImage:
-                            "arrow.clockwise"
-                    )
+                    Label("Obnovit Telemetrii", systemImage: "arrow.clockwise")
                 }
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Admin Panel")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(
-            .hidden,
-            for: .tabBar
-        )
+        .toolbar(.hidden, for: .tabBar)
     }
 
     @ViewBuilder
-    private func infoRow(
-        _ title: String,
-        _ icon: String,
-        _ value: String
-    ) -> some View {
-
+    private func infoRow(_ title: String, _ icon: String, _ value: String) -> some View {
         HStack {
-
-            Label(
-                title,
-                systemImage: icon
-            )
-
+            Label(title, systemImage: icon)
             Spacer()
-
             Text(value)
-                .foregroundStyle(
-                    .secondary
-                )
+                .foregroundStyle(.secondary)
         }
     }
 }
-
 
 // MARK: - Metric Card 📊
 
@@ -1231,12 +800,7 @@ struct MetricCard: View {
     let color: Color
 
     var body: some View {
-
-        VStack(
-            alignment: .leading,
-            spacing: 8
-        ) {
-
+        VStack(alignment: .leading, spacing: 8) {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundStyle(color)
@@ -1252,210 +816,93 @@ struct MetricCard: View {
                 .foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .glassEffect(
-            .regular.tint(
-                color.opacity(0.14)
-            ),
-            in: .rect(
-                cornerRadius: 22
-            )
-        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular.tint(color.opacity(0.14)), in: .rect(cornerRadius: 22))
     }
 }
-
 
 // MARK: - Settings ⚙️
 
 struct SettingsView: View {
-
     var body: some View {
-
         VStack(spacing: 20) {
-
-            Image(
-                systemName: "gear"
-            )
-            .font(
-                .system(
-                    size: 48,
-                    weight: .medium
-                )
-            )
-            .frame(
-                width: 88,
-                height: 88
-            )
-            .glassEffect(
-                .regular.tint(
-                    .gray.opacity(0.2)
-                ),
-                in: .circle
-            )
+            Image(systemName: "gear")
+                .font(.system(size: 48, weight: .medium))
+                .frame(width: 88, height: 88)
+                .glassEffect(.regular.tint(.gray.opacity(0.2)), in: .circle)
 
             Text("Nastavení")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
-            Text(
-                "Nastavení aplikace ⚙️✨"
-            )
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            Text("Nastavení aplikace ⚙️✨")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
             Spacer()
         }
         .padding()
         .navigationTitle("Nastavení")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(
-            .hidden,
-            for: .tabBar
-        )
+        .toolbar(.hidden, for: .tabBar)
     }
 }
-
 
 // MARK: - Credits 💖
 
 struct CreditsView: View {
-
     var body: some View {
-
         ScrollView {
-
             GlassEffectContainer(spacing: 18) {
-
                 VStack(spacing: 18) {
-
                     VStack(spacing: 12) {
-
-                        Image(
-                            systemName:
-                                "heart.text.square.fill"
-                        )
-                        .font(
-                            .system(
-                                size: 50,
-                                weight: .medium
-                            )
-                        )
-                        .foregroundStyle(.pink)
+                        Image(systemName: "heart.text.square.fill")
+                            .font(.system(size: 50, weight: .medium))
+                            .foregroundStyle(.pink)
 
                         Text("iOsApp")
                             .font(.title2)
                             .fontWeight(.bold)
                     }
-                    .frame(
-                        maxWidth: .infinity
-                    )
+                    .frame(maxWidth: .infinity)
                     .padding(25)
-                    .glassEffect(
-                        .regular.tint(
-                            .pink.opacity(0.18)
-                        ),
-                        in: .rect(
-                            cornerRadius: 30
-                        )
-                    )
+                    .glassEffect(.regular.tint(.pink.opacity(0.18)), in: .rect(cornerRadius: 30))
 
-                    VStack(
-                        alignment: .leading,
-                        spacing: 14
-                    ) {
-
+                    VStack(alignment: .leading, spacing: 14) {
                         Text("Tým")
                             .font(.headline)
 
-                        creditRow(
-                            "Vývojář",
-                            "iOSondyhop ",
-                            "hammer.fill"
-                        )
-
-                        creditRow(
-                            "UI/UX Design",
-                            "Shadow_ROBLOX",
-                            "paintpalette"
-                        )
+                        creditRow("Vývojář", "iOSondyhop ", "hammer.fill")
+                        creditRow("UI/UX Design", "Shadow_ROBLOX", "paintpalette")
                     }
                     .padding(20)
-                    .glassEffect(
-                        .regular.tint(
-                            .blue.opacity(0.12)
-                        ),
-                        in: .rect(
-                            cornerRadius: 28
-                        )
-                    )
+                    .glassEffect(.regular.tint(.blue.opacity(0.12)), in: .rect(cornerRadius: 28))
 
-                    VStack(
-                        alignment: .leading,
-                        spacing: 12
-                    ) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Open-Source")
+                            .font(.headline)
 
-                        Text(
-                            "Open-Source"
-                        )
-                        .font(.headline)
+                        Link("GitHub", destination: URL(string: "https://github.com")!)
+                            .buttonStyle(.glass)
 
-                        Link(
-                            "GitHub",
-                            destination:
-                                URL(
-                                    string:
-                                        "https://github.com"
-                                )!
-                        )
-                        .buttonStyle(.glass)
-
-                        Link(
-                            "SF Symbols",
-                            destination:
-                                URL(
-                                    string:
-                                        "https://developer.apple.com/sf-symbols/"
-                                )!
-                        )
-                        .buttonStyle(.glass)
+                        Link("SF Symbols", destination: URL(string: "https://developer.apple.com/sf-symbols/")!)
+                            .buttonStyle(.glass)
                     }
                     .padding(20)
-                    .glassEffect(
-                        .regular.tint(
-                            .purple.opacity(0.12)
-                        ),
-                        in: .rect(
-                            cornerRadius: 28
-                        )
-                    )
+                    .glassEffect(.regular.tint(.purple.opacity(0.12)), in: .rect(cornerRadius: 28))
 
-                    Text(
-                        "© 2026 Všechna práva vyhrazena"
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(
-                        .horizontal,
-                        18
-                    )
-                    .padding(
-                        .vertical,
-                        12
-                    )
-                    .glassEffect(
-                        .regular,
-                        in: .capsule
-                    )
+                    Text("© 2026 Všechna práva vyhrazena")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 12)
+                        .glassEffect(.regular, in: .capsule)
                 }
                 .padding()
             }
         }
         .scrollIndicators(.hidden)
         .background {
-
             LinearGradient(
                 colors: [
                     .pink.opacity(0.08),
@@ -1472,14 +919,8 @@ struct CreditsView: View {
     }
 
     @ViewBuilder
-    private func creditRow(
-        _ title: String,
-        _ value: String,
-        _ icon: String
-    ) -> some View {
-
+    private func creditRow(_ title: String, _ value: String, _ icon: String) -> some View {
         HStack {
-
             Image(systemName: icon)
                 .frame(width: 28)
 
@@ -1488,9 +929,7 @@ struct CreditsView: View {
             Spacer()
 
             Text(value)
-                .foregroundStyle(
-                    .secondary
-                )
+                .foregroundStyle(.secondary)
         }
     }
 }
