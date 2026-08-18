@@ -134,6 +134,34 @@ class RealSystemAdminManager: ObservableObject {
     }
 }
 
+// MARK: - Liquid Glass Modifier & Helper 💧✨
+struct LiquidGlassModifier: ViewModifier {
+    @AppStorage("isLiquidGlassEnabled") private var isLiquidGlassEnabled: Bool = true
+
+    func body(content: Content) -> some View {
+        #if LIQUID_GLASS_ENABLED
+        if isLiquidGlassEnabled {
+            // Reálný Liquid Glass efekt registrovaný v iOS 💧
+            content
+                .background(.ultraThinMaterial)
+                .shadow(color: Color.blue.opacity(0.2), radius: 10, x: 0, y: 5)
+        } else {
+            // Starý klasický styl bez registraci Liquid Glass prvků 🏛️
+            content
+        }
+        #else
+        // Fallback pro starší SDK (iOS 18 a nižší) 🚫
+        content
+        #endif
+    }
+}
+
+extension View {
+    func applyLiquidGlass() -> some View {
+        self.modifier(LiquidGlassModifier())
+    }
+}
+
 // MARK: - Hlavní Kontajner Aplikace 📱
 struct ContentView: View {
     @StateObject private var adminManager = RealSystemAdminManager()
@@ -183,6 +211,7 @@ struct HomeView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
+                .applyLiquidGlass() // 💧 Aplikace Liquid Glass
 
                 // Posuvník / Slider 🎛️
                 VStack(alignment: .leading, spacing: 10) {
@@ -193,6 +222,7 @@ struct HomeView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
+                .applyLiquidGlass() // 💧 Aplikace Liquid Glass
 
                 // Indikátor načítání 🌀
                 VStack(spacing: 10) {
@@ -399,26 +429,36 @@ struct MetricCard: View {
 
 // MARK: - Settings View ⚙️
 struct SettingsView: View {
+    // Persistentní nastavení – výchozí hodnota je true (povoleno) 💧
+    @AppStorage("isLiquidGlassEnabled") private var isLiquidGlassEnabled: Bool = true
+
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "gear")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 70, height: 70)
-                .foregroundColor(.gray)
+        List {
+            Section(header: Text("Vzhled & Design 🎨")) {
+                Toggle(isOn: $isLiquidGlassEnabled) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Liquid Glass Efekt ✨", systemImage: "drop.fill")
+                            .font(.headline)
+                        Text("Povolit skleněné efekty iOS napříč celou aplikací. Při vypnutí iOS prvky neregistruje.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .tint(.blue)
+            }
 
-            Text("Nastavení")
-                .font(.largeTitle)
-                .bold()
-
-            Text("Tohle je stránka nastavení aplikace! ⚙️✨")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Spacer()
+            Section(header: Text("Stav Efektu 🔍")) {
+                HStack {
+                    Label("Aktivita Liquid Glass", systemImage: "sparkles")
+                    Spacer()
+                    Text(isLiquidGlassEnabled ? "Zapnuto 💧" : "Vypnuto 🚫")
+                        .bold()
+                        .foregroundColor(isLiquidGlassEnabled ? .green : .red)
+                }
+            }
         }
-        .padding()
-        .navigationTitle("Nastavení")
+        .listStyle(.insetGrouped)
+        .navigationTitle("Nastavení ⚙️")
         .navigationBarTitleDisplayMode(.inline)
         // 🙈 Skryje spodní TabView po dobu návštěvy Nastavení!
         .toolbar(.hidden, for: .tabBar)
