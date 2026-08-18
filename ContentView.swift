@@ -158,95 +158,285 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Home View 🏠
+// MARK: - Home View 🏠✨ Liquid Glass Playground
 struct HomeView: View {
     @EnvironmentObject var adminManager: RealSystemAdminManager
+
     @State private var isToggleOn = false
     @State private var sliderValue = 50.0
     @State private var isLoading = false
+    @State private var isPressed = false
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                // Ikona v záhlaví 🖼️
-                Image(systemName: "house.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .foregroundColor(.gray)
+            GlassEffectContainer(spacing: 20) {
+                VStack(spacing: 20) {
 
-                // Přepínač / Toggle 🎚️
-                Toggle(isOn: $isToggleOn) {
-                    Label("Přepínač", systemImage: "switch.2")
-                        .font(.headline)
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
+                    // MARK: - Hero Glass Element ✨
+                    VStack(spacing: 14) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 42, weight: .semibold))
+                            .foregroundStyle(.tint)
+                            .frame(width: 86, height: 86)
+                            .glassEffect(
+                                .regular.tint(.blue.opacity(0.35)),
+                                in: .circle
+                            )
 
-                // Posuvník / Slider 🎛️
-                VStack(alignment: .leading, spacing: 10) {
-                    Label("Hodnota posuvníku: \(Int(sliderValue))", systemImage: "slider.horizontal.3")
-                        .font(.headline)
-                    Slider(value: $sliderValue, in: 0...100)
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
+                        VStack(spacing: 4) {
+                            Text("Liquid Glass")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
 
-                // Indikátor načítání 🌀
-                VStack(spacing: 10) {
-                    Label("Načítání", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.headline)
-                    
-                    if isLoading {
-                        ProgressView()
-                            .controlSize(.large)
-                    } else {
-                        Text("Stiskněte tlačítko níže pro spuštění")
+                            Text("Interaktivní playground")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+
+                    // MARK: - Toggle Glass Card 🎚️
+                    VStack(alignment: .leading, spacing: 14) {
+                        Label("Přepínač", systemImage: "switch.2")
+                            .font(.headline)
+
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(isToggleOn ? "Aktivní" : "Neaktivní")
+                                    .fontWeight(.medium)
+
+                                Text(isToggleOn
+                                     ? "Funkce je zapnutá"
+                                     : "Funkce je vypnutá")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: $isToggleOn)
+                                .labelsHidden()
+                                .tint(.blue)
+                        }
+                    }
+                    .padding(20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassEffect(
+                        .regular.tint(
+                            isToggleOn
+                            ? .blue.opacity(0.25)
+                            : .clear
+                        ),
+                        in: .rect(cornerRadius: 28)
+                    )
+
+                    // MARK: - Slider Glass Card 🎛️
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            Label(
+                                "Posuvník",
+                                systemImage: "slider.horizontal.3"
+                            )
+                            .font(.headline)
+
+                            Spacer()
+
+                            Text("\(Int(sliderValue))")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .monospacedDigit()
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .glassEffect(
+                                    .regular.tint(.purple.opacity(0.25)),
+                                    in: .capsule
+                                )
+                        }
+
+                        Slider(
+                            value: $sliderValue,
+                            in: 0...100
+                        )
+                        .tint(.purple)
+
+                        HStack {
+                            Text("0")
+                            Spacer()
+                            Text("100")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding(20)
+                    .glassEffect(
+                        .regular.tint(.purple.opacity(0.15)),
+                        in: .rect(cornerRadius: 28)
+                    )
+
+                    // MARK: - Loading Glass Card 🌀
+                    VStack(spacing: 14) {
+                        Image(systemName: isLoading
+                              ? "arrow.triangle.2.circlepath"
+                              : "checkmark.circle")
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundStyle(
+                                isLoading ? .orange : .green
+                            )
+                            .symbolEffect(
+                                .rotate,
+                                isActive: isLoading
+                            )
+
+                        Text(isLoading
+                             ? "Probíhá operace…"
+                             : "Připraveno")
+                            .font(.headline)
+
+                        Text(isLoading
+                             ? "Liquid Glass pracuje."
+                             : "Stiskni tlačítko níže pro spuštění.")
                             .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
 
-                // Tlačítko 👆
-                Button(action: {
-                    withAnimation {
-                        isLoading.toggle()
+                        if isLoading {
+                            ProgressView()
+                                .controlSize(.large)
+                                .tint(.orange)
+                        }
                     }
-                }) {
-                    Label(isLoading ? "Zastavit" : "Spustit", systemImage: isLoading ? "stop.fill" : "play.fill")
-                        .fontWeight(.bold)
-                        .padding()
+                    .frame(maxWidth: .infinity)
+                    .padding(24)
+                    .glassEffect(
+                        .regular.tint(
+                            isLoading
+                            ? .orange.opacity(0.18)
+                            : .green.opacity(0.12)
+                        ),
+                        in: .rect(cornerRadius: 30)
+                    )
+
+                    // MARK: - Main Liquid Glass Button 🚀
+                    Button {
+                        withAnimation(.spring(response: 0.35)) {
+                            isLoading.toggle()
+                        }
+                    } label: {
+                        Label(
+                            isLoading ? "Zastavit" : "Spustit",
+                            systemImage: isLoading
+                                ? "stop.fill"
+                                : "play.fill"
+                        )
+                        .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(isLoading ? .red : .blue)
+                    .controlSize(.large)
+
+                    // MARK: - Quick Glass Actions ⚡
+                    HStack(spacing: 14) {
+
+                        Button {
+                            adminManager.triggerHapticFeedback()
+                        } label: {
+                            Image(systemName: "waveform")
+                                .font(.title3)
+                        }
+                        .buttonStyle(.glass)
+                        .frame(width: 58, height: 58)
+
+                        Button {
+                            adminManager.fetchRealDeviceMetrics()
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title3)
+                        }
+                        .buttonStyle(.glass)
+                        .frame(width: 58, height: 58)
+
+                        NavigationLink {
+                            AdminPanelView()
+                        } label: {
+                            Image(systemName: "shield.fill")
+                                .font(.title3)
+                        }
+                        .buttonStyle(.glass)
+                        .frame(width: 58, height: 58)
+
+                        NavigationLink {
+                            SettingsView()
+                        } label: {
+                            Image(systemName: "gear")
+                                .font(.title3)
+                        }
+                        .buttonStyle(.glass)
+                        .frame(width: 58, height: 58)
+                    }
+
+                    // MARK: - Device Status Glass Pill 📱
+                    HStack(spacing: 10) {
+                        Circle()
+                            .fill(adminManager.thermalColor)
+                            .frame(width: 9, height: 9)
+                            .shadow(
+                                color: adminManager.thermalColor.opacity(0.7),
+                                radius: 5
+                            )
+
+                        Text(adminManager.thermalStateName)
+
+                        Spacer()
+
+                        Text("\(adminManager.batteryLevel)%")
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
+
+                        Image(
+                            systemName: adminManager.batteryLevel > 20
+                                ? "battery.75percent"
+                                : "battery.25percent"
+                        )
+                    }
+                    .font(.subheadline)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 13)
+                    .glassEffect(
+                        .regular.tint(.green.opacity(0.12)),
+                        in: .capsule
+                    )
                 }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 30)
             }
-            .padding()
+        }
+        .scrollIndicators(.hidden)
+        .background {
+            // Jemný živý gradient pod sklem
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.10),
+                    Color.purple.opacity(0.08),
+                    Color.clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
         }
         .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
-                    NavigationLink(destination: AdminPanelView()) {
-                        Image(systemName: "shield.fill")
-                            .font(.title3)
-                            .foregroundColor(.primary)
-                    }
-                    
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gear")
-                            .font(.title3)
-                            .foregroundColor(.primary)
-                    }
+                NavigationLink {
+                    AdminPanelView()
+                } label: {
+                    Image(systemName: "shield.fill")
                 }
+                .buttonStyle(.glass)
             }
         }
     }
