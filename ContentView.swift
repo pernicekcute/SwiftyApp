@@ -14,6 +14,13 @@ class RealSystemAdminManager: ObservableObject {
     @Published var systemUptime: String = "0h 0m 0s"
     @Published var actionMessage: String? = nil
 
+    // Globální stav Liquid Glass propojený s UserDefaults (výchozí true) 💧✨
+    @Published var isLiquidGlassEnabled: Bool = UserDefaults.standard.object(forKey: "isLiquidGlassEnabled") as? Bool ?? true {
+        didSet {
+            UserDefaults.standard.set(isLiquidGlassEnabled, forKey: "isLiquidGlassEnabled")
+        }
+    }
+
     // Informace o aplikaci & iOS ℹ️
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -134,24 +141,26 @@ class RealSystemAdminManager: ObservableObject {
     }
 }
 
-// MARK: - Liquid Glass Modifier & Helper 💧✨
+// MARK: - Dynamický Liquid Glass Modifier 💧✨
 struct LiquidGlassModifier: ViewModifier {
-    @AppStorage("isLiquidGlassEnabled") private var isLiquidGlassEnabled: Bool = true
+    @EnvironmentObject var adminManager: RealSystemAdminManager
 
     func body(content: Content) -> some View {
         #if LIQUID_GLASS_ENABLED
-        if isLiquidGlassEnabled {
-            // Reálný Liquid Glass efekt registrovaný v iOS 💧
+        if adminManager.isLiquidGlassEnabled {
+            // 💧 Povoleno: Aplikuje skleněný materiál & stín
             content
-                .background(.ultraThinMaterial)
-                .shadow(color: Color.blue.opacity(0.2), radius: 10, x: 0, y: 5)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .shadow(color: Color.blue.opacity(0.15), radius: 8, x: 0, y: 4)
         } else {
-            // Starý klasický styl bez registraci Liquid Glass prvků 🏛️
+            // 🏛️ Vypnuto: Čistě klasický ne-skleněný vzhled (iOS sklo neregistruje)
             content
+                .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
         }
         #else
-        // Fallback pro starší SDK (iOS 18 a nižší) 🚫
+        // 🚫 Fallback pro starší SDK (iOS 18 a nižší)
         content
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
         #endif
     }
 }
@@ -209,9 +218,7 @@ struct HomeView: View {
                         .font(.headline)
                 }
                 .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-                .applyLiquidGlass() // 💧 Aplikace Liquid Glass
+                .applyLiquidGlass() // 💧 Využívá dynamický Liquid Glass modifier
 
                 // Posuvník / Slider 🎛️
                 VStack(alignment: .leading, spacing: 10) {
@@ -220,9 +227,7 @@ struct HomeView: View {
                     Slider(value: $sliderValue, in: 0...100)
                 }
                 .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-                .applyLiquidGlass() // 💧 Aplikace Liquid Glass
+                .applyLiquidGlass() // 💧 Využívá dynamický Liquid Glass modifier
 
                 // Indikátor načítání 🌀
                 VStack(spacing: 10) {
@@ -240,8 +245,7 @@ struct HomeView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
+                .applyLiquidGlass() // 💧 Využívá dynamický Liquid Glass modifier
 
                 // Tlačítko 👆
                 Button(action: {
@@ -263,7 +267,6 @@ struct HomeView: View {
         .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Ikony Admin Panelu 🛡️ i Nastavení ⚙️ vpravo nahoře!
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
                     NavigationLink(destination: AdminPanelView()) {
@@ -289,7 +292,6 @@ struct AdminPanelView: View {
 
     var body: some View {
         List {
-            // Oznámení o provedené akci 🔔
             if let msg = adminManager.actionMessage {
                 Section {
                     Text(msg)
@@ -391,7 +393,6 @@ struct AdminPanelView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Admin Panel 🛡️")
         .navigationBarTitleDisplayMode(.inline)
-        // 🙈 Skryje spodní TabView po dobu návštěvy Admin Panelu!
         .toolbar(.hidden, for: .tabBar)
     }
 }
@@ -429,13 +430,12 @@ struct MetricCard: View {
 
 // MARK: - Settings View ⚙️
 struct SettingsView: View {
-    // Persistentní nastavení – výchozí hodnota je true (povoleno) 💧
-    @AppStorage("isLiquidGlassEnabled") private var isLiquidGlassEnabled: Bool = true
+    @EnvironmentObject var adminManager: RealSystemAdminManager
 
     var body: some View {
         List {
             Section(header: Text("Vzhled & Design 🎨")) {
-                Toggle(isOn: $isLiquidGlassEnabled) {
+                Toggle(isOn: $adminManager.isLiquidGlassEnabled) {
                     VStack(alignment: .leading, spacing: 4) {
                         Label("Liquid Glass Efekt ✨", systemImage: "drop.fill")
                             .font(.headline)
@@ -451,16 +451,15 @@ struct SettingsView: View {
                 HStack {
                     Label("Aktivita Liquid Glass", systemImage: "sparkles")
                     Spacer()
-                    Text(isLiquidGlassEnabled ? "Zapnuto 💧" : "Vypnuto 🚫")
+                    Text(adminManager.isLiquidGlassEnabled ? "Zapnuto 💧" : "Vypnuto 🚫")
                         .bold()
-                        .foregroundColor(isLiquidGlassEnabled ? .green : .red)
+                        .foregroundColor(adminManager.isLiquidGlassEnabled ? .green : .red)
                 }
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Nastavení ⚙️")
         .navigationBarTitleDisplayMode(.inline)
-        // 🙈 Skryje spodní TabView po dobu návštěvy Nastavení!
         .toolbar(.hidden, for: .tabBar)
     }
 }
@@ -469,7 +468,6 @@ struct SettingsView: View {
 struct CreditsView: View {
     var body: some View {
         List {
-            // MARK: - Hlavička s logem 📱✨
             Section {
                 VStack(spacing: 12) {
                     Image(systemName: "heart.text.square.fill")
@@ -488,7 +486,6 @@ struct CreditsView: View {
                 .listRowBackground(Color.clear)
             }
             
-            // MARK: - Tým & Vývojáři 👨‍💻👩‍💻
             Section(header: Text("Tým")) {
                 HStack {
                     Label("Vývojář", systemImage: "hammer.fill")
@@ -505,7 +502,6 @@ struct CreditsView: View {
                 }
             }
             
-            // MARK: - Použité knihovny & Poděkování 📚🙏
             Section(header: Text("Poděkování a open-source")) {
                 Link(destination: URL(string: "https://github.com")!) {
                     HStack {
@@ -528,7 +524,6 @@ struct CreditsView: View {
                 }
             }
             
-            // MARK: - Odkazy & Kontakt 🌐📧
             Section(header: Text("Kde nás najdete")) {
                 Link(destination: URL(string: "https://example.com")!) {
                     Label("Oficiální web", systemImage: "globe")
@@ -539,7 +534,6 @@ struct CreditsView: View {
                 }
             }
             
-            // MARK: - Copyright 📜
             Section {
                 HStack {
                     Spacer()
