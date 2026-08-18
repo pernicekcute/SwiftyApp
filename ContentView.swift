@@ -1,25 +1,23 @@
 import SwiftUI
-import Combine
 import UIKit
 import Darwin
 import MachO
 
 // MARK: - Reálná Nativní Telemetrie & Diagnostika Zařízení 🛡️📱
 
-class RealSystemAdminManager: ObservableObject {
+@MainActor
+final class RealSystemAdminManager: ObservableObject {
 
     @Published var batteryLevel: Int = 0
     @Published var batteryState: String = "Neznámý"
-    @Published var freeStorageGB: Double = 0.0
-    @Published var totalStorageGB: Double = 0.0
-    @Published var appMemoryMB: Double = 0.0
-    @Published var totalDeviceRAMGB: Double = 0.0
-
+    @Published var freeStorageGB: Double = 0
+    @Published var totalStorageGB: Double = 0
+    @Published var appMemoryMB: Double = 0
+    @Published var totalDeviceRAMGB: Double = 0
     @Published var thermalStateName: String = "Normální 🟢"
     @Published var thermalColor: Color = .green
-
-    @Published var systemUptime: String = "0h 0m 0s"
-    @Published var actionMessage: String? = nil
+    @Published var systemUptime: String = "00h 00m 00s"
+    @Published var actionMessage: String?
 
     let appVersion =
         Bundle.main.infoDictionary?["CFBundleShortVersionString"]
@@ -40,39 +38,37 @@ class RealSystemAdminManager: ObservableObject {
 
     init() {
         UIDevice.current.isBatteryMonitoringEnabled = true
-
         fetchRealDeviceMetrics()
         startTelemetryLoop()
     }
 
-    // MARK: - Telemetrie
-
     func fetchRealDeviceMetrics() {
 
-        // Battery
+        // MARK: Battery
+
         let rawLevel = UIDevice.current.batteryLevel
 
         batteryLevel =
             rawLevel >= 0
             ? Int(rawLevel * 100)
-            : 100
+            : 0
 
         switch UIDevice.current.batteryState {
         case .charging:
             batteryState = "Nabíjí se ⚡"
-
         case .full:
             batteryState = "Plně nabito 🔌"
-
         case .unplugged:
             batteryState = "Na baterii 🔋"
-
         default:
             batteryState = "Neznámý ❓"
         }
 
-        // Storage
-        let homeURL = URL(fileURLWithPath: NSHomeDirectory())
+        // MARK: Storage
+
+        let homeURL = URL(
+            fileURLWithPath: NSHomeDirectory()
+        )
 
         if let values = try? homeURL.resourceValues(
             forKeys: [
@@ -80,33 +76,31 @@ class RealSystemAdminManager: ObservableObject {
                 .volumeTotalCapacityKey
             ]
         ) {
-
             if let free = values.volumeAvailableCapacity,
                let total = values.volumeTotalCapacity {
 
                 freeStorageGB =
-                    Double(free) / 1_073_741_824.0
+                    Double(free) / 1_073_741_824
 
                 totalStorageGB =
-                    Double(total) / 1_073_741_824.0
+                    Double(total) / 1_073_741_824
             }
         }
 
-        // App RAM
-        var stats = mach_task_basic_info()
+        // MARK: RAM
 
-        var count =
-            mach_msg_type_number_t(
-                MemoryLayout<mach_task_basic_info>.size
-            ) / 4
+        var info = mach_task_basic_info()
 
-        let kerr: kern_return_t =
-            withUnsafeMutablePointer(to: &stats) {
+        var count = mach_msg_type_number_t(
+            MemoryLayout<mach_task_basic_info>.size
+        ) / 4
+
+        let result: kern_return_t =
+            withUnsafeMutablePointer(to: &info) {
                 $0.withMemoryRebound(
                     to: integer_t.self,
                     capacity: Int(count)
                 ) {
-
                     task_info(
                         mach_task_self_,
                         task_flavor_t(MACH_TASK_BASIC_INFO),
@@ -116,21 +110,20 @@ class RealSystemAdminManager: ObservableObject {
                 }
             }
 
-        if kerr == KERN_SUCCESS {
+        if result == KERN_SUCCESS {
             appMemoryMB =
-                Double(stats.resident_size)
-                / 1024.0
-                / 1024.0
+                Double(info.resident_size)
+                / 1024
+                / 1024
         }
 
-        // Total RAM
         totalDeviceRAMGB =
             Double(ProcessInfo.processInfo.physicalMemory)
-            / 1_073_741_824.0
+            / 1_073_741_824
 
-        // Thermal state
+        // MARK: Thermal State
+
         switch ProcessInfo.processInfo.thermalState {
-
         case .nominal:
             thermalStateName = "Normální 🟢"
             thermalColor = .green
@@ -152,37 +145,35 @@ class RealSystemAdminManager: ObservableObject {
             thermalColor = .gray
         }
 
-        // Uptime
-        let uptime =
-            ProcessInfo.processInfo.systemUptime
+        // MARK: Uptime
 
-        let hours = Int(uptime) / 3600
-        let minutes = (Int(uptime) % 3600) / 60
-        let seconds = Int(uptime) % 60
+        let uptime = ProcessInfo.processInfo.systemUptime
+        let totalSeconds = Int(uptime)
 
-        systemUptime =
-            String(
-                format: "%02dh %02dm %02ds",
-                hours,
-                minutes,
-                seconds
-            )
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+
+        systemUptime = String(
+            format: "%02dh %02dm %02ds",
+            hours,
+            minutes,
+            seconds
+        )
     }
 
     private func startTelemetryLoop() {
 
         timer = Timer.scheduledTimer(
-            withTimeInterval: 1.0,
+            withTimeInterval: 1,
             repeats: true
         ) { [weak self] _ in
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self?.fetchRealDeviceMetrics()
             }
         }
     }
-
-    // MARK: - Cache
 
     func clearRealCache() {
 
@@ -204,49 +195,50 @@ class RealSystemAdminManager: ObservableObject {
                 )
 
             for file in files {
-                try FileManager.default.removeItem(at: file)
+                try FileManager.default.removeItem(
+                    at: file
+                )
             }
 
             fetchRealDeviceMetrics()
 
             showAction(
-                "Složka Cache byla smazána z disku! 🧹💾"
+                "Cache byla vymazána! 🧹💾"
             )
 
         } catch {
 
             showAction(
-                "Chyba při mazání cache: \(error.localizedDescription) ⚠️"
+                "Chyba při mazání cache: \(error.localizedDescription)"
             )
         }
     }
 
-    // MARK: - Haptika
-
     func triggerHapticFeedback() {
 
         let generator =
-            UIImpactFeedbackGenerator(style: .heavy)
+            UIImpactFeedbackGenerator(
+                style: .heavy
+            )
 
         generator.prepare()
         generator.impactOccurred()
 
         showAction(
-            "Haptický motor aktivován! 📳✨"
+            "Haptika aktivována! 📳✨"
         )
     }
 
     private func showAction(_ text: String) {
 
-        withAnimation(.spring(response: 0.4)) {
+        withAnimation(.spring) {
             actionMessage = text
         }
 
         DispatchQueue.main.asyncAfter(
             deadline: .now() + 3
         ) {
-
-            withAnimation(.spring(response: 0.4)) {
+            withAnimation(.spring) {
                 self.actionMessage = nil
             }
         }
@@ -258,7 +250,7 @@ class RealSystemAdminManager: ObservableObject {
 }
 
 
-// MARK: - Hlavní Container 📱
+// MARK: - Content View 📱
 
 struct ContentView: View {
 
@@ -285,7 +277,8 @@ struct ContentView: View {
             .tabItem {
                 Label(
                     "Kredity",
-                    systemImage: "heart.text.square.fill"
+                    systemImage:
+                        "heart.text.square.fill"
                 )
             }
         }
@@ -294,67 +287,78 @@ struct ContentView: View {
 }
 
 
-// MARK: - Home View 🫧✨
+// MARK: - Home View 🫧
 
 struct HomeView: View {
 
-    @EnvironmentObject var adminManager:
+    @EnvironmentObject
+    private var adminManager:
         RealSystemAdminManager
 
     @State private var isToggleOn = false
     @State private var sliderValue = 50.0
     @State private var isLoading = false
-    @State private var selectedColor = 0
+    @State private var selectedTint = 0
+
+    private var selectedColor: Color {
+
+        switch selectedTint {
+        case 0: return .blue
+        case 1: return .purple
+        case 2: return .pink
+        case 3: return .orange
+        default: return .green
+        }
+    }
 
     var body: some View {
 
         ScrollView {
 
-            GlassEffectContainer(spacing: 20) {
+            GlassEffectContainer(spacing: 18) {
 
-                VStack(spacing: 20) {
+                VStack(spacing: 18) {
 
                     // MARK: Hero
 
-                    VStack(spacing: 16) {
+                    VStack(spacing: 14) {
 
-                        Image(systemName: "sparkles")
-                            .font(
-                                .system(
-                                    size: 42,
-                                    weight: .semibold
-                                )
+                        Image(
+                            systemName: "sparkles"
+                        )
+                        .font(
+                            .system(
+                                size: 42,
+                                weight: .semibold
                             )
-                            .foregroundStyle(.white)
-                            .frame(
-                                width: 88,
-                                height: 88
-                            )
-                            .glassEffect(
-                                .regular
-                                    .tint(
-                                        .blue.opacity(0.35)
-                                    )
-                                    .interactive(),
-                                in: .circle
-                            )
+                        )
+                        .foregroundStyle(.white)
+                        .frame(
+                            width: 86,
+                            height: 86
+                        )
+                        .glassEffect(
+                            .regular.tint(
+                                selectedColor.opacity(0.45)
+                            ),
+                            in: .circle
+                        )
 
-                        VStack(spacing: 5) {
+                        Text("Liquid Glass")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
 
-                            Text("Liquid Glass")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-
-                            Text("Full playground")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
+                        Text(
+                            "Full interactive playground"
+                        )
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 12)
+                    .padding(.vertical, 10)
 
 
-                    // MARK: Status
+                    // MARK: Device Status
 
                     HStack(spacing: 12) {
 
@@ -363,14 +367,8 @@ struct HomeView: View {
                                 adminManager.thermalColor
                             )
                             .frame(
-                                width: 11,
-                                height: 11
-                            )
-                            .shadow(
-                                color:
-                                    adminManager.thermalColor
-                                    .opacity(0.7),
-                                radius: 6
+                                width: 10,
+                                height: 10
                             )
 
                         VStack(
@@ -395,9 +393,7 @@ struct HomeView: View {
 
                         Image(
                             systemName:
-                                adminManager.batteryLevel > 20
-                                ? "battery.75percent"
-                                : "battery.25percent"
+                                "battery.75percent"
                         )
 
                         Text(
@@ -406,16 +402,20 @@ struct HomeView: View {
                         .fontWeight(.semibold)
                         .monospacedDigit()
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 14)
+                    .padding(
+                        .horizontal,
+                        18
+                    )
+                    .padding(
+                        .vertical,
+                        14
+                    )
                     .glassEffect(
-                        .regular
-                            .tint(
-                                adminManager
-                                    .thermalColor
-                                    .opacity(0.12)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            adminManager
+                                .thermalColor
+                                .opacity(0.16)
+                        ),
                         in: .capsule
                     )
 
@@ -431,7 +431,8 @@ struct HomeView: View {
 
                             Label(
                                 "Glass Toggle",
-                                systemImage: "switch.2"
+                                systemImage:
+                                    "switch.2"
                             )
                             .font(.headline)
 
@@ -450,43 +451,33 @@ struct HomeView: View {
                             )
                             .padding(
                                 .vertical,
-                                5
+                                6
                             )
                             .glassEffect(
-                                .regular
-                                    .tint(
-                                        isToggleOn
-                                        ? .green.opacity(0.35)
-                                        : .gray.opacity(0.15)
-                                    )
-                                    .interactive(),
+                                isToggleOn
+                                ? .regular.tint(
+                                    .green.opacity(0.3)
+                                )
+                                : .regular,
                                 in: .capsule
                             )
                         }
 
                         Toggle(
+                            "Interaktivní přepínač",
                             isOn: $isToggleOn
-                        ) {
-
-                            Text(
-                                isToggleOn
-                                ? "Funkce aktivní"
-                                : "Funkce neaktivní"
-                            )
-                        }
+                        )
                         .tint(.blue)
                     }
                     .padding(20)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                isToggleOn
-                                ? .blue.opacity(0.2)
-                                : nil
-                            )
-                            .interactive(),
+                        isToggleOn
+                        ? .regular.tint(
+                            .blue.opacity(0.18)
+                        )
+                        : .regular,
                         in: .rect(
-                            cornerRadius: 30
+                            cornerRadius: 28
                         )
                     )
 
@@ -512,28 +503,20 @@ struct HomeView: View {
                             Text(
                                 "\(Int(sliderValue))"
                             )
-                            .font(
-                                .system(
-                                    .title3,
-                                    design: .rounded
-                                )
-                            )
-                            .fontWeight(.bold)
+                            .font(.headline)
                             .monospacedDigit()
                             .padding(
                                 .horizontal,
-                                13
+                                12
                             )
                             .padding(
                                 .vertical,
                                 7
                             )
                             .glassEffect(
-                                .regular
-                                    .tint(
-                                        .purple.opacity(0.25)
-                                    )
-                                    .interactive(),
+                                .regular.tint(
+                                    .purple.opacity(0.25)
+                                ),
                                 in: .capsule
                             )
                         }
@@ -547,13 +530,9 @@ struct HomeView: View {
                         HStack {
 
                             Text("0")
-
                             Spacer()
-
                             Text("50")
-
                             Spacer()
-
                             Text("100")
                         }
                         .font(.caption)
@@ -563,18 +542,16 @@ struct HomeView: View {
                     }
                     .padding(20)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                .purple.opacity(0.14)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            .purple.opacity(0.14)
+                        ),
                         in: .rect(
-                            cornerRadius: 30
+                            cornerRadius: 28
                         )
                     )
 
 
-                    // MARK: Color Playground
+                    // MARK: Tint Playground
 
                     VStack(
                         alignment: .leading,
@@ -588,73 +565,50 @@ struct HomeView: View {
                         )
                         .font(.headline)
 
-                        HStack(spacing: 12) {
+                        HStack(
+                            spacing: 12
+                        ) {
 
-                            GlassColorButton(
+                            tintButton(
                                 color: .blue,
-                                selected:
-                                    selectedColor == 0
-                            ) {
-                                selectedColor = 0
-                            }
+                                index: 0
+                            )
 
-                            GlassColorButton(
+                            tintButton(
                                 color: .purple,
-                                selected:
-                                    selectedColor == 1
-                            ) {
-                                selectedColor = 1
-                            }
+                                index: 1
+                            )
 
-                            GlassColorButton(
+                            tintButton(
                                 color: .pink,
-                                selected:
-                                    selectedColor == 2
-                            ) {
-                                selectedColor = 2
-                            }
+                                index: 2
+                            )
 
-                            GlassColorButton(
+                            tintButton(
                                 color: .orange,
-                                selected:
-                                    selectedColor == 3
-                            ) {
-                                selectedColor = 3
-                            }
+                                index: 3
+                            )
 
-                            GlassColorButton(
+                            tintButton(
                                 color: .green,
-                                selected:
-                                    selectedColor == 4
-                            ) {
-                                selectedColor = 4
-                            }
+                                index: 4
+                            )
                         }
                     }
                     .padding(20)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                selectedColor == 0
-                                ? .blue.opacity(0.18)
-                                : selectedColor == 1
-                                ? .purple.opacity(0.18)
-                                : selectedColor == 2
-                                ? .pink.opacity(0.18)
-                                : selectedColor == 3
-                                ? .orange.opacity(0.18)
-                                : .green.opacity(0.18)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            selectedColor.opacity(0.14)
+                        ),
                         in: .rect(
-                            cornerRadius: 30
+                            cornerRadius: 28
                         )
                     )
 
 
                     // MARK: Loading
 
-                    VStack(spacing: 15) {
+                    VStack(spacing: 14) {
 
                         Image(
                             systemName:
@@ -664,7 +618,7 @@ struct HomeView: View {
                         )
                         .font(
                             .system(
-                                size: 36,
+                                size: 34,
                                 weight: .medium
                             )
                         )
@@ -672,10 +626,6 @@ struct HomeView: View {
                             isLoading
                             ? .orange
                             : .green
-                        )
-                        .symbolEffect(
-                            .rotate,
-                            isActive: isLoading
                         )
 
                         Text(
@@ -687,13 +637,11 @@ struct HomeView: View {
 
                         Text(
                             isLoading
-                            ? "Liquid Glass playground právě pracuje."
+                            ? "Liquid Glass playground pracuje."
                             : "Všechny systémy jsou připravené."
                         )
                         .font(.subheadline)
-                        .foregroundStyle(
-                            .secondary
-                        )
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(
                             .center
                         )
@@ -702,26 +650,25 @@ struct HomeView: View {
 
                             ProgressView()
                                 .controlSize(.large)
-                                .tint(.orange)
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(25)
+                    .padding(24)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                isLoading
-                                ? .orange.opacity(0.18)
-                                : .green.opacity(0.12)
-                            )
-                            .interactive(),
+                        isLoading
+                        ? .regular.tint(
+                            .orange.opacity(0.18)
+                        )
+                        : .regular.tint(
+                            .green.opacity(0.12)
+                        ),
                         in: .rect(
                             cornerRadius: 30
                         )
                     )
 
 
-                    // MARK: Main Glass Button
+                    // MARK: Main Liquid Glass Button
 
                     Button {
 
@@ -763,16 +710,16 @@ struct HomeView: View {
 
                     // MARK: Quick Actions
 
-                    HStack(spacing: 14) {
+                    HStack(spacing: 12) {
 
-                        GlassActionButton(
+                        glassAction(
                             icon: "waveform"
                         ) {
                             adminManager
                                 .triggerHapticFeedback()
                         }
 
-                        GlassActionButton(
+                        glassAction(
                             icon: "arrow.clockwise"
                         ) {
                             adminManager
@@ -791,8 +738,8 @@ struct HomeView: View {
                         }
                         .buttonStyle(.glass)
                         .frame(
-                            width: 58,
-                            height: 58
+                            width: 56,
+                            height: 56
                         )
 
                         NavigationLink {
@@ -807,17 +754,17 @@ struct HomeView: View {
                         }
                         .buttonStyle(.glass)
                         .frame(
-                            width: 58,
-                            height: 58
+                            width: 56,
+                            height: 56
                         )
                     }
 
 
-                    // MARK: Device Info Cards
+                    // MARK: Metrics
 
-                    HStack(spacing: 14) {
+                    HStack(spacing: 12) {
 
-                        MiniGlassMetric(
+                        miniMetric(
                             title: "RAM",
                             value: String(
                                 format: "%.1f GB",
@@ -825,18 +772,18 @@ struct HomeView: View {
                                     .totalDeviceRAMGB
                             ),
                             icon: "memorychip",
-                            tint: .purple
+                            color: .purple
                         )
 
-                        MiniGlassMetric(
-                            title: "Volné",
+                        miniMetric(
+                            title: "Volné místo",
                             value: String(
                                 format: "%.1f GB",
                                 adminManager
                                     .freeStorageGB
                             ),
                             icon: "internaldrive",
-                            tint: .blue
+                            color: .blue
                         )
                     }
 
@@ -861,91 +808,50 @@ struct HomeView: View {
                                 12
                             )
                             .glassEffect(
-                                .regular
-                                    .tint(
-                                        .green.opacity(0.2)
-                                    )
-                                    .interactive(),
+                                .regular.tint(
+                                    .green.opacity(0.2)
+                                ),
                                 in: .capsule
                             )
                             .transition(
                                 .scale
-                                .combined(
-                                    with: .opacity
-                                )
+                                    .combined(
+                                        with: .opacity
+                                    )
                             )
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 10)
-                .padding(.bottom, 35)
+                .padding()
             }
         }
         .scrollIndicators(.hidden)
-
-        // Background remains intentionally simple.
-        // The actual controls are Liquid Glass.
         .background {
 
-            ZStack {
-
-                LinearGradient(
-                    colors: [
-                        .blue.opacity(0.16),
-                        .purple.opacity(0.12),
-                        .pink.opacity(0.08),
-                        .clear
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                Circle()
-                    .fill(
-                        .blue.opacity(0.10)
-                    )
-                    .frame(
-                        width: 280,
-                        height: 280
-                    )
-                    .blur(radius: 70)
-                    .offset(
-                        x: -120,
-                        y: -250
-                    )
-
-                Circle()
-                    .fill(
-                        .purple.opacity(0.10)
-                    )
-                    .frame(
-                        width: 300,
-                        height: 300
-                    )
-                    .blur(radius: 80)
-                    .offset(
-                        x: 140,
-                        y: 180
-                    )
-            }
+            LinearGradient(
+                colors: [
+                    .blue.opacity(0.12),
+                    .purple.opacity(0.10),
+                    .pink.opacity(0.06),
+                    .clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
             .ignoresSafeArea()
         }
-
         .navigationTitle("Domů")
         .navigationBarTitleDisplayMode(.inline)
-
         .toolbar {
 
             ToolbarItem(
                 placement: .topBarTrailing
             ) {
 
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
 
                     NavigationLink {
                         AdminPanelView()
                     } label: {
-
                         Image(
                             systemName:
                                 "shield.fill"
@@ -956,7 +862,6 @@ struct HomeView: View {
                     NavigationLink {
                         SettingsView()
                     } label: {
-
                         Image(
                             systemName:
                                 "gear"
@@ -967,30 +872,32 @@ struct HomeView: View {
             }
         }
     }
-}
 
+    // MARK: Tint Button
 
-// MARK: - Glass Color Button 🎨
+    @ViewBuilder
+    private func tintButton(
+        color: Color,
+        index: Int
+    ) -> some View {
 
-struct GlassColorButton: View {
+        Button {
 
-    let color: Color
-    let selected: Bool
-    let action: () -> Void
+            withAnimation(.spring) {
+                selectedTint = index
+            }
 
-    var body: some View {
-
-        Button(action: action) {
+        } label: {
 
             Circle()
                 .fill(color.gradient)
                 .frame(
-                    width: 42,
-                    height: 42
+                    width: 40,
+                    height: 40
                 )
                 .overlay {
 
-                    if selected {
+                    if selectedTint == index {
 
                         Image(
                             systemName:
@@ -1004,28 +911,15 @@ struct GlassColorButton: View {
                 }
         }
         .buttonStyle(.glass)
-        .glassEffect(
-            selected
-            ? .regular
-                .tint(
-                    color.opacity(0.4)
-                )
-                .interactive()
-            : .regular.interactive(),
-            in: .circle
-        )
     }
-}
 
+    // MARK: Glass Action
 
-// MARK: - Glass Action Button ⚡
-
-struct GlassActionButton: View {
-
-    let icon: String
-    let action: () -> Void
-
-    var body: some View {
+    @ViewBuilder
+    private func glassAction(
+        icon: String,
+        action: @escaping () -> Void
+    ) -> some View {
 
         Button(action: action) {
 
@@ -1034,29 +928,26 @@ struct GlassActionButton: View {
         }
         .buttonStyle(.glass)
         .frame(
-            width: 58,
-            height: 58
+            width: 56,
+            height: 56
         )
     }
-}
 
+    // MARK: Mini Metric
 
-// MARK: - Mini Glass Metric 📊
+    @ViewBuilder
+    private func miniMetric(
+        title: String,
+        value: String,
+        icon: String,
+        color: Color
+    ) -> some View {
 
-struct MiniGlassMetric: View {
-
-    let title: String
-    let value: String
-    let icon: String
-    let tint: Color
-
-    var body: some View {
-
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
 
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(tint)
+                .foregroundStyle(color)
 
             VStack(
                 alignment: .leading,
@@ -1076,14 +967,12 @@ struct MiniGlassMetric: View {
 
             Spacer()
         }
-        .padding(16)
+        .padding(15)
         .frame(maxWidth: .infinity)
         .glassEffect(
-            .regular
-                .tint(
-                    tint.opacity(0.14)
-                )
-                .interactive(),
+            .regular.tint(
+                color.opacity(0.14)
+            ),
             in: .rect(
                 cornerRadius: 24
             )
@@ -1092,36 +981,35 @@ struct MiniGlassMetric: View {
 }
 
 
-// MARK: - Admin Panel View 🛡️
+// MARK: - Admin Panel 🛡️
 
 struct AdminPanelView: View {
 
-    @EnvironmentObject var adminManager:
+    @EnvironmentObject
+    private var adminManager:
         RealSystemAdminManager
 
     var body: some View {
 
         List {
 
-            if let msg =
+            if let message =
                 adminManager.actionMessage {
 
                 Section {
 
-                    Text(msg)
+                    Text(message)
                         .font(.subheadline)
-                        .bold()
+                        .fontWeight(.bold)
                         .foregroundStyle(.green)
                         .frame(
-                            maxWidth: .infinity,
-                            alignment: .center
+                            maxWidth: .infinity
                         )
                 }
             }
 
             Section(
-                header:
-                    Text("Reálný Stav Zařízení 📊")
+                "Reálný Stav Zařízení 📊"
             ) {
 
                 Grid(
@@ -1138,19 +1026,19 @@ struct AdminPanelView: View {
                             icon:
                                 "battery.100",
                             color:
-                                adminManager.batteryLevel > 20
+                                adminManager
+                                    .batteryLevel > 20
                                 ? .green
                                 : .red
                         )
 
                         MetricCard(
                             title: "Volné Místo",
-                            value:
-                                String(
-                                    format: "%.1f GB",
-                                    adminManager
-                                        .freeStorageGB
-                                ),
+                            value: String(
+                                format: "%.1f GB",
+                                adminManager
+                                    .freeStorageGB
+                            ),
                             icon:
                                 "internaldrive",
                             color: .blue
@@ -1161,12 +1049,11 @@ struct AdminPanelView: View {
 
                         MetricCard(
                             title: "RAM Aplikace",
-                            value:
-                                String(
-                                    format: "%.1f MB",
-                                    adminManager
-                                        .appMemoryMB
-                                ),
+                            value: String(
+                                format: "%.1f MB",
+                                adminManager
+                                    .appMemoryMB
+                            ),
                             icon:
                                 "memorychip",
                             color: .purple
@@ -1185,104 +1072,86 @@ struct AdminPanelView: View {
                         )
                     }
                 }
-                .listRowBackground(
-                    Color.clear
-                )
                 .listRowInsets(
                     EdgeInsets()
                 )
+                .listRowBackground(
+                    Color.clear
+                )
             }
 
-
             Section(
-                header:
-                    Text("Systémové Informace ℹ️")
+                "Systémové Informace ℹ️"
             ) {
 
-                AdminInfoRow(
-                    title: "Název Zařízení",
-                    icon: "iphone",
-                    value:
-                        adminManager.deviceName
+                infoRow(
+                    "Název Zařízení",
+                    "iphone",
+                    adminManager.deviceName
                 )
 
-                AdminInfoRow(
-                    title: "Verze iOS",
-                    icon: "apple.logo",
-                    value:
-                        "iOS \(adminManager.systemVersion)"
+                infoRow(
+                    "Verze iOS",
+                    "apple.logo",
+                    "iOS \(adminManager.systemVersion)"
                 )
 
-                AdminInfoRow(
-                    title: "Stav Baterie",
-                    icon: "bolt.fill",
-                    value:
-                        adminManager.batteryState
+                infoRow(
+                    "Stav Baterie",
+                    "bolt.fill",
+                    adminManager.batteryState
                 )
 
-                AdminInfoRow(
-                    title: "Uptime Telefonu",
-                    icon: "clock.fill",
-                    value:
-                        adminManager.systemUptime
+                infoRow(
+                    "Uptime Telefonu",
+                    "clock.fill",
+                    adminManager.systemUptime
                 )
 
-                AdminInfoRow(
-                    title: "Celková RAM HW",
-                    icon: "cpu",
-                    value:
-                        String(
-                            format:
-                                "%.1f GB RAM",
-                            adminManager
-                                .totalDeviceRAMGB
-                        )
+                infoRow(
+                    "Celková RAM HW",
+                    "cpu",
+                    String(
+                        format: "%.1f GB RAM",
+                        adminManager
+                            .totalDeviceRAMGB
+                    )
                 )
 
-                AdminInfoRow(
-                    title: "Celková Kapacita",
-                    icon: "sdcard",
-                    value:
-                        String(
-                            format:
-                                "%.1f GB",
-                            adminManager
-                                .totalStorageGB
-                        )
+                infoRow(
+                    "Celková Kapacita",
+                    "sdcard",
+                    String(
+                        format: "%.1f GB",
+                        adminManager
+                            .totalStorageGB
+                    )
                 )
             }
 
-
             Section(
-                header:
-                    Text("Metadata Buildu 📦")
+                "Metadata Buildu 📦"
             ) {
 
-                AdminInfoRow(
-                    title: "Bundle ID",
-                    icon: "shippingbox",
-                    value:
-                        adminManager.bundleID
+                infoRow(
+                    "Bundle ID",
+                    "shippingbox",
+                    adminManager.bundleID
                 )
 
-                AdminInfoRow(
-                    title: "Verze Aplikace",
-                    icon: "tag.fill",
-                    value:
-                        "\(adminManager.appVersion) (\(adminManager.buildNumber))"
+                infoRow(
+                    "Verze Aplikace",
+                    "tag.fill",
+                    "\(adminManager.appVersion) (\(adminManager.buildNumber))"
                 )
             }
 
-
             Section(
-                header:
-                    Text("Nativní Akce 🛠️")
+                "Nativní Akce 🛠️"
             ) {
 
                 Button {
-
                     adminManager.clearRealCache()
-
                 } label: {
 
                     Label(
@@ -1290,14 +1159,12 @@ struct AdminPanelView: View {
                         systemImage:
                             "trash.fill"
                     )
-                    .foregroundStyle(.red)
                 }
+                .foregroundStyle(.red)
 
                 Button {
-
                     adminManager
                         .triggerHapticFeedback()
-
                 } label: {
 
                     Label(
@@ -1308,10 +1175,8 @@ struct AdminPanelView: View {
                 }
 
                 Button {
-
                     adminManager
                         .fetchRealDeviceMetrics()
-
                 } label: {
 
                     Label(
@@ -1323,25 +1188,20 @@ struct AdminPanelView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Admin Panel 🛡️")
+        .navigationTitle("Admin Panel")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(
             .hidden,
             for: .tabBar
         )
     }
-}
 
-
-// MARK: - Admin Info Row
-
-struct AdminInfoRow: View {
-
-    let title: String
-    let icon: String
-    let value: String
-
-    var body: some View {
+    @ViewBuilder
+    private func infoRow(
+        _ title: String,
+        _ icon: String,
+        _ value: String
+    ) -> some View {
 
         HStack {
 
@@ -1361,7 +1221,7 @@ struct AdminInfoRow: View {
 }
 
 
-// MARK: - Metric Card
+// MARK: - Metric Card 📊
 
 struct MetricCard: View {
 
@@ -1383,7 +1243,7 @@ struct MetricCard: View {
 
             Text(value)
                 .font(.title3)
-                .bold()
+                .fontWeight(.bold)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
 
@@ -1391,17 +1251,15 @@ struct MetricCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding()
+        .padding(16)
         .frame(
             maxWidth: .infinity,
             alignment: .leading
         )
         .glassEffect(
-            .regular
-                .tint(
-                    color.opacity(0.14)
-                )
-                .interactive(),
+            .regular.tint(
+                color.opacity(0.14)
+            ),
             in: .rect(
                 cornerRadius: 22
             )
@@ -1410,7 +1268,7 @@ struct MetricCard: View {
 }
 
 
-// MARK: - Settings View ⚙️
+// MARK: - Settings ⚙️
 
 struct SettingsView: View {
 
@@ -1418,29 +1276,29 @@ struct SettingsView: View {
 
         VStack(spacing: 20) {
 
-            Image(systemName: "gear")
-                .font(
-                    .system(
-                        size: 50,
-                        weight: .medium
-                    )
+            Image(
+                systemName: "gear"
+            )
+            .font(
+                .system(
+                    size: 48,
+                    weight: .medium
                 )
-                .frame(
-                    width: 90,
-                    height: 90
-                )
-                .glassEffect(
-                    .regular
-                        .tint(
-                            .gray.opacity(0.2)
-                        )
-                        .interactive(),
-                    in: .circle
-                )
+            )
+            .frame(
+                width: 88,
+                height: 88
+            )
+            .glassEffect(
+                .regular.tint(
+                    .gray.opacity(0.2)
+                ),
+                in: .circle
+            )
 
             Text("Nastavení")
                 .font(.largeTitle)
-                .bold()
+                .fontWeight(.bold)
 
             Text(
                 "Nastavení aplikace ⚙️✨"
@@ -1461,7 +1319,7 @@ struct SettingsView: View {
 }
 
 
-// MARK: - Credits View 💖
+// MARK: - Credits 💖
 
 struct CreditsView: View {
 
@@ -1473,7 +1331,7 @@ struct CreditsView: View {
 
                 VStack(spacing: 18) {
 
-                    VStack(spacing: 14) {
+                    VStack(spacing: 12) {
 
                         Image(
                             systemName:
@@ -1481,7 +1339,7 @@ struct CreditsView: View {
                         )
                         .font(
                             .system(
-                                size: 48,
+                                size: 50,
                                 weight: .medium
                             )
                         )
@@ -1496,16 +1354,13 @@ struct CreditsView: View {
                     )
                     .padding(25)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                .pink.opacity(0.18)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            .pink.opacity(0.18)
+                        ),
                         in: .rect(
                             cornerRadius: 30
                         )
                     )
-
 
                     VStack(
                         alignment: .leading,
@@ -1515,110 +1370,83 @@ struct CreditsView: View {
                         Text("Tým")
                             .font(.headline)
 
-                        CreditRow(
-                            title: "Vývojář",
-                            value: "iOSondyhop ",
-                            icon: "hammer.fill"
+                        creditRow(
+                            "Vývojář",
+                            "iOSondyhop ",
+                            "hammer.fill"
                         )
 
-                        CreditRow(
-                            title: "UI/UX Design",
-                            value: "Shadow_ROBLOX",
-                            icon: "paintpalette"
+                        creditRow(
+                            "UI/UX Design",
+                            "Shadow_ROBLOX",
+                            "paintpalette"
                         )
                     }
                     .padding(20)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                .blue.opacity(0.12)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            .blue.opacity(0.12)
+                        ),
                         in: .rect(
                             cornerRadius: 28
                         )
                     )
 
-
                     VStack(
                         alignment: .leading,
-                        spacing: 14
+                        spacing: 12
                     ) {
 
                         Text(
-                            "Poděkování a open-source"
+                            "Open-Source"
                         )
                         .font(.headline)
 
                         Link(
+                            "GitHub",
                             destination:
                                 URL(
                                     string:
                                         "https://github.com"
                                 )!
-                        ) {
-
-                            Label(
-                                "Open-Source knihovny",
-                                systemImage:
-                                    "shippingbox.fill"
-                            )
-                            .frame(
-                                maxWidth: .infinity,
-                                alignment: .leading
-                            )
-                        }
+                        )
                         .buttonStyle(.glass)
 
                         Link(
+                            "SF Symbols",
                             destination:
                                 URL(
                                     string:
                                         "https://developer.apple.com/sf-symbols/"
                                 )!
-                        ) {
-
-                            Label(
-                                "SF Symbols",
-                                systemImage:
-                                    "star.fill"
-                            )
-                            .frame(
-                                maxWidth: .infinity,
-                                alignment: .leading
-                            )
-                        }
+                        )
                         .buttonStyle(.glass)
                     }
                     .padding(20)
                     .glassEffect(
-                        .regular
-                            .tint(
-                                .purple.opacity(0.12)
-                            )
-                            .interactive(),
+                        .regular.tint(
+                            .purple.opacity(0.12)
+                        ),
                         in: .rect(
                             cornerRadius: 28
                         )
                     )
 
-
-                    VStack(spacing: 12) {
-
-                        Text(
-                            "© 2026 Všechna práva vyhrazena"
-                        )
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                        Text("Made with SwiftUI ")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding()
+                    Text(
+                        "© 2026 Všechna práva vyhrazena"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(
+                        .horizontal,
+                        18
+                    )
+                    .padding(
+                        .vertical,
+                        12
+                    )
                     .glassEffect(
-                        .regular
-                            .interactive(),
+                        .regular,
                         in: .capsule
                     )
                 }
@@ -1627,6 +1455,7 @@ struct CreditsView: View {
         }
         .scrollIndicators(.hidden)
         .background {
+
             LinearGradient(
                 colors: [
                     .pink.opacity(0.08),
@@ -1641,25 +1470,18 @@ struct CreditsView: View {
         .navigationTitle("Kredity")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
 
-
-// MARK: - Credit Row
-
-struct CreditRow: View {
-
-    let title: String
-    let value: String
-    let icon: String
-
-    var body: some View {
+    @ViewBuilder
+    private func creditRow(
+        _ title: String,
+        _ value: String,
+        _ icon: String
+    ) -> some View {
 
         HStack {
 
             Image(systemName: icon)
-                .frame(
-                    width: 28
-                )
+                .frame(width: 28)
 
             Text(title)
 
