@@ -15,7 +15,7 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // First Page: Called "Global" with Default Xcode Template
+            // First Page: Global
             Tab("Global", systemImage: "globe", value: AppTab.global) {
                 NavigationStack {
                     GlobalView()
@@ -29,12 +29,11 @@ struct MainTabView: View {
                 }
             }
 
-            // Search Tab using role: .search
+            // Search Tab
             Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 Color.clear
             }
         }
-        // Intercept selection when Search tab is tapped
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
                 showSearchSheet = true
@@ -49,7 +48,7 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - 1st Page: Global (Default Xcode Template View)
+// MARK: - 1st Page: Global
 struct GlobalView: View {
     var body: some View {
         VStack(spacing: 12) {
@@ -62,10 +61,20 @@ struct GlobalView: View {
         }
         .padding()
         .navigationTitle("Global")
+        .toolbar {
+            // Top-right button in the app
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // Action for top-right app button
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
     }
 }
 
-// MARK: - 2nd Page: Placeholder View
+// MARK: - 2nd Page: Second View
 struct SecondTabView: View {
     var body: some View {
         VStack(spacing: 16) {
@@ -77,6 +86,16 @@ struct SecondTabView: View {
         }
         .padding()
         .navigationTitle("Second")
+        .toolbar {
+            // Top-right button in the app
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // Action for top-right app button
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
     }
 }
 
@@ -98,9 +117,17 @@ struct SearchSheetView: View {
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Top-right blue button with a checkmark on the sheet
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.footnote.bold())
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(Color.blue)
+                            .clipShape(Circle())
                     }
                 }
             }
