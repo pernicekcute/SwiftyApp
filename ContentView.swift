@@ -12,9 +12,9 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient to demonstrate the liquid glass blur
+            // A rich background is required for Liquid Glass to bend light properly
             LinearGradient(
-                colors: [.orange, .yellow, .orange],
+                colors: [.orange, .purple, .blue],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -24,15 +24,15 @@ struct ContentView: View {
                 Image(systemName: "globe")
                     .imageScale(.large)
                     .foregroundStyle(.white)
-
+                
                 Text("Hello, world!")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
-
-                // Native "Liquid Glass" Button
+                
+                // Real iOS 26 Native Liquid Glass Button
                 Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    withAnimation {
                         isLoading.toggle()
                     }
                 }) {
@@ -42,30 +42,17 @@ struct ContentView: View {
                                 .tint(.white)
                         } else {
                             Image(systemName: "drop.fill")
-                                .foregroundStyle(.cyan)
                             Text("Liquid Glass")
                                 .fontWeight(.semibold)
-                                .foregroundStyle(.white)
                         }
                     }
-                    .padding(.vertical, 14)
-                    .padding(.horizontal, 28)
-                    // Native ultra-thin glass material backdrop
-                    .background(.ultraThinMaterial, in: Capsule())
-                    // Subtle glass edge outline and inner glare
-                    .overlay(
-                        Capsule()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [.white.opacity(0.6), .white.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.5
-                            )
-                    )
-                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 8)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .foregroundStyle(.white)
                 }
+                // NATIVE API: Use the iOS 26 glass prominent button style
+                .buttonStyle(.glassProminent)
+                .tint(.orange)
             }
             .padding()
         }
