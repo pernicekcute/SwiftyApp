@@ -3,13 +3,15 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
-            Tab("Home", systemImage: "house") {
-                HomeView()
-            }
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
 
-            Tab("Settings", systemImage: "gearshape", role: .settings) {
-                SettingsView()
-            }
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
         }
     }
 }
@@ -29,7 +31,6 @@ struct HomeView: View {
 }
 
 struct SettingsView: View {
-    // AppStorage automatically persists these keys to UserDefaults
     @AppStorage("isLiquidGlassEnabled") private var isLiquidGlassEnabled: Bool = true
     @AppStorage("UIDesignRequiresCompatibility") private var requiresCompatibility: Bool = false
 
@@ -40,7 +41,6 @@ struct SettingsView: View {
                     get: { isLiquidGlassEnabled },
                     set: { newValue in
                         isLiquidGlassEnabled = newValue
-                        // Setting UIDesignRequiresCompatibility to true disables modern glass materials
                         requiresCompatibility = !newValue
                     }
                 )) {
@@ -52,5 +52,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    MainTabView()
+    ContentView()
 }
