@@ -24,7 +24,7 @@ struct MainTabView: View {
             }
 
             // Second Page
-            Tab("Second", systemImage: "square.stack.3d.up", value: AppTab.second) {
+            Tab("Developer Tests", systemImage: "hammer.fill", value: AppTab.second) {
                 NavigationStack {
                     SecondTabView()
                 }
@@ -90,14 +90,25 @@ struct SecondTabView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "square.stack.3d.up")
+            Image(systemName: "hammer.fill")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
-            Text("Second Page Content")
+            
+            Text("Developer Tests for the Developer")
                 .font(.title3)
+
+            Button {
+                // Action for button tap
+            } label: {
+                Label("Perform Action", systemImage: "sparkles")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(.blue)
         }
         .padding()
-        .navigationTitle("Second")
+        .navigationTitle("Developer Tests")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
