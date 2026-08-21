@@ -12,6 +12,7 @@ struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
     @State private var previousTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
+    @State private var showBetaAlert: Bool = true
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -45,6 +46,12 @@ struct MainTabView: View {
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
         }
+        // Beta Warning Alert shown on startup
+        .alert("App is in Beta", isPresented: $showBetaAlert) {
+            Button("Got it", role: .cancel) { }
+        } message: {
+            Text("This app is currently under development. Some features may change or be incomplete.")
+        }
     }
 }
 
@@ -62,7 +69,6 @@ struct GlobalView: View {
         .padding()
         .navigationTitle("Global")
         .toolbar {
-            // Top-right button in the app
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     // Action for top-right app button
@@ -87,7 +93,6 @@ struct SecondTabView: View {
         .padding()
         .navigationTitle("Second")
         .toolbar {
-            // Top-right button in the app
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     // Action for top-right app button
@@ -117,7 +122,6 @@ struct SearchSheetView: View {
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Top-right blue button with a checkmark on the sheet
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
