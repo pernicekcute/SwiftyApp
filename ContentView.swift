@@ -102,21 +102,17 @@ struct SecondTabView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            // Fully populated button with explicit text, icon, and working action
+            // Standard native SwiftUI system button
             Button {
                 testCounter += 1
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                    Text("Run Test Action")
-                        .font(.body.weight(.semibold))
-                }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color.blue)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                Label("Run Test Action", systemImage: "sparkles")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(.blue)
         }
         .padding()
         .navigationTitle("Developer Tests")
