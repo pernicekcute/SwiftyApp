@@ -46,7 +46,6 @@ struct MainTabView: View {
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
         }
-        // Beta Warning Alert shown on startup
         .alert("App is in Beta", isPresented: $showBetaAlert) {
             Button("Got it", role: .cancel) { }
         } message: {
@@ -57,6 +56,8 @@ struct MainTabView: View {
 
 // MARK: - 1st Page: Global
 struct GlobalView: View {
+    @State private var showSettingsSheet = false
+
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "globe")
@@ -71,17 +72,22 @@ struct GlobalView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    // Action for top-right app button
+                    showSettingsSheet = true
                 } label: {
                     Image(systemName: "gearshape")
                 }
             }
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsSheetView()
         }
     }
 }
 
 // MARK: - 2nd Page: Second View
 struct SecondTabView: View {
+    @State private var showSettingsSheet = false
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "square.stack.3d.up")
@@ -95,12 +101,48 @@ struct SecondTabView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    // Action for top-right app button
+                    showSettingsSheet = true
                 } label: {
                     Image(systemName: "gearshape")
                 }
             }
         }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsSheetView()
+        }
+    }
+}
+
+// MARK: - Settings Sheet View
+struct SettingsSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                ContentUnavailableView(
+                    "Settings",
+                    systemImage: "gearshape",
+                    description: Text("Settings is not done and currently is in this state.")
+                )
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.footnote.bold())
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.blue)
+                    .clipShape(Circle())
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -128,11 +170,10 @@ struct SearchSheetView: View {
                     } label: {
                         Image(systemName: "checkmark")
                             .font(.footnote.bold())
-                            .foregroundStyle(.white)
-                            .padding(8)
-                            .background(Color.blue)
-                            .clipShape(Circle())
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.blue)
+                    .clipShape(Circle())
                 }
             }
         }
