@@ -16,33 +16,37 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // First Page: Called "Global" with Default Xcode Template
-            Tab("Global", systemImage: "globe", value: AppTab.global) {
-                NavigationStack {
-                    GlobalView()
-                }
+            NavigationStack {
+                GlobalView()
             }
+            .tabItem {
+                Label("Global", systemImage: "globe")
+            }
+            .tag(AppTab.global)
 
             // Second Page
-            Tab("Second", systemImage: "square.stack.3d.up", value: AppTab.second) {
-                NavigationStack {
-                    SecondTabView()
-                }
+            NavigationStack {
+                SecondTabView()
             }
+            .tabItem {
+                Label("Second", systemImage: "square.stack.3d.up")
+            }
+            .tag(AppTab.second)
 
-            // Search Tab using role: .search
-            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
-                // Empty view container since selecting search triggers the sheet
-                Color.clear
-            }
+            // Custom Search Tab
+            Color.clear
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                .tag(AppTab.search)
         }
         // Intercept tab selection when Search is tapped
-        .onChange(of: selectedTab) { oldValue, newValue in
+        .onChange(of: selectedTab) { newValue in
             if newValue == .search {
                 showSearchSheet = true
-                // Revert to previous tab so the current view remains active behind the sheet
+                // Revert to previous tab so current view remains active
                 selectedTab = previousTab
             } else {
-                // Keep track of active non-search tab
                 previousTab = newValue
             }
         }
