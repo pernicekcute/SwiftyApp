@@ -7,7 +7,7 @@ struct MainTabView: View {
                 HomeView()
             }
 
-            Tab(role: .settings) {
+            Tab("Settings", systemImage: "gearshape", role: .settings) {
                 SettingsView()
             }
         }
