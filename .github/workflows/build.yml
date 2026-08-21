@@ -56,7 +56,7 @@ jobs:
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            $BUILD_FLAGS
+            ${{ env.BUILD_FLAGS }}
 
       - name: Vytvoření iOsApp.ipa balíčku 📦
         run: |
