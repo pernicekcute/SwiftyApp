@@ -16,41 +16,33 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // First Page: Called "Global" with Default Xcode Template
-            NavigationStack {
-                GlobalView()
+            Tab("Global", systemImage: "globe", value: AppTab.global) {
+                NavigationStack {
+                    GlobalView()
+                }
             }
-            .tabItem {
-                Label("Global", systemImage: "globe")
-            }
-            .tag(AppTab.global)
 
             // Second Page
-            NavigationStack {
-                SecondTabView()
-            }
-            .tabItem {
-                Label("Second", systemImage: "square.stack.3d.up")
-            }
-            .tag(AppTab.second)
-
-            // Custom Search Tab
-            Color.clear
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+            Tab("Second", systemImage: "square.stack.3d.up", value: AppTab.second) {
+                NavigationStack {
+                    SecondTabView()
                 }
-                .tag(AppTab.search)
+            }
+
+            // Search Tab using role: .search
+            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
+                Color.clear
+            }
         }
-        // Intercept tab selection when Search is tapped
-        .onChange(of: selectedTab) { newValue in
+        // Intercept selection when Search tab is tapped
+        .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
                 showSearchSheet = true
-                // Revert to previous tab so current view remains active
                 selectedTab = previousTab
             } else {
                 previousTab = newValue
             }
         }
-        // Present custom Search sheet
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
         }
