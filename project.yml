@@ -2,21 +2,21 @@ name: iOsApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
-    iOS: 16.0
-  xcodeVersion: "15.0"
+    iOS: "16.0"
 
 targets:
   iOsApp:
     type: application
     platform: iOS
-    deploymentTarget: 16.0
+    deploymentTarget: "16.0"
     sources:
       - path: ContentView.swift
       - path: iOsAppApp.swift
-      - path: Assets.xcassets # 👈 This tells XcodeGen to include your icons
+      - path: Assets.xcassets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
         GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon # 👈 Directs Xcode to use your icon folder name
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
