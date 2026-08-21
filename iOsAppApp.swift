@@ -4,7 +4,7 @@ import SwiftUI
 struct iOsAppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
     }
 }
