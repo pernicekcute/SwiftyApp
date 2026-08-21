@@ -13,6 +13,7 @@ targets:
     sources:
       - path: ContentView.swift
       - path: iOsAppApp.swift
+      - path: Assets.xcassets # 👈 This tells XcodeGen to include your icons
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
