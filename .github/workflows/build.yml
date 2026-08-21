@@ -46,26 +46,24 @@ jobs:
       - name: Generování Xcode Projektu (iOsApp.xcodeproj) 🏗️
         run: xcodegen generate
 
-      - name: Sestavení iOS aplikace (.app) 📱
+      - name: Archivadce iOS aplikace (.app) 📱
         run: |
-          xcodebuild build \
+          xcodebuild archive \
             -project iOsApp.xcodeproj \
             -scheme iOsApp \
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
-            -configuration Release \
-            -derivedDataPath build \
+            -archivePath build/iOsApp.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             COMPILER_SIGN_INPUTS=NO \
-            STRIP_INTERNATIONAL_STRINGS=NO \
             ${{ env.BUILD_FLAGS }}
-
 
       - name: Vytvoření iOsApp.ipa balíčku 📦
         run: |
           mkdir -p Payload
-          cp -r build/Build/Products/Release-iphoneos/iOsApp.app Payload/
+          cp -r build/iOsApp.xcarchive/Products/Applications/iOsApp.app Payload/
           zip -r iOsApp.ipa Payload
 
       - name: Nahrání iOsApp.ipa do GitHub Artifacts 📤
