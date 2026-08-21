@@ -84,38 +84,47 @@ struct GlobalView: View {
     }
 }
 
-// MARK: - 2nd Page: Second View
+// MARK: - 2nd Page: Developer & Utility Tools
 struct SecondTabView: View {
     @State private var showSettingsSheet = false
-    @State private var testCounter = 0
+    @State private var enableVerboseLogs = true
+    @State private var simulateOffline = false
+    @State private var cacheSizeMB: Double = 24.5
+    @State private var showClearCacheAlert = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "hammer.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            
-            Text("Developer Tests")
-                .font(.title3.bold())
-
-            Text("Executions: \(testCounter)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            // Standard native SwiftUI system button
-            Button {
-                testCounter += 1
-            } label: {
-                Label("Run Test Action", systemImage: "sparkles")
-                    .font(.body.weight(.semibold))
-                    .frame(maxWidth: .infinity)
+        Form {
+            // Section 1: System & Build Info
+            Section("Build Information") {
+                LabeledContent("App Version", value: "1.0.0 (Beta)")
+                LabeledContent("Build Number", value: "104")
+                LabeledContent("iOS Version", value: UIDevice.current.systemVersion)
+                LabeledContent("Environment", value: "Staging")
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(.blue)
+
+            // Section 2: Debug Toggles
+            Section("Debug Overrides") {
+                Toggle(isOn: $enableVerboseLogs) {
+                    Label("Verbose Console Logs", systemImage: "terminal")
+                }
+                
+                Toggle(isOn: $simulateOffline) {
+                    Label("Simulate Offline Mode", systemImage: "wifi.slash")
+                }
+            }
+
+            // Section 3: Data & Storage
+            Section("Cache & Storage") {
+                LabeledContent("Cache Size", value: String(format: "%.1f MB", cacheSizeMB))
+
+                Button(role: .destructive) {
+                    showClearCacheAlert = true
+                } label: {
+                    Label("Clear Local Cache", systemImage: "trash")
+                }
+            }
         }
-        .padding()
-        .navigationTitle("Developer Tests")
+        .navigationTitle("Dev Tools")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -127,6 +136,14 @@ struct SecondTabView: View {
         }
         .sheet(isPresented: $showSettingsSheet) {
             SettingsSheetView()
+        }
+        .confirmationDialog("Clear Cache?", isPresented: $showClearCacheAlert, titleVisibility: .visible) {
+            Button("Clear All", role: .destructive) {
+                cacheSizeMB = 0.0
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This will purge all temporary cached network responses.")
         }
     }
 }
