@@ -87,25 +87,36 @@ struct GlobalView: View {
 // MARK: - 2nd Page: Second View
 struct SecondTabView: View {
     @State private var showSettingsSheet = false
+    @State private var testCounter = 0
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Image(systemName: "hammer.fill")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
             
-            Text("Developer Tests for the Developer")
-                .font(.title3)
+            Text("Developer Tests")
+                .font(.title3.bold())
 
+            Text("Executions: \(testCounter)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            // Fully populated button with explicit text, icon, and working action
             Button {
-                // Action for button tap
+                testCounter += 1
             } label: {
-                Label("Perform Action", systemImage: "sparkles")
-                    .frame(maxWidth: .infinity)
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                    Text("Run Test Action")
+                        .font(.body.weight(.semibold))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(.blue)
         }
         .padding()
         .navigationTitle("Developer Tests")
