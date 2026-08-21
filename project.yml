@@ -2,13 +2,13 @@ name: iOsApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
-    iOS: "18.0"
+    iOS: "26.0"
 
 targets:
   iOsApp:
     type: application
     platform: iOS
-    deploymentTarget: "18.0"
+    deploymentTarget: "26.0"
     sources:
       - path: ContentView.swift
       - path: iOsAppApp.swift
