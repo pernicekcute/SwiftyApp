@@ -275,11 +275,15 @@ struct SettingsSheetView: View {
     private var sysBuildNum: String {
         var size = 0
         sysctlbyname("hw.buildversion", nil, &size, nil, 0)
+        
+        guard size > 0 else { return "N/A" }
+        
         var buffer = [CChar](repeating: 0, count: size)
-        sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
+        let result = sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
+        
+        guard result == 0 else { return "N/A" }
         return String(cString: buffer)
     }
-
     var body: some View {
         NavigationStack {
             Form {
