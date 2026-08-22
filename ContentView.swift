@@ -24,7 +24,7 @@ struct MainTabView: View {
             }
 
             // Second Page
-            Tab("Developer Tests", systemImage: "hammer.fill", value: AppTab.second) {
+            Tab("Local", systemImage: "iphone", value: AppTab.second) {
                 NavigationStack {
                     SecondTabView()
                 }
@@ -86,45 +86,19 @@ struct GlobalView: View {
 
 // MARK: - 2nd Page: Developer & Utility Tools
 struct SecondTabView: View {
-    @State private var showSettingsSheet = false
-    @State private var enableVerboseLogs = true
-    @State private var simulateOffline = false
-    @State private var cacheSizeMB: Double = 24.5
-    @State private var showClearCacheAlert = false
+        @State private var showSettingsSheet = false
 
     var body: some View {
-        Form {
-            // Section 1: System & Build Info
-            Section("Build Information") {
-                LabeledContent("App Version", value: "1.0.0 (Beta)")
-                LabeledContent("Build Number", value: "104")
-                LabeledContent("iOS Version", value: UIDevice.current.systemVersion)
-                LabeledContent("Environment", value: "Staging")
-            }
-
-            // Section 2: Debug Toggles
-            Section("Debug Overrides") {
-                Toggle(isOn: $enableVerboseLogs) {
-                    Label("Verbose Console Logs", systemImage: "terminal")
-                }
-                
-                Toggle(isOn: $simulateOffline) {
-                    Label("Simulate Offline Mode", systemImage: "wifi.slash")
-                }
-            }
-
-            // Section 3: Data & Storage
-            Section("Cache & Storage") {
-                LabeledContent("Cache Size", value: String(format: "%.1f MB", cacheSizeMB))
-
-                Button(role: .destructive) {
-                    showClearCacheAlert = true
-                } label: {
-                    Label("Clear Local Cache", systemImage: "trash")
-                }
-            }
+        VStack(spacing: 12) {
+            Image(systemName: "iphone")
+                .imageScale(.large)
+                .foregroundStyle(.tint)
+            Text("Hello, user!")
+                .font(.title2)
+                .bold()
         }
-        .navigationTitle("Dev Tools")
+        .padding()
+        .navigationTitle("Local")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -137,29 +111,40 @@ struct SecondTabView: View {
         .sheet(isPresented: $showSettingsSheet) {
             SettingsSheetView()
         }
-        .confirmationDialog("Clear Cache?", isPresented: $showClearCacheAlert, titleVisibility: .visible) {
-            Button("Clear All", role: .destructive) {
-                cacheSizeMB = 0.0
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("This will purge all temporary cached network responses.")
-        }
     }
 }
 
 // MARK: - Settings Sheet View
+import SwiftUI
+
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var title: String = ""
+    @State private var message: String = ""
+    @State private var buttonTitle: String = ""
+    @State private var isShowingAlert: Bool = false
 
     var body: some View {
         NavigationStack {
-            VStack {
+            Form {
                 ContentUnavailableView(
                     "Settings",
                     systemImage: "gearshape",
                     description: Text("Settings is not done and currently is in this state.")
                 )
+                .listRowBackground(Color.clear)
+
+                Section("Dialog Inputs") {
+                    TextField("Title", text: $title)
+                    TextField("Message", text: $message)
+                    TextField("Button Label", text: $buttonTitle)
+                }
+
+                Section {
+                    Button("Show Dialog") {
+                        isShowingAlert = true
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -176,8 +161,15 @@ struct SettingsSheetView: View {
                     .clipShape(Circle())
                 }
             }
+            .alert(title.isEmpty ? "Alert" : title, isPresented: $isShowingAlert) {
+                Button(buttonTitle.isEmpty ? "OK" : buttonTitle) { }
+            } message: {
+                if !message.isEmpty {
+                    Text(message)
+                }
+            }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
     }
 }
 
@@ -212,7 +204,7 @@ struct SearchSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
     }
 }
 
