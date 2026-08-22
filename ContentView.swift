@@ -43,6 +43,7 @@ struct MainTabView: View {
                 Color.clear
             }
         }
+        .tint(.orange)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
                 showSearchSheet = true
