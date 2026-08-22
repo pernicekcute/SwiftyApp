@@ -38,7 +38,7 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Other", systemImage: "book.pages", value: AppTab.third) {
+            Tab("Other", systemImage: "book", value: AppTab.third) {
                 NavigationStack {
                     OtherTabView()
                 }
@@ -104,7 +104,7 @@ struct OtherTabView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "book.pages")
+            Image(systemName: "book")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Nothing here yet!")
