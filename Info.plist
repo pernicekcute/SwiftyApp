@@ -21,10 +21,6 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
-	<!-- Opt-out flag for system Liquid Glass materials -->
-	<key>UIDesignRequiresCompatibility</key>
-	<true/>
-
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
