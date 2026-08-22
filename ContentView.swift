@@ -8,7 +8,7 @@ enum AppTab: Hashable {
     case search
 }
 
-// MARK: - Main TabView Container
+// MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
     @State private var previousTab: AppTab = .global
@@ -18,38 +18,30 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // First Page: Global
-            NavigationStack {
-                GlobalView()
+            Tab("Global", systemImage: "globe", value: AppTab.global) {
+                NavigationStack {
+                    GlobalView()
+                }
             }
-            .tabItem {
-                Label("Global", systemImage: "globe")
-            }
-            .tag(AppTab.global)
 
             // Second Page: Local
-            NavigationStack {
-                SecondTabView()
+            Tab("Local", systemImage: "iphone", value: AppTab.second) {
+                NavigationStack {
+                    SecondTabView()
+                }
             }
-            .tabItem {
-                Label("Local", systemImage: "iphone")
-            }
-            .tag(AppTab.second)
 
             // Third Page: Exploits
-            NavigationStack {
-                ExploitsTabView()
-            }
-            .tabItem {
-                Label("Exploits", systemImage: "cpu.fill")
-            }
-            .tag(AppTab.third)
-
-            // Search Trigger Tab
-            Color.clear
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.third) {
+                NavigationStack {
+                    ExploitsTabView()
                 }
-                .tag(AppTab.search)
+            }
+
+            // Search Tab with Search Role
+            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
+                Color.clear
+            }
         }
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
@@ -69,7 +61,6 @@ struct MainTabView: View {
         }
     }
 }
-
 // MARK: - 1st Page: Global
 struct GlobalView: View {
     @State private var showSettingsSheet = false
@@ -185,7 +176,7 @@ struct ExploitsTabView: View {
             }
             .padding()
         }
-        .navigationTitle("Info about Exploits for Modding")
+        .navigationTitle("Info about Exploits")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
