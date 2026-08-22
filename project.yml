@@ -17,6 +17,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
         GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: SwiftyApp
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
