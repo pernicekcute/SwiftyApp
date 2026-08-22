@@ -6,6 +6,7 @@ enum AppTab: Hashable {
     case second
     case third
     case search
+    case fourth
 }
 
 // MARK: - Main TabView Container (iOS 18+)
@@ -38,7 +39,7 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Other", systemImage: "book", value: AppTab.third) {
+            Tab("Other", systemImage: "book.fill", value: AppTab.fourth) {
                 NavigationStack {
                     OtherTabView()
                 }
@@ -104,7 +105,7 @@ struct OtherTabView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "book")
+            Image(systemName: "book.fill")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Nothing here yet!")
