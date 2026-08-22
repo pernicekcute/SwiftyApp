@@ -18,29 +18,38 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // First Page: Global
-            Tab("Global", systemImage: "globe", value: AppTab.global) {
-                NavigationStack {
-                    GlobalView()
-                }
+            NavigationStack {
+                GlobalView()
             }
+            .tabItem {
+                Label("Global", systemImage: "globe")
+            }
+            .tag(AppTab.global)
 
-            // Second Page
-            Tab("Local", systemImage: "iphone", value: AppTab.second) {
-                NavigationStack {
-                    SecondTabView()
-                }
+            // Second Page: Local
+            NavigationStack {
+                SecondTabView()
             }
+            .tabItem {
+                Label("Local", systemImage: "iphone")
+            }
+            .tag(AppTab.second)
 
-            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.third) {
-                NavigationStack {
-                    ExploitsTabView()
-                }
+            // Third Page: Exploits
+            NavigationStack {
+                ExploitsTabView()
             }
+            .tabItem {
+                Label("Exploits", systemImage: "cpu.fill")
+            }
+            .tag(AppTab.third)
 
-            // Search Tab
-            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
-                Color.clear
-            }
+            // Search Trigger Tab
+            Color.clear
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                .tag(AppTab.search)
         }
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
@@ -91,13 +100,13 @@ struct GlobalView: View {
     }
 }
 
+// MARK: - Exploits Tab
 struct ExploitsTabView: View {
     @State private var showSettingsSheet = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Main Header
                 HStack(spacing: 12) {
                     Image(systemName: "cpu.fill")
                         .font(.system(size: 32))
@@ -115,7 +124,6 @@ struct ExploitsTabView: View {
                 
                 Divider()
 
-                // SparseRestore Card
                 VStack(alignment: .leading, spacing: 8) {
                     Label("SparseRestore", systemName: "bolt.shield.fill")
                         .font(.headline)
@@ -138,7 +146,6 @@ struct ExploitsTabView: View {
                     .cornerRadius(8)
                 }
 
-                // BookRestore Card
                 VStack(alignment: .leading, spacing: 8) {
                     Label("BookRestore", systemName: "book.pages.fill")
                         .font(.headline)
@@ -161,7 +168,6 @@ struct ExploitsTabView: View {
                     .cornerRadius(8)
                 }
 
-                // Safety Warning Box
                 VStack(alignment: .leading, spacing: 6) {
                     Label("Developer Note & Risk", systemName: "exclamationmark.triangle.fill")
                         .font(.subheadline)
@@ -195,9 +201,9 @@ struct ExploitsTabView: View {
     }
 }
 
-// MARK: - 2nd Page: Developer & Utility Tools
+// MARK: - 2nd Page: Local
 struct SecondTabView: View {
-        @State private var showSettingsSheet = false
+    @State private var showSettingsSheet = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -226,8 +232,6 @@ struct SecondTabView: View {
 }
 
 // MARK: - Settings Sheet View
-import SwiftUI
-
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title: String = ""
