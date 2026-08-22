@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 // MARK: - Tab Enum
 enum AppTab: Hashable {
@@ -271,6 +272,14 @@ struct SettingsSheetView: View {
         UIDevice.current.systemVersion
     }
 
+    private var sysBuildNum: String {
+    var size = 0
+    sysctlbyname("hw.buildversion", nil, &size, nil, 0)
+    var buffer = [CChar](repeating: 0, count: size)
+    sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
+    return String(cString: buffer)
+}
+
     var body: some View {
         NavigationStack {
             Form {
@@ -286,6 +295,11 @@ struct SettingsSheetView: View {
                         Text(sysVer)
                     } label: {
                         Label("iOS Version", systemImage: "iphone")
+                    }
+                    LabeledContent {
+                        Text(sysBuildNum)
+                    } label: {
+                        Label("iOS Build Version", systemImage: "hammer.fill")
                     }
                 }
 
@@ -322,7 +336,7 @@ struct SettingsSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
     }
 }
 
@@ -355,7 +369,7 @@ struct SearchSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents(.large])
     }
 }
 
