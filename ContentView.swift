@@ -32,7 +32,7 @@ struct MainTabView: View {
             }
 
             // Third Page: Exploits
-            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.third) {
+            Tab("Exploits", systemImage: "cpu.fill", value: AppTab.third) {
                 NavigationStack {
                     ExploitsTabView()
                 }
