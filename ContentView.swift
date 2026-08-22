@@ -89,7 +89,7 @@ struct GlobalView: View {
                 Button {
                     showSettingsSheet = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                 }
             }
         }
@@ -119,7 +119,7 @@ struct OtherTabView: View {
                 Button {
                     showSettingsSheet = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                 }
             }
         }
@@ -220,7 +220,7 @@ struct ExploitsTabView: View {
                 Button {
                     showSettingsSheet = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                 }
             }
         }
@@ -250,7 +250,7 @@ struct SecondTabView: View {
                 Button {
                     showSettingsSheet = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                 }
             }
         }
@@ -273,7 +273,7 @@ struct SettingsSheetView: View {
             Form {
                 ContentUnavailableView(
                     "Settings",
-                    systemImage: "gearshape",
+                    systemImage: "gear",
                     description: Text("Settings is not done and currently is in this state.")
                 )
                 .listRowBackground(Color.clear)
