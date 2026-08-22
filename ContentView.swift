@@ -4,6 +4,7 @@ import SwiftUI
 enum AppTab: Hashable {
     case global
     case second
+    case third
     case search
 }
 
@@ -30,7 +31,7 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.second) {
+            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.third) {
                 NavigationStack {
                     ExploitsTabView()
                 }
