@@ -273,12 +273,12 @@ struct SettingsSheetView: View {
     }
 
     private var sysBuildNum: String {
-    var size = 0
-    sysctlbyname("hw.buildversion", nil, &size, nil, 0)
-    var buffer = [CChar](repeating: 0, count: size)
-    sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
-    return String(cString: buffer)
-}
+        var size = 0
+        sysctlbyname("hw.buildversion", nil, &size, nil, 0)
+        var buffer = [CChar](repeating: 0, count: size)
+        sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
+        return String(cString: buffer)
+    }
 
     var body: some View {
         NavigationStack {
@@ -320,12 +320,12 @@ struct SettingsSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-    dismiss()
-} label: {
-    Image(systemName: "checkmark")
-}
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
                     .buttonStyle(.borderedProminent)
-.tint(.blue)
+                    .tint(.blue)
                 }
             }
             .alert(title.isEmpty ? "Alert" : title, isPresented: $isShowingAlert) {
@@ -360,12 +360,12 @@ struct SearchSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-    dismiss()
-} label: {
-    Image(systemName: "checkmark")
-}
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
                     .buttonStyle(.borderedProminent)
-.tint(.blue)
+                    .tint(.blue)
                 }
             }
         }
