@@ -258,6 +258,8 @@ struct SecondTabView: View {
     }
 }
 
+import SwiftUI
+
 // MARK: - Settings Sheet View
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
@@ -265,6 +267,11 @@ struct SettingsSheetView: View {
     @State private var message: String = ""
     @State private var buttonTitle: String = ""
     @State private var isShowingAlert: Bool = false
+    
+    // Automatically retrieve the device system version
+    private var sysVer: String {
+        UIDevice.current.systemVersion
+    }
 
     var body: some View {
         NavigationStack {
@@ -275,6 +282,14 @@ struct SettingsSheetView: View {
                     description: Text("Settings is not done and currently is in this state.")
                 )
                 .listRowBackground(Color.clear)
+
+                Section("Info") {
+                    LabeledContent {
+                        Text(sysVer)
+                    } label: {
+                        Label("iOS Version", systemName: "iphone")
+                    }
+                }
 
                 Section("Dialog Inputs") {
                     TextField("Title", text: $title)
@@ -291,16 +306,13 @@ struct SettingsSheetView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .font(.footnote.bold())
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .clipShape(Circle())
+    dismiss()
+} label: {
+    Image(systemName: "checkmark")
+}
+.tint(.blue)
                 }
             }
             .alert(title.isEmpty ? "Alert" : title, isPresented: $isShowingAlert) {
@@ -311,7 +323,7 @@ struct SettingsSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -333,20 +345,17 @@ struct SearchSheetView: View {
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .font(.footnote.bold())
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .clipShape(Circle())
+    dismiss()
+} label: {
+    Image(systemName: "checkmark")
+}
+.tint(.blue)
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 
