@@ -21,13 +21,6 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
-	<!-- Key forced by setup -->
-	<key>UIDesignRequiresCompatibility</key>
-	<true/>
-
-	<key>UILaunchScreen</key>
-	<dict/>
-
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
