@@ -125,7 +125,7 @@ struct ExploitsTabView: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("SparseRestore", systemName: "bolt.shield.fill")
+                    Label("SparseRestore", systemImage: "bolt.shield.fill")
                         .font(.headline)
                         .foregroundStyle(.orange)
                     
@@ -147,7 +147,7 @@ struct ExploitsTabView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("BookRestore", systemName: "book.pages.fill")
+                    Label("BookRestore", systemImage: "book.pages.fill")
                         .font(.headline)
                         .foregroundStyle(.blue)
                     
@@ -169,7 +169,7 @@ struct ExploitsTabView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("Developer Note & Risk", systemName: "exclamationmark.triangle.fill")
+                    Label("Developer Note & Risk", systemImage: "exclamationmark.triangle.fill")
                         .font(.subheadline)
                         .bold()
                         .foregroundStyle(.red)
