@@ -11,8 +11,6 @@ targets:
     deploymentTarget: "18.0"
     info:
       path: Info.plist
-      properties:
-        UIDesignRequiresCompatibility: false
     sources:
       - path: ContentView.swift
       - path: iOsAppApp.swift
