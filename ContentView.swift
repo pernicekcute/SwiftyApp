@@ -369,7 +369,7 @@ struct SearchSheetView: View {
                 }
             }
         }
-        .presentationDetents(.large])
+        .presentationDetents([.large])
     }
 }
 
