@@ -38,6 +38,12 @@ struct MainTabView: View {
                 }
             }
 
+            Tab("Other", systemImage: "book.pages", value: AppTab.third) {
+                NavigationStack {
+                    OtherTabView()
+                }
+            }
+
             // Search Tab with Search Role
             Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 Color.clear
@@ -77,6 +83,36 @@ struct GlobalView: View {
         }
         .padding()
         .navigationTitle("Global")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showSettingsSheet = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsSheetView()
+        }
+    }
+}
+
+// MARK: - 1st Page: Global
+struct OtherTabView: View {
+    @State private var showSettingsSheet = false
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "book.pages")
+                .imageScale(.large)
+                .foregroundStyle(.tint)
+            Text("Nothing here yet!")
+                .font(.title2)
+                .bold()
+        }
+        .padding()
+        .navigationTitle("Other")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
