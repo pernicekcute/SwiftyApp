@@ -258,8 +258,6 @@ struct SecondTabView: View {
     }
 }
 
-import SwiftUI
-
 // MARK: - Settings Sheet View
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
@@ -287,7 +285,7 @@ struct SettingsSheetView: View {
                     LabeledContent {
                         Text(sysVer)
                     } label: {
-                        Label("iOS Version", systemName: "iphone")
+                        Label("iOS Version", systemImage: "iphone")
                     }
                 }
 
@@ -312,6 +310,7 @@ struct SettingsSheetView: View {
 } label: {
     Image(systemName: "checkmark")
 }
+                    .buttonStyle(.borderedProminent)
 .tint(.blue)
                 }
             }
@@ -351,6 +350,7 @@ struct SearchSheetView: View {
 } label: {
     Image(systemName: "checkmark")
 }
+                    .buttonStyle(.borderedProminent)
 .tint(.blue)
                 }
             }
