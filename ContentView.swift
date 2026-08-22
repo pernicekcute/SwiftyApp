@@ -30,6 +30,12 @@ struct MainTabView: View {
                 }
             }
 
+            Tab("Exploits for Modding", systemImage: "cpu.fill", value: AppTab.second) {
+                NavigationStack {
+                    ExploitsTabView()
+                }
+            }
+
             // Search Tab
             Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 Color.clear
@@ -69,6 +75,110 @@ struct GlobalView: View {
         }
         .padding()
         .navigationTitle("Global")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showSettingsSheet = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsSheetView()
+        }
+    }
+}
+
+struct ExploitsTabView: View {
+    @State private var showSettingsSheet = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Main Header
+                HStack(spacing: 12) {
+                    Image(systemName: "cpu.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.tint)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Partial Restore Exploits")
+                            .font(.title2)
+                            .bold()
+                        Text("MobileBackup2 system write vectors")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Divider()
+
+                // SparseRestore Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("SparseRestore", systemName: "bolt.shield.fill")
+                        .font(.headline)
+                        .foregroundStyle(.orange)
+                    
+                    Text("Manipulates iOS's local restore daemon using sparse backup data to write custom configuration files into system paths without a full device wipe.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("• **Vector:** Partial backup file injection")
+                        Text("• **Support:** iOS 16.0 – iOS 18.1 Beta 4")
+                        Text("• **Edits:** MobileGestalt & preference tweaks")
+                        Text("• **Status:** Patched (iOS 18.1 Beta 5+)")
+                    }
+                    .font(.footnote)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(8)
+                }
+
+                // BookRestore Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("BookRestore", systemName: "book.pages.fill")
+                        .font(.headline)
+                        .foregroundStyle(.blue)
+                    
+                    Text("An evolved exploit targeting specific app domain paths to bypass updated file-write protections on newer iOS firmware versions.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("• **Vector:** App domain preference restore")
+                        Text("• **Support:** iOS 18.2 – iOS 26.x")
+                        Text("• **Edits:** Selective UI & system behavior tweaks")
+                        Text("• **Status:** Active (Preference writes)")
+                    }
+                    .font(.footnote)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(8)
+                }
+
+                // Safety Warning Box
+                VStack(alignment: .leading, spacing: 6) {
+                    Label("Developer Note & Risk", systemName: "exclamationmark.triangle.fill")
+                        .font(.subheadline)
+                        .bold()
+                        .foregroundStyle(.red)
+                    
+                    Text("Invalid plist modifications can trigger recovery bootloops requiring an iTunes/Finder restore. System updates or device wipes clear all applied tweaks.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(10)
+            }
+            .padding()
+        }
+        .navigationTitle("Info about Exploits for Modding")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
