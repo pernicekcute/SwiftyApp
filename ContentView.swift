@@ -5,14 +5,13 @@ enum AppTab: Hashable {
     case global
     case second
     case third
-    case search
     case fourth
+    case search
 }
 
 // MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
-    @State private var previousTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
 
@@ -39,6 +38,7 @@ struct MainTabView: View {
                 }
             }
 
+            // Fourth Page: Other
             Tab("Other", systemImage: "book", value: AppTab.fourth) {
                 NavigationStack {
                     OtherTabView()
@@ -54,9 +54,7 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
                 showSearchSheet = true
-                selectedTab = previousTab
-            } else {
-                previousTab = newValue
+                selectedTab = oldValue // Directly restores the tab prior to search tap
             }
         }
         .sheet(isPresented: $showSearchSheet) {
