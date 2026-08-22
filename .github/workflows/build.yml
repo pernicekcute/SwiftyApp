@@ -15,38 +15,13 @@ jobs:
       - name: Checkout repozitáře 📥
         uses: actions/checkout@v4
 
-      - name: Kontrola iOS SDK targetu z project.yml 🧐
-        id: check_sdk
-        run: |
-          # Vytažení verze deployment targetu z project.yml 🔍
-          TARGET_VER=$(python3 -c "
-          import re
-          with open('project.yml', 'r') as f:
-              content = f.read()
-          match = re.search(r'(?:iOS|deploymentTarget):\s*[\'\"]?([0-9\.]+)[\'\"]?', content)
-          print(match.group(1) if match else '0')
-          ")
-          
-          MAJOR_VER=$(echo "$TARGET_VER" | cut -d'.' -f1)
-          echo "Zjištěná verze iOS targetu: $TARGET_VER (Major: $MAJOR_VER) 📱"
-          
-          if [ "$MAJOR_VER" -ge 26 ]; then
-            echo "LIQUID_GLASS=YES" >> $GITHUB_ENV
-            echo "BUILD_FLAGS=OTHER_SWIFT_FLAGS=-DLIQUID_GLASS_ENABLED" >> $GITHUB_ENV
-            echo "✨ Liquid Glass: POVOLENO! 🎉"
-          else
-            echo "LIQUID_GLASS=NO" >> $GITHUB_ENV
-            echo "BUILD_FLAGS=" >> $GITHUB_ENV
-            echo "🚫 Liquid Glass: ZAKÁZÁNO (iOS $MAJOR_VER <= 18) 🛑"
-          fi
-
       - name: Instalace XcodeGen 🛠️
         run: brew install xcodegen
 
       - name: Generování Xcode Projektu (iOsApp.xcodeproj) 🏗️
         run: xcodegen generate
 
-      - name: Archivadce iOS aplikace (.app) 📱
+      - name: Archivace iOS aplikace (.app) 📱
         run: |
           xcodebuild archive \
             -project iOsApp.xcodeproj \
@@ -57,8 +32,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            COMPILER_SIGN_INPUTS=NO \
-            ${{ env.BUILD_FLAGS }}
+            COMPILER_SIGN_INPUTS=NO
 
       - name: Vytvoření iOsApp.ipa balíčku 📦
         run: |
