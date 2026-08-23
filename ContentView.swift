@@ -11,26 +11,23 @@ enum AppTab: Hashable {
 }
 
 // MARK: - Main TabView Container (iOS 18+)
-// MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
-    // 1. Add state variable at the top of your view
-@State private var showTermsAlert: Bool = false
+    @State private var showTermsAlert: Bool = false
 
-// Helper method for exit logic
-private func terminateApp() {
-    UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-        exit(0)
+    private func terminateApp() {
+        UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            exit(0)
+        }
     }
-}
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // First Page: Global (Rotating Globe)
+            // First Page: Global
             Tab(value: AppTab.global) {
                 NavigationStack {
                     GlobalView()
@@ -40,7 +37,7 @@ private func terminateApp() {
                     .symbolEffect(.rotate, value: selectedTab == .global)
             }
 
-            // Second Page: Local (Wiggling / Vibrating iPhone)
+            // Second Page: Local
             Tab(value: AppTab.second) {
                 NavigationStack {
                     SecondTabView()
@@ -50,7 +47,7 @@ private func terminateApp() {
                     .symbolEffect(.wiggle, value: selectedTab == .second)
             }
 
-            // Third Page: Exploits (Bouncing CPU)
+            // Third Page: Exploits
             Tab(value: AppTab.third) {
                 NavigationStack {
                     ExploitsTabView()
@@ -60,7 +57,7 @@ private func terminateApp() {
                     .symbolEffect(.bounce, value: selectedTab == .third)
             }
 
-            // Fourth Page: Other (Small Jumping Book)
+            // Fourth Page: Other
             Tab(value: AppTab.fourth) {
                 NavigationStack {
                     OtherTabView()
@@ -70,7 +67,7 @@ private func terminateApp() {
                     .symbolEffect(.bounce.up, value: selectedTab == .fourth)
             }
 
-            // Search Tab (No Animation)
+            // Search Tab
             Tab(value: AppTab.search, role: .search) {
                 Color.clear
             } label: {
@@ -81,7 +78,7 @@ private func terminateApp() {
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
                 showSearchSheet = true
-                selectedTab = oldValue // Reverts selection so active tab content remains unchanged
+                selectedTab = oldValue
             }
         }
         .sheet(isPresented: $showSearchSheet) {
@@ -90,20 +87,18 @@ private func terminateApp() {
                 .presentationDragIndicator(.visible)
         }
         .onAppear {
-            // Only trigger the alert chain on first launch if not yet agreed
             if !hasAgreedToTerms {
                 showBetaAlert = true
             }
         }
         .alert("App is in Release", isPresented: $showBetaAlert) {
-            Button("OK", role: .cancel) {
-                
-            }
+            Button("OK", role: .cancel) { }
         } message: {
             Text("This app is currently released but some features may change or be incomplete.")
         }
     }
 }
+
 // MARK: - 1st Page: Global
 struct GlobalView: View {
     @State private var showSettingsSheet = false
@@ -120,6 +115,15 @@ struct GlobalView: View {
         .padding()
         .navigationTitle("Global")
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Button(action: {
+                    // Button action here
+                }) {
+                    Image(systemName: "info.circle.fill")
+                }
+                .buttonStyle(.glass)
+                .padding(.top, 4)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showSettingsSheet = true
@@ -134,22 +138,31 @@ struct GlobalView: View {
     }
 }
 
-// MARK: - 1st Page: Global
-struct OtherTabView: View {
+// MARK: - 2nd Page: Local
+struct SecondTabView: View {
     @State private var showSettingsSheet = false
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "book")
+            Image(systemName: "iphone")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Nothing here yet!")
+            Text("Hello, user!")
                 .font(.title2)
                 .bold()
         }
         .padding()
-        .navigationTitle("Other")
+        .navigationTitle("Local")
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Button(action: {
+                    // Button action here
+                }) {
+                    Image(systemName: "info.circle.fill")
+                }
+                .buttonStyle(.glass)
+                .padding(.top, 4)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showSettingsSheet = true
@@ -164,7 +177,7 @@ struct OtherTabView: View {
     }
 }
 
-// MARK: - Exploits Tab
+// MARK: - 3rd Page: Exploits
 struct ExploitsTabView: View {
     @State private var showSettingsSheet = false
 
@@ -251,6 +264,15 @@ struct ExploitsTabView: View {
         }
         .navigationTitle("Info about Exploits")
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Button(action: {
+                    // Button action here
+                }) {
+                    Image(systemName: "info.circle.fill")
+                }
+                .buttonStyle(.glass)
+                .padding(.top, 4)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showSettingsSheet = true
@@ -265,22 +287,31 @@ struct ExploitsTabView: View {
     }
 }
 
-// MARK: - 2nd Page: Local
-struct SecondTabView: View {
+// MARK: - 4th Page: Other
+struct OtherTabView: View {
     @State private var showSettingsSheet = false
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "iphone")
+            Image(systemName: "book")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, user!")
+            Text("Nothing here yet!")
                 .font(.title2)
                 .bold()
         }
         .padding()
-        .navigationTitle("Local")
+        .navigationTitle("Other")
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Button(action: {
+                    // Button action here
+                }) {
+                    Image(systemName: "info.circle.fill")
+                }
+                .buttonStyle(.glass)
+                .padding(.top, 4)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showSettingsSheet = true
@@ -295,15 +326,14 @@ struct SecondTabView: View {
     }
 }
 
-// MARK: - Settings Sheet View
+// MARK: - Settings Sheet View (Excluded)
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title: String = ""
     @State private var message: String = ""
     @State private var buttonTitle: String = ""
     @State private var isShowingAlert: Bool = false
-    
-    // Automatically retrieve the device system version
+
     private var sysVer: String {
         UIDevice.current.systemVersion
     }
@@ -311,15 +341,14 @@ struct SettingsSheetView: View {
     private var sysBuildNum: String {
         var size = 0
         sysctlbyname("hw.buildversion", nil, &size, nil, 0)
-        
         guard size > 0 else { return "N/A" }
         
         var buffer = [CChar](repeating: 0, count: size)
         let result = sysctlbyname("hw.buildversion", &buffer, &size, nil, 0)
-        
         guard result == 0 else { return "N/A" }
         return String(cString: buffer)
     }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -380,33 +409,31 @@ struct SettingsSheetView: View {
     }
 }
 
-// MARK: - Custom Search Sheet View
+// MARK: - Custom Search Sheet View (Excluded)
 struct SearchSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
             VStack {
-    ContentUnavailableView(
-        "App",
-        systemImage: "moon.stars.fill",
-        description: Text("""
-                          Some things are here for the app. Come back in the next update for more features.
-                          
-                          Current Version: 1.2
-                          """)
-    )
+                ContentUnavailableView(
+                    "App",
+                    systemImage: "moon.stars.fill",
+                    description: Text("""
+                                 Some things are here for the app. Come back in the next update for more features.
+                                 
+                                 Current Version: 1.2
+                                 """)
+                )
 
-    Button(action: {
-    // Button action here
-}) {
-    Text("Button :)")
-}
-.buttonStyle(.glass)
-                .tint(.blue)
-    .padding(.top, 4)
-}
+                Button(action: {
+                    // Button action here
+                }) {
+                    Text("Button :)")
+                }
+                .buttonStyle(.glass)
+                .padding(.top, 4)
+            }
             .navigationTitle("App")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
