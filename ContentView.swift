@@ -413,7 +413,8 @@ struct SearchSheetView: View {
 }) {
     Text("Button :)")
 }
-.glassEffect(.regular.tint(.blue).interactive())
+.buttonStyle(.glass)
+                .tint(.blue)
     .padding(.top, 4)
 }
             .navigationTitle("App")
