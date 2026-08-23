@@ -59,7 +59,7 @@ struct TestSheet: View {
                 
                 Form {
                     // 1. Developer Section
-                    Section("Developer") {
+                    Section("Credits") {
                         CreditFormRow(
                             handle: "@ondyhop_verity",
                             description: "Lead developer managing app architecture, feature builds, and core functionality.",
