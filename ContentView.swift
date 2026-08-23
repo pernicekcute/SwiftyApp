@@ -13,8 +13,8 @@ struct AppBackgroundView: View {
                     Color(red: 0.18, green: 0.08, blue: 0.28)  // Dark Sunset Purple
                   ]
                 : [Color(red: 1.00, green: 0.88, blue: 0.70), Color(red: 1.00, green: 0.98, blue: 0.75)], // Light Orange & Light Yellow
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            startPoint: .top,
+            endPoint: .bottom
         )
         .ignoresSafeArea()
     }
@@ -246,7 +246,7 @@ struct GlobalView: View {
         }
         .navigationTitle("Global")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -274,7 +274,7 @@ struct SecondTabView: View {
         }
         .navigationTitle("Local")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -374,7 +374,7 @@ struct ExploitsTabView: View {
         }
         .navigationTitle("Info about Exploits")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -402,7 +402,7 @@ struct OtherTabView: View {
         }
         .navigationTitle("Other")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
