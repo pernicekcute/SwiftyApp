@@ -29,11 +29,9 @@ struct CustomToolbarButton: View {
             showSheet = true
         } label: {
             Image(systemName: "hammer")
-                .font(.system(size: 18, weight: .semibold))
                 .frame(width: 36, height: 36)
         }
         .buttonStyle(.glass)
-        .padding(.top, 4)
         .sheet(isPresented: $showSheet) {
             TestSheet()
         }
