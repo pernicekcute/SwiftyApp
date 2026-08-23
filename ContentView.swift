@@ -8,7 +8,10 @@ struct AppBackgroundView: View {
     var body: some View {
         LinearGradient(
             colors: colorScheme == .dark
-                ? [Color(red: 0.30, green: 0.12, blue: 0.0), Color(red: 0.30, green: 0.24, blue: 0.0)] // Dark Orange & Dark Yellow
+                ? [
+                    Color(red: 0.38, green: 0.15, blue: 0.08), // Dark Orange
+                    Color(red: 0.18, green: 0.08, blue: 0.28)  // Dark Sunset Purple
+                  ]
                 : [Color(red: 1.00, green: 0.88, blue: 0.70), Color(red: 1.00, green: 0.98, blue: 0.75)], // Light Orange & Light Yellow
             startPoint: .topLeading,
             endPoint: .bottomTrailing
