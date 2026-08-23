@@ -518,7 +518,7 @@ struct SearchSheetView: View {
                     )
 
                     Button(action: {}) { Text("Button :)") }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                         .padding(.top, 4)
                 }
             }
