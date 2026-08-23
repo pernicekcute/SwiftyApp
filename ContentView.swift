@@ -404,14 +404,9 @@ struct SearchSheetView: View {
                     .fill(.blue.opacity(0.85))
             }
         )
-        .clipShape(Capsule())
-        .overlay(
-            Capsule()
-                .stroke(.white.opacity(0.4), lineWidth: 1.5)
-        )
-        .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 6)
 }
-.tint(.blue)
+.buttonStyle(.borderedProminent)
+                    .tint(.blue)
     .padding(.top, 16)
 }
             .navigationTitle("App")
