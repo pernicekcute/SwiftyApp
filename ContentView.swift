@@ -59,18 +59,34 @@ struct TestSheet: View {
                 
                 Form {
                     // 1. Developer Section
-                    Section("Credits") {
+                    Section("Credits - YouTube") {
                         CreditFormRow(
                             handle: "@ondyhop_verity",
-                            description: "Lead developer managing app architecture, feature builds, and core functionality.",
+                            description: "Main Developer",
                             avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
                             fallbackIcon: "hammer.fill"
                         )
                         CreditFormRow(
                             handle: "@SHADOW_ROBLOX_RIVALS",
-                            description: "Roblox Rivals content creator and design advisor on YouTube.",
+                            description: "Co-Developer",
                             avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
+                            fallbackIcon: "hammer"
+                        )
+
+                        CreditFormRow(
+                            handle: "@Pernicek_Cute",
+                            description: "UI Helper",
+                            avatarURL: "https://unavatar.io/youtube/Pernicek_Cute",
                             fallbackIcon: "play.rectangle.fill"
+                        )
+                    }
+
+                    Section("Credits - TikTok") {
+                        CreditFormRow(
+                            handle: "@rockroad_doors",
+                            description: "Main Developer",
+                            avatarURL: "https://unavatar.io/tiktok/rockyroad_doors",
+                            fallbackIcon: "hammer.fill"
                         )
                     }
                 }
