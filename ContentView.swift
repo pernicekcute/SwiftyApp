@@ -381,7 +381,8 @@ struct SearchSheetView: View {
         systemImage: "moon.stars.fill",
         description: Text("""Some things are here for the app. Come back in the next update for more features.
                           
-                          Current Version: 1.1""")
+                          Current Version: 1.1
+                          """)
     )
 
     Button(action: {
