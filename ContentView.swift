@@ -37,6 +37,28 @@ struct CustomToolbarButton: View {
     }
 }
 
+struct ExitToolbarButton: View {
+    private func exitToHomeScreen() {
+        // 1. Minimize app to the Home Screen
+        UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
+        
+        // 2. Terminate the app process after minimizing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            exit(0)
+        }
+    }
+    
+    var body: some View {
+        Button {
+            exitToHomeScreen()
+        } label: {
+            Image(systemName: "xmark")
+                .frame(width: 36, height: 36)
+        }
+    }
+}
+
+
 
 // MARK: - Tab Enum
 enum AppTab: Hashable {
@@ -211,8 +233,6 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
         }
         .onAppear {
             if !hasAgreedToTerms {
@@ -250,6 +270,10 @@ struct GlobalView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
+
+            ToolbarItem(placement: .topBarLeading) {
+        ExitToolbarButton()
+    }
         }
         .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
     }
@@ -278,6 +302,10 @@ struct SecondTabView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
+            ToolbarItem(placement: .topBarLeading) {
+        ExitToolbarButton()
+    }
+        }
         }
         .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
     }
@@ -375,6 +403,10 @@ struct ExploitsTabView: View {
         .navigationTitle("Info about Exploits")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) {
+        ExitToolbarButton()
+    }
+        }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -403,6 +435,10 @@ struct OtherTabView: View {
         .navigationTitle("Other")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) {
+        ExitToolbarButton()
+    }
+        }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -495,11 +531,7 @@ struct SearchSheetView: View {
                     ContentUnavailableView(
                         "App",
                         systemImage: "moon.stars.fill",
-                        description: Text("""
-                            Some things are here for the app. Come back in the next update for more features.
-                            
-                            Current Version: 1.2
-                            """)
+                        description: Text("Some things are here for the app. Come back in the next update for more features.\n\nCurrent Version: 1.3")
                     )
 
                     Button(action: {}) { Text("Button :)") }
