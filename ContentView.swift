@@ -13,9 +13,8 @@ enum AppTab: Hashable {
 // MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
+    @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
-    @State private var searchText: String = ""
-    @State private var isSearching: Bool = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -48,19 +47,21 @@ struct MainTabView: View {
             }
 
             // Search Tab with Search Role
-            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
+            Tab("App", systemImage: "moon.stars.fill", value: AppTab.search, role: .search) {
                 Color.clear
             }
         }
         .tint(.orange)
-        .searchable(text: $searchText, isPresented: $isSearching, prompt: "Search...")
-        .toolbarVisibility(isSearching ? .hidden : .visible, for: .tabBar)
-        .animation(.easeInOut(duration: 0.2), value: isSearching)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
-                selectedTab = oldValue // Keeps previous tab active behind search
-                isSearching = true     // Expands native .searchable interface
+                showSearchSheet = true
+                selectedTab = oldValue // Instantly reverts selection so active tab content remains unchanged
             }
+        }
+        .sheet(isPresented: $showSearchSheet) {
+            SearchSheetView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .alert("App is in Beta", isPresented: $showBetaAlert) {
             Button("Got it", role: .cancel) { }
@@ -354,13 +355,12 @@ struct SearchSheetView: View {
         NavigationStack {
             VStack {
                 ContentUnavailableView(
-                    "Search",
-                    systemImage: "magnifyingglass",
-                    description: Text("Type a query to search across the app.")
+                    "App",
+                    systemImage: "moon.stars.fill",
+                    description: Text("Nothing here yet for the app. Come back in the next update")
                 )
             }
-            .searchable(text: $searchText, prompt: "Search...")
-            .navigationTitle("Search")
+            .navigationTitle("App")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
