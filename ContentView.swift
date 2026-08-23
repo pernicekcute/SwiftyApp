@@ -22,16 +22,21 @@ struct AppBackgroundView: View {
 
 // MARK: - Reusable Centered Toolbar Button
 struct CustomToolbarButton: View {
-    var action: () -> Void = {}
+    @State private var showSheet = false
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            showSheet = true
+        } label: {
             Image(systemName: "hammer")
                 .font(.system(size: 18, weight: .semibold))
                 .frame(width: 36, height: 36)
         }
         .buttonStyle(.glass)
         .padding(.top, 4)
+        .sheet(isPresented: $showSheet) {
+            TestSheet()
+        }
     }
 }
 
@@ -42,6 +47,36 @@ enum AppTab: Hashable {
     case third
     case fourth
     case search
+}
+
+// MARK: - Custom Search Sheet View
+struct TestSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                AppBackgroundView()
+                VStack {
+                    ContentUnavailableView(
+                        "Test",
+                        systemImage: "hammer",
+                        description: Text("Test Sheet for SwiftyApp")
+                    )
+                }
+            }
+            .navigationTitle("App")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: { Image(systemName: "checkmark") }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
 }
 
 // MARK: - Main TabView Container (iOS 18+)
