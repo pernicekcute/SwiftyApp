@@ -66,10 +66,6 @@ struct TestSheet: View {
                             avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
                             fallbackIcon: "hammer.fill"
                         )
-                    }
-                    
-                    // 2. YouTube Creator Section
-                    Section("YouTube Creator") {
                         CreditFormRow(
                             handle: "@SHADOW_ROBLOX_RIVALS",
                             description: "Roblox Rivals content creator and design advisor on YouTube.",
