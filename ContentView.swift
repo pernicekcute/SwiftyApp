@@ -57,15 +57,31 @@ struct TestSheet: View {
         NavigationStack {
             ZStack {
                 AppBackgroundView()
-                VStack {
-                    ContentUnavailableView(
-                        "Test",
-                        systemImage: "hammer",
-                        description: Text("Test Sheet for SwiftyApp")
-                    )
+                
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // 1. Lead Developer
+                        CreditRowView(
+                            handle: "@ondyhop_verity",
+                            role: "Developer",
+                            description: "Lead developer managing architecture, feature builds, and core functionality.",
+                            avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
+                            fallbackIcon: "hammer.fill"
+                        )
+                        
+                        // 2. YouTube Creator / Contributor
+                        CreditRowView(
+                            handle: "@SHADOW_ROBLOX_RIVALS",
+                            role: "Content Creator",
+                            description: "Roblox Rivals content creator and design advisor on YouTube.",
+                            avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
+                            fallbackIcon: "play.rectangle.fill"
+                        )
+                    }
+                    .padding()
                 }
             }
-            .navigationTitle("App")
+            .navigationTitle("Credits")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -76,6 +92,69 @@ struct TestSheet: View {
             }
         }
         .presentationDetents([.large])
+    }
+}
+
+// MARK: - Credit Row Component
+struct CreditRowView: View {
+    let handle: String
+    let role: String
+    let description: String
+    let avatarURL: String
+    let fallbackIcon: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            // Profile Picture Fetcher
+            AsyncImage(url: URL(string: avatarURL)) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure, .empty:
+                    Image(systemName: fallbackIcon)
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.blue.gradient)
+                @unknown default:
+                    ProgressView()
+                }
+            }
+            .frame(width: 54, height: 54)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.primary.opacity(0.12), lineWidth: 1))
+
+            // User Info & Description
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(handle)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
+                    Text(role)
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(Color.blue.opacity(0.15)))
+                        .foregroundStyle(.blue)
+                }
+
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+        )
     }
 }
 
