@@ -97,20 +97,10 @@ private func terminateApp() {
         }
         .alert("App is in Release", isPresented: $showBetaAlert) {
             Button("OK", role: .cancel) {
-                showTermsAlert = true
+                
             }
         } message: {
             Text("This app is currently released but some features may change or be incomplete.")
-        }
-        .alert("License & Terms of Service", isPresented: $showTermsAlert) {
-            Button("Yes", role: .cancel) {
-                hasAgreedToTerms = true // Persists choice; alerts won't pop up next launch
-            }
-            Button("No", role: .destructive) {
-                terminateApp()
-            }
-        } message: {
-            Text("By pressing Yes, you agree to the License & Terms of Service.")
         }
     }
 }
