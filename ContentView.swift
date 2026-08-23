@@ -13,8 +13,9 @@ enum AppTab: Hashable {
 // MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
-    @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
+    @State private var searchText: String = ""
+    @State private var isSearching: Bool = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -52,14 +53,14 @@ struct MainTabView: View {
             }
         }
         .tint(.orange)
+        .searchable(text: $searchText, isPresented: $isSearching, prompt: "Search...")
+        .toolbarVisibility(isSearching ? .hidden : .visible, for: .tabBar)
+        .animation(.easeInOut(duration: 0.2), value: isSearching)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
-                showSearchSheet = true
-                selectedTab = oldValue // Directly restores the tab prior to search tap
+                selectedTab = oldValue // Keeps previous tab active behind search
+                isSearching = true     // Expands native .searchable interface
             }
-        }
-        .sheet(isPresented: $showSearchSheet) {
-            SearchSheetView()
         }
         .alert("App is in Beta", isPresented: $showBetaAlert) {
             Button("Got it", role: .cancel) { }
