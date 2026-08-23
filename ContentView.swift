@@ -58,7 +58,7 @@ struct TestSheet: View {
                 AppBackgroundView()
                 
                 Form {
-                    // 1. Developer Section
+                    // 1. Developer Section - YouTube
                     Section("Credits - YouTube") {
                         CreditFormRow(
                             handle: "@ondyhop_verity",
@@ -72,12 +72,14 @@ struct TestSheet: View {
                             avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
                             fallbackIcon: "hammer"
                         )
+                    }
 
+                    // 2. Developer Section - TikTok
                     Section("Credits - TikTok") {
                         CreditFormRow(
                             handle: "@rockyroad_doors",
                             description: "Main Developer",
-                            avatarURL: "https://unavatar.io/youtube/rockyroad_doors",
+                            avatarURL: "https://yt3.googleusercontent.com/Qyn1kwTNzit7rXSf9YlEASLZwmuC3O8WaENFR68c3WMkDUHrIjNMYWRyZwwYsO7KyUgjV2PpYsk=s800-c-k-c0x00ffffff-no-rj",
                             fallbackIcon: "hammer.fill"
                         )
                     }
