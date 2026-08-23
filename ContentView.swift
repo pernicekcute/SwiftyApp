@@ -83,9 +83,9 @@ struct TestSheet: View {
 
                     Section("Credits - TikTok") {
                         CreditFormRow(
-                            handle: "@rockroad_doors",
+                            handle: "@rockyroad_doors",
                             description: "Main Developer",
-                            avatarURL: "https://unavatar.io/tiktok/rockyroad_doors",
+                            avatarURL: "https://unavatar.io/youtube/rockyroad_doors",
                             fallbackIcon: "hammer.fill"
                         )
                     }
