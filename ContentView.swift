@@ -13,13 +13,12 @@ enum AppTab: Hashable {
 // MARK: - Main TabView Container (iOS 18+)
 // MARK: - Main TabView Container (iOS 18+)
 struct MainTabView: View {
+    @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
     // 1. Add state variable at the top of your view
 @State private var showTermsAlert: Bool = false
-
-    @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
 
 // Helper method for exit logic
 private func terminateApp() {
@@ -104,7 +103,7 @@ private func terminateApp() {
             Text("This app is currently released but some features may change or be incomplete.")
         }
         .alert("License & Terms of Service", isPresented: $showTermsAlert) {
-            Button("Yes") {
+            Button("Yes", role: .cancel) {
                 hasAgreedToTerms = true // Persists choice; alerts won't pop up next launch
             }
             Button("No", role: .destructive) {
