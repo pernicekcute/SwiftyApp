@@ -49,7 +49,6 @@ enum AppTab: Hashable {
     case search
 }
 
-// MARK: - Custom Search Sheet View
 struct TestSheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -58,28 +57,28 @@ struct TestSheet: View {
             ZStack {
                 AppBackgroundView()
                 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // 1. Lead Developer
-                        CreditRowView(
+                Form {
+                    // 1. Developer Section
+                    Section("Developer") {
+                        CreditFormRow(
                             handle: "@ondyhop_verity",
-                            role: "Developer",
-                            description: "Lead developer managing architecture, feature builds, and core functionality.",
+                            description: "Lead developer managing app architecture, feature builds, and core functionality.",
                             avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
                             fallbackIcon: "hammer.fill"
                         )
-                        
-                        // 2. YouTube Creator / Contributor
-                        CreditRowView(
+                    }
+                    
+                    // 2. YouTube Creator Section
+                    Section("YouTube Creator") {
+                        CreditFormRow(
                             handle: "@SHADOW_ROBLOX_RIVALS",
-                            role: "Content Creator",
                             description: "Roblox Rivals content creator and design advisor on YouTube.",
                             avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
                             fallbackIcon: "play.rectangle.fill"
                         )
                     }
-                    .padding()
                 }
+                .scrollContentBackground(.hidden) // Lets AppBackgroundView show through
             }
             .navigationTitle("Credits")
             .navigationBarTitleDisplayMode(.inline)
@@ -95,17 +94,16 @@ struct TestSheet: View {
     }
 }
 
-// MARK: - Credit Row Component
-struct CreditRowView: View {
+// MARK: - Form Row Component
+struct CreditFormRow: View {
     let handle: String
-    let role: String
     let description: String
     let avatarURL: String
     let fallbackIcon: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            // Profile Picture Fetcher
+        HStack(alignment: .top, spacing: 12) {
+            // Profile Picture
             AsyncImage(url: URL(string: avatarURL)) { phase in
                 switch phase {
                 case .success(let image):
@@ -114,7 +112,7 @@ struct CreditRowView: View {
                         .scaledToFill()
                 case .failure, .empty:
                     Image(systemName: fallbackIcon)
-                        .font(.title2)
+                        .font(.headline)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.blue.gradient)
@@ -122,39 +120,20 @@ struct CreditRowView: View {
                     ProgressView()
                 }
             }
-            .frame(width: 54, height: 54)
+            .frame(width: 44, height: 44)
             .clipShape(Circle())
-            .overlay(Circle().stroke(Color.primary.opacity(0.12), lineWidth: 1))
 
-            // User Info & Description
+            // Handle & Description
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(handle)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    Text(role)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(Capsule().fill(Color.blue.opacity(0.15)))
-                        .foregroundStyle(.blue)
-                }
-
+                Text(handle)
+                    .font(.headline)
+                
                 Text(description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.leading)
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-        )
+        .padding(.vertical, 4)
     }
 }
 
