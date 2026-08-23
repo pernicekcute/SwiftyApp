@@ -28,7 +28,6 @@ struct CustomToolbarButton: View {
                 .frame(width: 36, height: 36)
         }
         .buttonStyle(.glass)
-        .clipShape(Circle())
         .padding(.top, 4)
     }
 }
