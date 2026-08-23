@@ -28,8 +28,7 @@ struct CustomToolbarButton: View {
         Button {
             showSheet = true
         } label: {
-            Image(systemName: "person.3.fill"
-")
+            Image(systemName: "person.3.fill")
                 .frame(width: 36, height: 36)
         }
         .buttonStyle(.glass)
@@ -39,6 +38,7 @@ struct CustomToolbarButton: View {
         }
     }
 }
+
 
 // MARK: - Tab Enum
 enum AppTab: Hashable {
