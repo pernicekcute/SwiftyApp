@@ -73,14 +73,6 @@ struct TestSheet: View {
                             fallbackIcon: "hammer"
                         )
 
-                        CreditFormRow(
-                            handle: "@Pernicek_Cute",
-                            description: "UI Helper",
-                            avatarURL: "https://unavatar.io/youtube/Pernicek_Cute",
-                            fallbackIcon: "play.rectangle.fill"
-                        )
-                    }
-
                     Section("Credits - TikTok") {
                         CreditFormRow(
                             handle: "@rockyroad_doors",
