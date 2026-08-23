@@ -39,10 +39,9 @@ struct CustomToolbarButton: View {
 
 struct ExitToolbarButton: View {
     private func exitToHomeScreen() {
-        // 1. Minimize app to the Home Screen
+        // Suspends the app; note that calling exit(0) violates App Store Review Guidelines.
         UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
         
-        // 2. Terminate the app process after minimizing
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             exit(0)
         }
@@ -57,8 +56,6 @@ struct ExitToolbarButton: View {
         }
     }
 }
-
-
 
 // MARK: - Tab Enum
 enum AppTab: Hashable {
@@ -78,7 +75,6 @@ struct TestSheet: View {
                 AppBackgroundView()
                 
                 Form {
-                    // 1. Developer Section - YouTube
                     Section("Credits - YouTube") {
                         CreditFormRow(
                             handle: "@ondyhop_verity",
@@ -94,7 +90,6 @@ struct TestSheet: View {
                         )
                     }
 
-                    // 2. Developer Section - TikTok
                     Section("Credits - TikTok") {
                         CreditFormRow(
                             handle: "@rockyroad_doors",
@@ -104,7 +99,7 @@ struct TestSheet: View {
                         )
                     }
                 }
-                .scrollContentBackground(.hidden) // Lets AppBackgroundView show through
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Credits")
             .navigationBarTitleDisplayMode(.inline)
@@ -129,7 +124,6 @@ struct CreditFormRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Profile Picture
             AsyncImage(url: URL(string: avatarURL)) { phase in
                 switch phase {
                 case .success(let image):
@@ -149,7 +143,6 @@ struct CreditFormRow: View {
             .frame(width: 44, height: 44)
             .clipShape(Circle())
 
-            // Handle & Description
             VStack(alignment: .leading, spacing: 4) {
                 Text(handle)
                     .font(.headline)
@@ -168,15 +161,13 @@ struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
-    @State private var showBetaAlert: Bool = true
-    @State private var showTermsAlert: Bool = false
+    @State private var showBetaAlert: Bool = false
 
     var body: some View {
         ZStack {
             AppBackgroundView()
 
             TabView(selection: $selectedTab) {
-                // First Page: Global
                 Tab(value: AppTab.global) {
                     NavigationStack {
                         GlobalView()
@@ -186,7 +177,6 @@ struct MainTabView: View {
                         .symbolEffect(.rotate, value: selectedTab == .global)
                 }
 
-                // Second Page: Local
                 Tab(value: AppTab.second) {
                     NavigationStack {
                         SecondTabView()
@@ -196,7 +186,6 @@ struct MainTabView: View {
                         .symbolEffect(.wiggle, value: selectedTab == .second)
                 }
 
-                // Third Page: Exploits
                 Tab(value: AppTab.third) {
                     NavigationStack {
                         ExploitsTabView()
@@ -206,7 +195,6 @@ struct MainTabView: View {
                         .symbolEffect(.bounce, value: selectedTab == .third)
                 }
 
-                // Fourth Page: Other
                 Tab(value: AppTab.fourth) {
                     NavigationStack {
                         OtherTabView()
@@ -216,7 +204,6 @@ struct MainTabView: View {
                         .symbolEffect(.bounce.up, value: selectedTab == .fourth)
                 }
 
-                // Search Tab
                 Tab(value: AppTab.search, role: .search) {
                     Color.clear
                 } label: {
@@ -266,14 +253,13 @@ struct GlobalView: View {
         }
         .navigationTitle("Global")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
+            ToolbarItemGroup(placement: .topBarLeading) {
+                CustomToolbarButton()
+                ExitToolbarButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
-
-            ToolbarItem(placement: .topBarLeading) {
-        ExitToolbarButton()
-    }
         }
         .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
     }
@@ -298,14 +284,13 @@ struct SecondTabView: View {
         }
         .navigationTitle("Local")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
+            ToolbarItemGroup(placement: .topBarLeading) {
+                CustomToolbarButton()
+                ExitToolbarButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
-            ToolbarItem(placement: .topBarLeading) {
-        ExitToolbarButton()
-    }
-        }
         }
         .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
     }
@@ -402,11 +387,10 @@ struct ExploitsTabView: View {
         }
         .navigationTitle("Info about Exploits")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
-            ToolbarItem(placement: .topBarLeading) {
-        ExitToolbarButton()
-    }
-        }
+            ToolbarItemGroup(placement: .topBarLeading) {
+                CustomToolbarButton()
+                ExitToolbarButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -434,11 +418,10 @@ struct OtherTabView: View {
         }
         .navigationTitle("Other")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
-            ToolbarItem(placement: .topBarLeading) {
-        ExitToolbarButton()
-    }
-        }
+            ToolbarItemGroup(placement: .topBarLeading) {
+                CustomToolbarButton()
+                ExitToolbarButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -535,7 +518,7 @@ struct SearchSheetView: View {
                     )
 
                     Button(action: {}) { Text("Button :)") }
-                        .buttonStyle(.glass)
+                        .buttonStyle(.bordered)
                         .padding(.top, 4)
                 }
             }
