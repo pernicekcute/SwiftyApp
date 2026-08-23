@@ -1,6 +1,25 @@
 import SwiftUI
 import Foundation
 
+// MARK: - Reusable Centered Toolbar Button
+/// Edit this view to update the appearance, icon, sizing, or style of the button across all toolbars.
+struct CustomToolbarButton: View {
+    var action: () -> Void = {
+        // Default button action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "hammer")
+                .font(.system(size: 18, weight: .semibold))
+                .frame(width: 36, height: 36)
+        }
+        .buttonStyle(.glass)
+        .clipShape(Circle())
+        .padding(.top, 4)
+    }
+}
+
 // MARK: - Tab Enum
 enum AppTab: Hashable {
     case global
@@ -116,13 +135,9 @@ struct GlobalView: View {
         .navigationTitle("Global")
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Button(action: {
-                    // Button action here
-                }) {
-                    Image(systemName: "info.circle.fill")
+                CustomToolbarButton {
+                    // Custom action for GlobalView if needed
                 }
-                .buttonStyle(.glass)
-                .padding(.top, 4)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -155,13 +170,9 @@ struct SecondTabView: View {
         .navigationTitle("Local")
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Button(action: {
-                    // Button action here
-                }) {
-                    Image(systemName: "info.circle.fill")
+                CustomToolbarButton {
+                    // Custom action for SecondTabView if needed
                 }
-                .buttonStyle(.glass)
-                .padding(.top, 4)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -265,13 +276,9 @@ struct ExploitsTabView: View {
         .navigationTitle("Info about Exploits")
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Button(action: {
-                    // Button action here
-                }) {
-                    Image(systemName: "info.circle.fill")
+                CustomToolbarButton {
+                    // Custom action for ExploitsTabView if needed
                 }
-                .buttonStyle(.glass)
-                .padding(.top, 4)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -304,13 +311,9 @@ struct OtherTabView: View {
         .navigationTitle("Other")
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Button(action: {
-                    // Button action here
-                }) {
-                    Image(systemName: "info.circle.fill")
+                CustomToolbarButton {
+                    // Custom action for OtherTabView if needed
                 }
-                .buttonStyle(.glass)
-                .padding(.top, 4)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -326,7 +329,7 @@ struct OtherTabView: View {
     }
 }
 
-// MARK: - Settings Sheet View (Excluded)
+// MARK: - Settings Sheet View (Toolbar Excluded)
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title: String = ""
@@ -409,7 +412,7 @@ struct SettingsSheetView: View {
     }
 }
 
-// MARK: - Custom Search Sheet View (Excluded)
+// MARK: - Custom Search Sheet View (Toolbar Excluded)
 struct SearchSheetView: View {
     @Environment(\.dismiss) private var dismiss
 
