@@ -114,7 +114,6 @@ private func terminateApp() {
             Text("By pressing Yes, you agree to the License & Terms of Service.")
         }
     }
-    }
 }
 // MARK: - 1st Page: Global
 struct GlobalView: View {
