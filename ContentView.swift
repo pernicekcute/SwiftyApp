@@ -78,7 +78,7 @@ struct TestSheet: View {
                     Section("Credits - TikTok") {
                         CreditFormRow(
                             handle: "@rockyroad_doors",
-                            description: "Main Developer",
+                            description: "UI Helper",
                             avatarURL: "https://yt3.googleusercontent.com/Qyn1kwTNzit7rXSf9YlEASLZwmuC3O8WaENFR68c3WMkDUHrIjNMYWRyZwwYsO7KyUgjV2PpYsk=s800-c-k-c0x00ffffff-no-rj",
                             fallbackIcon: "hammer.fill"
                         )
