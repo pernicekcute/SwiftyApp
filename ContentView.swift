@@ -31,8 +31,6 @@ struct CustomToolbarButton: View {
             Image(systemName: "person.3.fill")
                 .frame(width: 36, height: 36)
         }
-        .buttonStyle(.glass)
-        .background(Color.clear)
         .sheet(isPresented: $showSheet) {
             TestSheet()
         }
