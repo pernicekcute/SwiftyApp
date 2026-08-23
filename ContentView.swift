@@ -32,6 +32,7 @@ struct CustomToolbarButton: View {
                 .frame(width: 36, height: 36)
         }
         .buttonStyle(.glass)
+        .tint(.clear)
         .sheet(isPresented: $showSheet) {
             TestSheet()
         }
