@@ -16,6 +16,18 @@ struct MainTabView: View {
     @State private var selectedTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = true
+    // 1. Add state variable at the top of your view
+@State private var showTermsAlert: Bool = false
+
+    @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
+
+// Helper method for exit logic
+private func terminateApp() {
+    UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        exit(0)
+    }
+}
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -78,18 +90,30 @@ struct MainTabView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
+        .onAppear {
+            // Only trigger the alert chain on first launch if not yet agreed
+            if !hasAgreedToTerms {
+                showBetaAlert = true
+            }
+        }
         .alert("App is in Release", isPresented: $showBetaAlert) {
-            Button("OK", role: .cancel) { }
-            Button("Exit", role: .destructive) {
-                UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    exit(0)
-                }
+            Button("OK", role: .cancel) {
+                showTermsAlert = true
             }
         } message: {
             Text("This app is currently released but some features may change or be incomplete.")
         }
+        .alert("License & Terms of Service", isPresented: $showTermsAlert) {
+            Button("Yes") {
+                hasAgreedToTerms = true // Persists choice; alerts won't pop up next launch
+            }
+            Button("No", role: .destructive) {
+                terminateApp()
+            }
+        } message: {
+            Text("By pressing Yes, you agree to the License & Terms of Service.")
+        }
+    }
     }
 }
 // MARK: - 1st Page: Global
@@ -382,7 +406,7 @@ struct SearchSheetView: View {
         description: Text("""
                           Some things are here for the app. Come back in the next update for more features.
                           
-                          Current Version: 1.1
+                          Current Version: 1.2
                           """)
     )
 
@@ -390,24 +414,10 @@ struct SearchSheetView: View {
     // Button action here
 }) {
     Text("Button :)")
-        .font(.headline)
-        .fontWeight(.semibold)
-        .foregroundStyle(.white)
-        .padding(.vertical, 14)
-        .padding(.horizontal, 28)
-        .background(
-            ZStack {
-                Capsule()
-                    .fill(.ultraThinMaterial)
-                
-                Capsule()
-                    .fill(.blue.opacity(0.85))
-            }
-        )
 }
 .buttonStyle(.borderedProminent)
                     .tint(.blue)
-    .padding(.top, 16)
+    .padding(.top, 4)
 }
             .navigationTitle("App")
             .navigationBarTitleDisplayMode(.inline)
