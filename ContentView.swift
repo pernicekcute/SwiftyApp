@@ -184,7 +184,7 @@ struct GlobalView: View {
         }
         .navigationTitle("Global")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -212,7 +212,7 @@ struct SecondTabView: View {
         }
         .navigationTitle("Local")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -312,7 +312,7 @@ struct ExploitsTabView: View {
         }
         .navigationTitle("Info about Exploits")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
@@ -340,7 +340,7 @@ struct OtherTabView: View {
         }
         .navigationTitle("Other")
         .toolbar {
-            ToolbarItem(placement: .principal) { CustomToolbarButton() }
+            ToolbarItem(placement: .topBarLeading) { CustomToolbarButton() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
