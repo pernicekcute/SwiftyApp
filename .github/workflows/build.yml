@@ -18,14 +18,23 @@ jobs:
       - name: Instalace XcodeGen 🛠️
         run: brew install xcodegen
 
-      - name: Generování Xcode Projektu (SwiftyApp.xcodeproj) 🏗️
+      - name: Generování Xcode Projektu 🏗️
         run: xcodegen generate
+
+      - name: Kontrola vygenerovaných souborů 🔍
+        run: ls -la
 
       - name: Archivace iOS aplikace (.app) 📱
         run: |
+          XCODEPROJ=$(find . -maxdepth 1 -name "*.xcodeproj" | head -n 1)
+          SCHEME=$(xcodebuild -list -project "$XCODEPROJ" | awk '/Schemes:/{flag=1; next} /^[[:space:]]*$/{flag=0} flag' | xargs | awk '{print $1}')
+          
+          echo "Používám projekt: $XCODEPROJ"
+          echo "Používám scheme: $SCHEME"
+
           xcodebuild archive \
-            -project SwiftyApp.xcodeproj \
-            -scheme SwiftyApp \
+            -project "$XCODEPROJ" \
+            -scheme "$SCHEME" \
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
             -archivePath build/SwiftyApp.xcarchive \
@@ -37,7 +46,8 @@ jobs:
       - name: Vytvoření SwiftyApp.ipa balíčku 📦
         run: |
           mkdir -p Payload
-          cp -r build/SwiftyApp.xcarchive/Products/Applications/SwiftyApp.app Payload/
+          APP_PATH=$(find build/SwiftyApp.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -n 1)
+          cp -r "$APP_PATH" Payload/
           zip -r SwiftyApp.ipa Payload
 
       - name: Nahrání SwiftyApp.ipa do GitHub Artifacts 📤
