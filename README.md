@@ -1,6 +1,8 @@
-# 🦆 iOsApp 📱✨
+# 🦆 SwiftyApp 📱✨
 
 *Moderní iOS aplikace napsaná ve Swiftu a SwiftUI s automatizovaným CI/CD sestavováním.* 🛠️⚡
+
+*Modern iOS application written in Swiftu and SwiftUI with automated CI/CD building.* 🛠️⚡
 
 [🇨🇿 Česky](#-česky) • [🇬🇧 English](#-english)
 
@@ -9,7 +11,7 @@
 ## 🇨🇿 Česky
 
 ### 📌 O projektu
-**iOsApp** je open-source iOS aplikace zaměřená na čistou architekturu, vysoký výkon a moderní vzhled. Projekt využívá SwiftUI pro deklarativní tvorbu rozhraní a je plně připraven pro automatizované sestavování `.ipa` balíčků přes GitHub Actions 🤖📦.
+**SwiftyApp** je open-source iOS aplikace zaměřená na čistou architekturu, vysoký výkon a moderní vzhled. Projekt využívá SwiftUI pro deklarativní tvorbu rozhraní a je plně připraven pro automatizované sestavování `.ipa` balíčků přes GitHub Actions 🤖📦.
 
 ### ✨ Vlastnosti
 - 🎨 **SwiftUI & Swift** – Čistý kód, moderní rozhraní a plynulé animace. 🌟
@@ -28,7 +30,7 @@
 ## 🇬🇧 English
 
 ### 📌 About The Project
-**iOsApp** is a modern iOS application built using Swift and SwiftUI. It combines clean UI design, lightweight architecture, and continuous integration workflows powered by GitHub Actions 🤖📦.
+**SwiftyApp** is a modern iOS application built using Swift and SwiftUI. It combines clean UI design, lightweight architecture, and continuous integration workflows powered by GitHub Actions 🤖📦.
 
 ### ✨ Features
 - 📱 **SwiftUI Powered** – Clean, adaptive, and modern user interface. 🌟
