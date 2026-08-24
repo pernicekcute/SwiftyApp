@@ -1,4 +1,4 @@
-name: Build iOsApp IPA 🚀
+name: Build SwiftyApp IPA 🚀
 
 on:
   push:
@@ -18,30 +18,30 @@ jobs:
       - name: Instalace XcodeGen 🛠️
         run: brew install xcodegen
 
-      - name: Generování Xcode Projektu (iOsApp.xcodeproj) 🏗️
+      - name: Generování Xcode Projektu (SwiftyApp.xcodeproj) 🏗️
         run: xcodegen generate
 
       - name: Archivace iOS aplikace (.app) 📱
         run: |
           xcodebuild archive \
-            -project iOsApp.xcodeproj \
-            -scheme iOsApp \
+            -project SwiftyApp.xcodeproj \
+            -scheme SwiftyApp \
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
-            -archivePath build/iOsApp.xcarchive \
+            -archivePath build/SwiftyApp.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             COMPILER_SIGN_INPUTS=NO
 
-      - name: Vytvoření iOsApp.ipa balíčku 📦
+      - name: Vytvoření SwiftyApp.ipa balíčku 📦
         run: |
           mkdir -p Payload
-          cp -r build/iOsApp.xcarchive/Products/Applications/iOsApp.app Payload/
-          zip -r iOsApp.ipa Payload
+          cp -r build/SwiftyApp.xcarchive/Products/Applications/SwiftyApp.app Payload/
+          zip -r SwiftyApp.ipa Payload
 
-      - name: Nahrání iOsApp.ipa do GitHub Artifacts 📤
+      - name: Nahrání SwiftyApp.ipa do GitHub Artifacts 📤
         uses: actions/upload-artifact@v4
         with:
-          name: iOsApp-IPA
-          path: iOsApp.ipa
+          name: SwiftyApp
+          path: SwiftyApp.ipa
