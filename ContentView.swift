@@ -278,7 +278,7 @@ struct SidebarMenuView: View {
     }
 }
 
-// MARK: - Main Container View (Only "App" in TabView + Sidebar)
+// MARK: - Main Container View
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab = .global
@@ -289,7 +289,6 @@ struct MainTabView: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            // Main App Container with TabView containing ONLY the "App" tab
             TabView(selection: $dummySearchTab) {
                 Tab("App", systemImage: "moon.stars.fill", value: AppTab.search) {
                     NavigationStack {
@@ -299,7 +298,6 @@ struct MainTabView: View {
             }
             .tint(.orange)
 
-            // Sidebar Slide-Over Overlay
             if showSidebar {
                 Color.black.opacity(0.35)
                     .ignoresSafeArea()
@@ -331,7 +329,7 @@ struct MainTabView: View {
     }
 
     @ViewBuilder
-    private var currentContentView: View {
+    private var currentContentView: some View {
         switch selectedTab {
         case .global:
             GlobalView(showSidebar: $showSidebar)
@@ -659,7 +657,6 @@ struct SearchSheetView: View {
                     )
 
                     Button(action: {}) { Text("Button :)") }
-                        .buttonStyle(.glass)
                         .padding(.top, 4)
                 }
             }
