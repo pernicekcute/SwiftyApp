@@ -32,14 +32,12 @@ class CertificateManager: ObservableObject {
         let status = SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
         
         if status == errSecSuccess, let items = rawItems as? [[String: Any]], let _ = items.first {
-            // Valid .p12 certificate successfully parsed
             UserDefaults.standard.set(data, forKey: certKey)
             UserDefaults.standard.set(password, forKey: passwordKey)
             isImported = true
             isValid = true
             showInvalidAlert = false
         } else {
-            // Invalid certificate or wrong password
             isImported = false
             isValid = false
             showInvalidAlert = true
@@ -288,7 +286,7 @@ struct CreditFormRow: View {
     }
 }
 
-// MARK: - Native Apple NavigationSplitView Sidebar (S automatickým importem certifikátu)
+// MARK: - Native Apple NavigationSplitView Sidebar (Vynucený import certifikátu)
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @StateObject private var certManager = CertificateManager()
@@ -296,11 +294,12 @@ struct MainTabView: View {
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
     
-    // Stavy pro automatický file importer při startu bez certifikátu
+    // Stavy pro import certifikátu a alerty
     @State private var showFileImporter: Bool = false
     @State private var certPassword: String = ""
     @State private var pendingCertData: Data? = nil
     @State private var showPasswordPrompt: Bool = false
+    @State private var showChooseCertAlert: Bool = false
 
     var body: some View {
         NavigationSplitView {
@@ -335,11 +334,17 @@ struct MainTabView: View {
             }
             certManager.checkStoredCertificate()
             
-            // Pokud certifikát chybí, automaticky vyvoláme dialog pro import
+            // Pokud certifikát chybí, hned při startu vynutíme výběr
             if !certManager.isValid {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     showFileImporter = true
                 }
+            }
+        }
+        .onChange(of: certManager.isValid) { newValue in
+            // Pokud se certifikát smaže nebo zneplatní, ihned znovu vyvoláme požadavek na import
+            if !newValue {
+                showFileImporter = true
             }
         }
         .alert("App is in Release", isPresented: $showBetaAlert) {
@@ -348,12 +353,27 @@ struct MainTabView: View {
             Text("This app is currently released but some features may change or be incomplete.")
         }
         .alert("Invalid certificate, please import a valid one.", isPresented: $certManager.showInvalidAlert) {
-            Button("OK", role: .cancel) { }
+            Button("OK", role: .cancel) {
+                // Po zavření chybového alertu znova otevřeme výběr souboru
+                showFileImporter = true
+            }
+        }
+        .alert("Choose a certificate.", isPresented: $showChooseCertAlert) {
+            Button("OK", role: .cancel) {
+                // Po potvrzení alertu se dialog pro výběr otevře znovu
+                showFileImporter = true
+            }
+        } message: {
+            Text("You must choose a valid certificate to continue using the app.")
         }
         .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.data], allowsMultipleSelection: false) { result in
             switch result {
             case .success(let urls):
-                guard let url = urls.first else { return }
+                guard let url = urls.first else {
+                    // Uživatel nic nevybral / zrušil to
+                    showChooseCertAlert = true
+                    return
+                }
                 if url.startAccessingSecurityScopedResource() {
                     defer { url.stopAccessingSecurityScopedResource() }
                     do {
@@ -363,9 +383,12 @@ struct MainTabView: View {
                     } catch {
                         certManager.showInvalidAlert = true
                     }
+                } else {
+                    showChooseCertAlert = true
                 }
             case .failure(_):
-                certManager.showInvalidAlert = true
+                // Výběr selhal nebo byl zrušen
+                showChooseCertAlert = true
             }
         }
         .alert("Enter .p12 Password", isPresented: $showPasswordPrompt) {
@@ -376,10 +399,14 @@ struct MainTabView: View {
                 }
                 certPassword = ""
                 pendingCertData = nil
+                
+                // Pokud heslo nebo certifikát selhal, ukáže se invalid alert a ten to pak hodí zpět
             }
             Button("Cancel", role: .cancel) {
                 certPassword = ""
                 pendingCertData = nil
+                // Když uživatel zruší zadávání hesla, vyvoláme alert "Choose a certificate."
+                showChooseCertAlert = true
             }
         } message: {
             Text("Please enter the password for the selected .p12 certificate file.")
