@@ -646,6 +646,7 @@ struct SearchSheetView: View {
 
                     Button(action: {}) { Text("Button :)") }
                         .padding(.top, 4)
+                    .buttonStyle(.glass)
                 }
             }
             .navigationTitle("App")
