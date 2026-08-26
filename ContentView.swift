@@ -16,9 +16,9 @@ class CertificateManager: ObservableObject {
     }
     
     func checkStoredCertificate() {
-        if let certData = UserDefaults.default?.data(forKey: certKey) {
+        if let certData = UserDefaults.standard.data(forKey: certKey) {
             isImported = true
-            validateCertificateData(certData, password: UserDefaults.default?.string(forKey: passwordKey) ?? "")
+            validateCertificateData(certData, password: UserDefaults.standard.string(forKey: passwordKey) ?? "")
         } else {
             isImported = false
             isValid = false
@@ -31,10 +31,10 @@ class CertificateManager: ObservableObject {
         
         let status = SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
         
-        if status == errSecSuccess, let items = rawItems as? [[String: Any]], let item = items.first {
+        if status == errSecSuccess, let items = rawItems as? [[String: Any]], let _ = items.first {
             // Valid .p12 certificate successfully parsed
-            UserDefaults.default?.set(data, forKey: certKey)
-            UserDefaults.default?.set(password, forKey: passwordKey)
+            UserDefaults.standard.set(data, forKey: certKey)
+            UserDefaults.standard.set(password, forKey: passwordKey)
             isImported = true
             isValid = true
             showInvalidAlert = false
@@ -60,8 +60,8 @@ class CertificateManager: ObservableObject {
     }
     
     func clearCertificate() {
-        UserDefaults.default?.removeObject(forKey: certKey)
-        UserDefaults.default?.removeObject(forKey: passwordKey)
+        UserDefaults.standard.removeObject(forKey: certKey)
+        UserDefaults.standard.removeObject(forKey: passwordKey)
         isImported = false
         isValid = false
     }
@@ -103,7 +103,7 @@ struct CustomToolbarButton: View {
     }
 }
 
-// MARK: - Reusable Centered Toolbar Button
+// MARK: - Reusable Changelog Button
 struct ChangelogBtn: View {
     @State private var showSheet = false
 
@@ -604,7 +604,7 @@ struct ExperimentsTabView: View {
                     Label("Actions", systemImage: "chevron.down.circle.fill")
                         .font(.headline)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.borderedProminent)
 
                 Text(selectedActionText)
                     .font(.subheadline)
@@ -771,7 +771,7 @@ struct SearchSheetView: View {
 
                     Button(action: {}) { Text("Button :)") }
                         .padding(.top, 4)
-                    .buttonStyle(.glass)
+                        .buttonStyle(.borderedProminent)
                 }
             }
             .navigationTitle("App")
