@@ -539,6 +539,7 @@ struct ExperimentsTabView: View {
                         .background(.thinMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                .buttonStyle(.glass)
 
                 Text(selectedActionText)
                     .font(.subheadline)
