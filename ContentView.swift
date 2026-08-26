@@ -222,22 +222,20 @@ struct CreditFormRow: View {
     }
 }
 
-// MARK: - Native Apple NavigationSplitView (Real Sidebar)
+// MARK: - Native Apple NavigationSplitView Sidebar
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab? = .global
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        NavigationSplitView {
             List(AppTab.allCases, selection: $selectedTab) { tab in
                 NavigationLink(value: tab) {
                     Label(tab.title, systemImage: tab.icon)
                 }
             }
-            .listStyle(.sidebar)
             .navigationTitle("Pages")
             .toolbar {
                 ToolbarItem(placement: .bottomBar) {
