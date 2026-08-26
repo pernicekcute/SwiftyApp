@@ -2,7 +2,7 @@
 
 *Moderní iOS aplikace napsaná ve Swiftu a SwiftUI s automatizovaným CI/CD sestavováním.* 🛠️⚡
 
-*Modern iOS application written in Swiftu and SwiftUI with automated CI/CD building.* 🛠️⚡
+*Modern iOS application written in Swift and SwiftUI with automated CI/CD building.* 🛠️⚡
 
 [🇨🇿 Česky](#-česky) • [🇬🇧 English](#-english)
 
