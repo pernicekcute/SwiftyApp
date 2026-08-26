@@ -4,7 +4,7 @@ import SwiftUI
 struct SwiftyAppApp: App {
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            ContentView()
         }
     }
 }
