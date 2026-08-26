@@ -637,7 +637,6 @@ struct SearchSheetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppBackgroundView()
                 VStack {
                     ContentUnavailableView(
                         "App",
