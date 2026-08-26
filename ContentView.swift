@@ -37,6 +37,51 @@ struct CustomToolbarButton: View {
     }
 }
 
+// MARK: - Reusable Centered Toolbar Button
+struct ChangelogBtn: View {
+    @State private var showSheet = false
+
+    var body: some View {
+        Button {
+            showSheet = true
+        } label: {
+            Image(systemName: "doc.text.fill")
+                .frame(width: 36, height: 36)
+        }
+        .sheet(isPresented: $showSheet) {
+            ChangelogSheet()
+        }
+    }
+}
+
+struct ChangelogSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                ContentUnavailableView(
+                    "Changelog",
+                    systemImage: "doc.text.fill",
+                    description: Text("Changelog is not done and currently is in this state.")
+                )
+                .listRowBackground(Color.clear)
+            }
+            .scrollContentBackground(.hidden)
+            .navigationTitle("Changelog")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: { Image(systemName: "checkmark") }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
+}
+
 struct ExitToolbarButton: View {
     private func exitToHomeScreen() {
         // Suspends the app; note that calling exit(0) violates App Store Review Guidelines.
@@ -168,49 +213,36 @@ struct MainTabView: View {
             AppBackgroundView()
 
             TabView(selection: $selectedTab) {
-                Tab(value: AppTab.global) {
-                    NavigationStack {
-                        GlobalView()
-                    }
-                } label: {
-                    Label("Global", systemImage: "globe")
-                        .symbolEffect(.rotate, value: selectedTab == .global)
-                }
-
-                Tab(value: AppTab.second) {
-                    NavigationStack {
-                        SecondTabView()
-                    }
-                } label: {
-                    Label("Local", systemImage: "iphone")
-                        .symbolEffect(.wiggle, value: selectedTab == .second)
-                }
-
-                Tab(value: AppTab.third) {
-                    NavigationStack {
-                        ExploitsTabView()
-                    }
-                } label: {
-                    Label("Exploits", systemImage: "cpu.fill")
-                        .symbolEffect(.bounce, value: selectedTab == .third)
-                }
-
-                Tab(value: AppTab.fourth) {
-                    NavigationStack {
-                        OtherTabView()
-                    }
-                } label: {
-                    Label("Other", systemImage: "book")
-                        .symbolEffect(.bounce.up, value: selectedTab == .fourth)
-                }
-
-                Tab(value: AppTab.search, role: .search) {
-                    Color.clear
-                } label: {
-                    Label("App", systemImage: "moon.stars.fill")
+            Tab("Global", systemImage: "globe", value: AppTab.global) {
+                NavigationStack {
+                    GlobalView()
                 }
             }
-            .tint(.orange)
+
+            Tab("Local", systemImage: "iphone", value: AppTab.second) {
+                NavigationStack {
+                    SecondTabView()
+                }
+            }
+
+            Tab("Exploits", systemImage: "cpu.fill", value: AppTab.third) {
+                NavigationStack {
+                    ExploitsTabView()
+                }
+            }
+
+            Tab("Other", systemImage: "book", value: AppTab.fourth) {
+                NavigationStack {
+                    OtherTabView()
+                }
+            }
+
+            Tab("App", systemImage: "moon.stars.fill", value: AppTab.search, role: .search) {
+                Color.clear
+            }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+        .tint(.orange)
         }
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .search {
@@ -257,7 +289,8 @@ struct GlobalView: View {
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ChangelogBtn()
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
         }
@@ -288,7 +321,8 @@ struct SecondTabView: View {
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ChangelogBtn()
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
         }
@@ -391,7 +425,8 @@ struct ExploitsTabView: View {
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ChangelogBtn()
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
         }
@@ -422,7 +457,8 @@ struct OtherTabView: View {
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ChangelogBtn()
                 Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
             }
         }
