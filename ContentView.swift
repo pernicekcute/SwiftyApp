@@ -8,10 +8,7 @@ struct AppBackgroundView: View {
     var body: some View {
         LinearGradient(
             colors: colorScheme == .dark
-                ? [
-                    Color(red: 0.38, green: 0.15, blue: 0.08),
-                    Color(red: 0.18, green: 0.08, blue: 0.28)
-                  ]
+                ? [Color(red: 0.38, green: 0.15, blue: 0.08), Color(red: 0.18, green: 0.08, blue: 0.28)]
                 : [Color(red: 1.00, green: 0.88, blue: 0.70), Color(red: 1.00, green: 0.98, blue: 0.75)],
             startPoint: .top,
             endPoint: .bottom
@@ -20,7 +17,7 @@ struct AppBackgroundView: View {
     }
 }
 
-// MARK: - Reusable Centered Toolbar Button
+// MARK: - Reusable Toolbar Items
 struct CustomToolbarButton: View {
     @State private var showSheet = false
 
@@ -37,7 +34,6 @@ struct CustomToolbarButton: View {
     }
 }
 
-// MARK: - Reusable Centered Toolbar Button
 struct ChangelogBtn: View {
     @State private var showSheet = false
 
@@ -54,50 +50,34 @@ struct ChangelogBtn: View {
     }
 }
 
-struct ChangelogSheet: View {
-    @Environment(\.dismiss) private var dismiss
+// MARK: - Shared Toolbar Modifier (DRY Refactor)
+struct StandardToolbarModifier: ViewModifier {
+    @Binding var showSettingsSheet: Bool
 
-    var body: some View {
-        NavigationStack {
-            Form {
-                ContentUnavailableView(
-                    "Changelog",
-                    systemImage: "doc.text.fill",
-                    description: Text("Changelog is not done and currently is in this state.")
-                )
-                .listRowBackground(Color.clear)
-            }
-            .scrollContentBackground(.hidden)
-            .navigationTitle("Changelog")
-            .navigationBarTitleDisplayMode(.inline)
+    func body(content: Content) -> some View {
+        content
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button { dismiss() } label: { Image(systemName: "checkmark") }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    CustomToolbarButton()
+                }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    ChangelogBtn()
+                    Button {
+                        showSettingsSheet = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
                 }
             }
-        }
-        .presentationDetents([.large])
+            .sheet(isPresented: $showSettingsSheet) {
+                SettingsSheetView()
+            }
     }
 }
 
-struct ExitToolbarButton: View {
-    private func exitToHomeScreen() {
-        UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            exit(0)
-        }
-    }
-    
-    var body: some View {
-        Button {
-            exitToHomeScreen()
-        } label: {
-            Image(systemName: "xmark")
-                .frame(width: 36, height: 36)
-        }
+extension View {
+    func standardToolbar(showSettingsSheet: Binding<Bool>) -> some View {
+        self.modifier(StandardToolbarModifier(showSettingsSheet: showSettingsSheet))
     }
 }
 
@@ -129,97 +109,7 @@ enum AppTab: Hashable, Identifiable, CaseIterable {
     }
 }
 
-struct TestSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                AppBackgroundView()
-                
-                Form {
-                    Section("Credits - YouTube") {
-                        CreditFormRow(
-                            handle: "@ondyhop_verity",
-                            description: "Main Developer",
-                            avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
-                            fallbackIcon: "hammer.fill"
-                        )
-                        CreditFormRow(
-                            handle: "@SHADOW_ROBLOX_RIVALS",
-                            description: "Co-Developer",
-                            avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
-                            fallbackIcon: "hammer"
-                        )
-                    }
-
-                    Section("Credits - TikTok") {
-                        CreditFormRow(
-                            handle: "@rockyroad_doors",
-                            description: "UI Helper",
-                            avatarURL: "https://yt3.googleusercontent.com/Qyn1kwTNzit7rXSf9YlEASLZwmuC3O8WaENFR68c3WMkDUHrIjNMYWRyZwwYsO7KyUgjV2PpYsk=s800-c-k-c0x00ffffff-no-rj",
-                            fallbackIcon: "hammer.fill"
-                        )
-                    }
-                }
-                .scrollContentBackground(.hidden)
-            }
-            .navigationTitle("Credits")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button { dismiss() } label: { Image(systemName: "checkmark") }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                }
-            }
-        }
-        .presentationDetents([.large])
-    }
-}
-
-// MARK: - Form Row Component
-struct CreditFormRow: View {
-    let handle: String
-    let description: String
-    let avatarURL: String
-    let fallbackIcon: String
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            AsyncImage(url: URL(string: avatarURL)) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure, .empty:
-                    Image(systemName: fallbackIcon)
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.blue.gradient)
-                @unknown default:
-                    ProgressView()
-                }
-            }
-            .frame(width: 44, height: 44)
-            .clipShape(Circle())
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(handle)
-                    .font(.headline)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-}
-
-// MARK: - Native Apple NavigationSplitView
+// MARK: - Main Tab View
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab? = .global
@@ -238,13 +128,13 @@ struct MainTabView: View {
             .navigationTitle("Pages")
             .toolbar {
                 ToolbarItem(placement: .bottomBar) {
-    Button {
-        showSearchSheet = true
-    } label: {
-        Label("App Info", systemImage: "moon.stars.fill")
-    }
-    .tint(.orange)
-}
+                    Button {
+                        showSearchSheet = true
+                    } label: {
+                        Label("App Info", systemImage: "moon.stars.fill")
+                    }
+                    .tint(.orange)
+                }
             }
         } detail: {
             NavigationStack {
@@ -282,7 +172,7 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - 1st Page: Global
+// MARK: - Views
 struct GlobalView: View {
     @State private var showSettingsSheet = false
 
@@ -300,21 +190,10 @@ struct GlobalView: View {
             .padding()
         }
         .navigationTitle("Global")
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) {
-                CustomToolbarButton()
-                ExitToolbarButton()
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                ChangelogBtn()
-                Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
-            }
-        }
-        .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
+        .standardToolbar(showSettingsSheet: $showSettingsSheet)
     }
 }
 
-// MARK: - 2nd Page: Local
 struct SecondTabView: View {
     @State private var showSettingsSheet = false
 
@@ -332,21 +211,10 @@ struct SecondTabView: View {
             .padding()
         }
         .navigationTitle("Local")
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) {
-                CustomToolbarButton()
-                ExitToolbarButton()
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                ChangelogBtn()
-                Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
-            }
-        }
-        .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
+        .standardToolbar(showSettingsSheet: $showSettingsSheet)
     }
 }
 
-// MARK: - 3rd Page: Exploits
 struct ExploitsTabView: View {
     @State private var showSettingsSheet = false
 
@@ -436,21 +304,10 @@ struct ExploitsTabView: View {
             .scrollContentBackground(.hidden)
         }
         .navigationTitle("Info about Exploits")
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) {
-                CustomToolbarButton()
-                ExitToolbarButton()
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                ChangelogBtn()
-                Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
-            }
-        }
-        .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
+        .standardToolbar(showSettingsSheet: $showSettingsSheet)
     }
 }
 
-// MARK: - 4th Page: Other
 struct OtherTabView: View {
     @State private var showSettingsSheet = false
 
@@ -468,21 +325,88 @@ struct OtherTabView: View {
             .padding()
         }
         .navigationTitle("Other")
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) {
-                CustomToolbarButton()
-                ExitToolbarButton()
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                ChangelogBtn()
-                Button { showSettingsSheet = true } label: { Image(systemName: "gear") }
-            }
-        }
-        .sheet(isPresented: $showSettingsSheet) { SettingsSheetView() }
+        .standardToolbar(showSettingsSheet: $showSettingsSheet)
     }
 }
 
-// MARK: - Settings Sheet View
+// MARK: - Sheets
+struct TestSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                AppBackgroundView()
+                
+                Form {
+                    Section("Credits - YouTube") {
+                        CreditFormRow(
+                            handle: "@ondyhop_verity",
+                            description: "Main Developer",
+                            avatarURL: "https://unavatar.io/youtube/ondyhop_verity",
+                            fallbackIcon: "hammer.fill"
+                        )
+                        CreditFormRow(
+                            handle: "@SHADOW_ROBLOX_RIVALS",
+                            description: "Co-Developer",
+                            avatarURL: "https://unavatar.io/youtube/SHADOW_ROBLOX_RIVALS",
+                            fallbackIcon: "hammer"
+                        )
+                    }
+
+                    Section("Credits - TikTok") {
+                        CreditFormRow(
+                            handle: "@rockyroad_doors",
+                            description: "UI Helper",
+                            avatarURL: "https://yt3.googleusercontent.com/Qyn1kwTNzit7rXSf9YlEASLZwmuC3O8WaENFR68c3WMkDUHrIjNMYWRyZwwYsO7KyUgjV2PpYsk=s800-c-k-c0x00ffffff-no-rj",
+                            fallbackIcon: "hammer.fill"
+                        )
+                    }
+                }
+                .scrollContentBackground(.hidden)
+            }
+            .navigationTitle("Credits")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: { Image(systemName: "checkmark") }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
+}
+
+struct ChangelogSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                ContentUnavailableView(
+                    "Changelog",
+                    systemImage: "doc.text.fill",
+                    description: Text("Changelog is not done and currently is in this state.")
+                )
+                .listRowBackground(Color.clear)
+            }
+            .scrollContentBackground(.hidden)
+            .navigationTitle("Changelog")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: { Image(systemName: "checkmark") }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
+}
+
 struct SettingsSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title: String = ""
@@ -554,7 +478,6 @@ struct SettingsSheetView: View {
     }
 }
 
-// MARK: - Custom Search Sheet View
 struct SearchSheetView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -571,6 +494,7 @@ struct SearchSheetView: View {
 
                     Button(action: {}) { Text("Button :)") }
                         .padding(.top, 4)
+                    .buttonStyle(.glass)
                 }
             }
             .navigationTitle("App")
@@ -584,6 +508,46 @@ struct SearchSheetView: View {
             }
         }
         .presentationDetents([.large])
+    }
+}
+
+struct CreditFormRow: View {
+    let handle: String
+    let description: String
+    let avatarURL: String
+    let fallbackIcon: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            AsyncImage(url: URL(string: avatarURL)) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure, .empty:
+                    Image(systemName: fallbackIcon)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.blue.gradient)
+                @unknown default:
+                    ProgressView()
+                }
+            }
+            .frame(width: 44, height: 44)
+            .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(handle)
+                    .font(.headline)
+                
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 
