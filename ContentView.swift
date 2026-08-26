@@ -534,10 +534,6 @@ struct ExperimentsTabView: View {
                 } label: {
                     Label("Actions", systemImage: "chevron.down.circle.fill")
                         .font(.headline)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(.thinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.glass)
 
