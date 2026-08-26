@@ -288,13 +288,19 @@ struct CreditFormRow: View {
     }
 }
 
-// MARK: - Native Apple NavigationSplitView Sidebar
+// MARK: - Native Apple NavigationSplitView Sidebar (S automatickým importem certifikátu)
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @StateObject private var certManager = CertificateManager()
     @State private var selectedTab: AppTab? = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
+    
+    // Stavy pro automatický file importer při startu bez certifikátu
+    @State private var showFileImporter: Bool = false
+    @State private var certPassword: String = ""
+    @State private var pendingCertData: Data? = nil
+    @State private var showPasswordPrompt: Bool = false
 
     var body: some View {
         NavigationSplitView {
@@ -328,6 +334,13 @@ struct MainTabView: View {
                 showBetaAlert = true
             }
             certManager.checkStoredCertificate()
+            
+            // Pokud certifikát chybí, automaticky vyvoláme dialog pro import
+            if !certManager.isValid {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showFileImporter = true
+                }
+            }
         }
         .alert("App is in Release", isPresented: $showBetaAlert) {
             Button("OK", role: .cancel) { }
@@ -336,6 +349,40 @@ struct MainTabView: View {
         }
         .alert("Invalid certificate, please import a valid one.", isPresented: $certManager.showInvalidAlert) {
             Button("OK", role: .cancel) { }
+        }
+        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.data], allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                if url.startAccessingSecurityScopedResource() {
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    do {
+                        let data = try Data(contentsOf: url)
+                        pendingCertData = data
+                        showPasswordPrompt = true
+                    } catch {
+                        certManager.showInvalidAlert = true
+                    }
+                }
+            case .failure(_):
+                certManager.showInvalidAlert = true
+            }
+        }
+        .alert("Enter .p12 Password", isPresented: $showPasswordPrompt) {
+            SecureField("Password", text: $certPassword)
+            Button("Import") {
+                if let data = pendingCertData {
+                    certManager.saveAndValidateCertificate(data: data, password: certPassword)
+                }
+                certPassword = ""
+                pendingCertData = nil
+            }
+            Button("Cancel", role: .cancel) {
+                certPassword = ""
+                pendingCertData = nil
+            }
+        } message: {
+            Text("Please enter the password for the selected .p12 certificate file.")
         }
     }
 
