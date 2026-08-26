@@ -1,5 +1,71 @@
 import SwiftUI
 import Foundation
+import Security
+
+// MARK: - Certificate Manager
+class CertificateManager: ObservableObject {
+    @Published var isImported: Bool = false
+    @Published var isValid: Bool = false
+    @Published var showInvalidAlert: Bool = false
+    
+    private let certKey = "stored_p12_certificate_data"
+    private let passwordKey = "stored_p12_password"
+    
+    init() {
+        checkStoredCertificate()
+    }
+    
+    func checkStoredCertificate() {
+        if let certData = UserDefaults.default?.data(forKey: certKey) {
+            isImported = true
+            validateCertificateData(certData, password: UserDefaults.default?.string(forKey: passwordKey) ?? "")
+        } else {
+            isImported = false
+            isValid = false
+        }
+    }
+    
+    func saveAndValidateCertificate(data: Data, password: String) {
+        let options: [String: Any] = [kSecImportExportPassphrase as String: password]
+        var rawItems: CFArray?
+        
+        let status = SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
+        
+        if status == errSecSuccess, let items = rawItems as? [[String: Any]], let item = items.first {
+            // Valid .p12 certificate successfully parsed
+            UserDefaults.default?.set(data, forKey: certKey)
+            UserDefaults.default?.set(password, forKey: passwordKey)
+            isImported = true
+            isValid = true
+            showInvalidAlert = false
+        } else {
+            // Invalid certificate or wrong password
+            isImported = false
+            isValid = false
+            showInvalidAlert = true
+        }
+    }
+    
+    private func validateCertificateData(_ data: Data, password: String) {
+        let options: [String: Any] = [kSecImportExportPassphrase as String: password]
+        var rawItems: CFArray?
+        let status = SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
+        
+        if status == errSecSuccess {
+            isValid = true
+        } else {
+            isValid = false
+            showInvalidAlert = true
+        }
+    }
+    
+    func clearCertificate() {
+        UserDefaults.default?.removeObject(forKey: certKey)
+        UserDefaults.default?.removeObject(forKey: passwordKey)
+        isImported = false
+        isValid = false
+    }
+}
 
 // MARK: - Dynamic App Background
 struct AppBackgroundView: View {
@@ -225,6 +291,7 @@ struct CreditFormRow: View {
 // MARK: - Native Apple NavigationSplitView Sidebar
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
+    @StateObject private var certManager = CertificateManager()
     @State private var selectedTab: AppTab? = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
@@ -260,11 +327,15 @@ struct MainTabView: View {
             if !hasAgreedToTerms {
                 showBetaAlert = true
             }
+            certManager.checkStoredCertificate()
         }
         .alert("App is in Release", isPresented: $showBetaAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("This app is currently released but some features may change or be incomplete.")
+        }
+        .alert("Invalid certificate, please import a valid one.", isPresented: $certManager.showInvalidAlert) {
+            Button("OK", role: .cancel) { }
         }
     }
 
@@ -563,6 +634,12 @@ struct SettingsSheetView: View {
     @State private var message: String = ""
     @State private var buttonTitle: String = ""
     @State private var isShowingAlert: Bool = false
+    @State private var showFileImporter: Bool = false
+    @State private var certPassword: String = ""
+    @State private var pendingCertData: Data? = nil
+    @State private var showPasswordPrompt: Bool = false
+
+    @StateObject private var certManager = CertificateManager()
 
     private var sysVer: String { UIDevice.current.systemVersion }
 
@@ -582,12 +659,25 @@ struct SettingsSheetView: View {
             ZStack {
                 AppBackgroundView()
                 Form {
-                    ContentUnavailableView(
-                        "Settings",
-                        systemImage: "gear",
-                        description: Text("Settings is not done and currently is in this state.")
-                    )
-                    .listRowBackground(Color.clear)
+                    Section("Certificate Status") {
+                        HStack {
+                            Label("Certificate", systemImage: certManager.isValid ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
+                            Spacer()
+                            Text(certManager.isValid ? "Certificate Imported!" : "Import a valid certificate.")
+                                .foregroundStyle(certManager.isValid ? .green : .red)
+                        }
+                        
+                        Button(certManager.isValid ? "Change .p12 Certificate" : "Import .p12 Certificate") {
+                            showFileImporter = true
+                        }
+                        
+                        if certManager.isValid {
+                            Button("Remove Certificate", role: .destructive) {
+                                certManager.clearCertificate()
+                            }
+                        }
+                    }
+                    .listRowBackground(Color.white.opacity(0.15))
 
                     Section("Info") {
                         LabeledContent { Text(sysVer) } label: { Label("iOS Version", systemImage: "iphone") }
@@ -617,6 +707,43 @@ struct SettingsSheetView: View {
                         .buttonStyle(.borderedProminent)
                         .tint(.blue)
                 }
+            }
+            .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.data], allowsMultipleSelection: false) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    if url.startAccessingSecurityScopedResource() {
+                        defer { url.stopAccessingSecurityScopedResource() }
+                        do {
+                            let data = try Data(contentsOf: url)
+                            pendingCertData = data
+                            showPasswordPrompt = true
+                        } catch {
+                            certManager.showInvalidAlert = true
+                        }
+                    }
+                case .failure(_):
+                    certManager.showInvalidAlert = true
+                }
+            }
+            .alert("Enter .p12 Password", isPresented: $showPasswordPrompt) {
+                SecureField("Password", text: $certPassword)
+                Button("Import") {
+                    if let data = pendingCertData {
+                        certManager.saveAndValidateCertificate(data: data, password: certPassword)
+                    }
+                    certPassword = ""
+                    pendingCertData = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    certPassword = ""
+                    pendingCertData = nil
+                }
+            } message: {
+                Text("Please enter the password for the selected .p12 certificate file.")
+            }
+            .alert("Invalid certificate, please import a valid one.", isPresented: $certManager.showInvalidAlert) {
+                Button("OK", role: .cancel) { }
             }
             .alert(title.isEmpty ? "Alert" : title, isPresented: $isShowingAlert) {
                 Button(buttonTitle.isEmpty ? "OK" : buttonTitle) { }
