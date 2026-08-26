@@ -9,10 +9,10 @@ struct AppBackgroundView: View {
         LinearGradient(
             colors: colorScheme == .dark
                 ? [
-                    Color(red: 0.38, green: 0.15, blue: 0.08), // Dark Orange
-                    Color(red: 0.18, green: 0.08, blue: 0.28)  // Dark Sunset Purple
+                    Color(red: 0.38, green: 0.15, blue: 0.08),
+                    Color(red: 0.18, green: 0.08, blue: 0.28)
                   ]
-                : [Color(red: 1.00, green: 0.88, blue: 0.70), Color(red: 1.00, green: 0.98, blue: 0.75)], // Light Orange & Light Yellow
+                : [Color(red: 1.00, green: 0.88, blue: 0.70), Color(red: 1.00, green: 0.98, blue: 0.75)],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -102,12 +102,13 @@ struct ExitToolbarButton: View {
 }
 
 // MARK: - Tab Enum
-enum AppTab: Hashable {
+enum AppTab: Hashable, Identifiable, CaseIterable {
     case global
     case second
     case third
     case fourth
-    case search
+    
+    var id: Self { self }
     
     var title: String {
         switch self {
@@ -115,7 +116,15 @@ enum AppTab: Hashable {
         case .second: return "Local"
         case .third: return "Exploits"
         case .fourth: return "Other"
-        case .search: return "App"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .global: return "globe"
+        case .second: return "iphone"
+        case .third: return "cpu.fill"
+        case .fourth: return "book"
         }
     }
 }
@@ -210,109 +219,39 @@ struct CreditFormRow: View {
     }
 }
 
-// MARK: - Slide-Over Sidebar Drawer
-struct SidebarMenuView: View {
-    @Binding var selectedTab: AppTab
-    @Binding var isPresented: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("Pages")
-                    .font(.title2)
-                    .bold()
-                Spacer()
-                Button {
-                    withAnimation(.easeInOut) { isPresented = false }
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding()
-
-            Divider()
-
-            List {
-                Button {
-                    select(.global)
-                } label: {
-                    Label("Global", systemImage: "globe")
-                        .foregroundStyle(selectedTab == .global ? .orange : .primary)
-                }
-
-                Button {
-                    select(.second)
-                } label: {
-                    Label("Local", systemImage: "iphone")
-                        .foregroundStyle(selectedTab == .second ? .orange : .primary)
-                }
-
-                Button {
-                    select(.third)
-                } label: {
-                    Label("Exploits", systemImage: "cpu.fill")
-                        .foregroundStyle(selectedTab == .third ? .orange : .primary)
-                }
-
-                Button {
-                    select(.fourth)
-                } label: {
-                    Label("Other", systemImage: "book")
-                        .foregroundStyle(selectedTab == .fourth ? .orange : .primary)
-                }
-            }
-            .listStyle(.plain)
-        }
-        .frame(width: 270)
-        .frame(maxHeight: .infinity)
-        .background(.regularMaterial)
-    }
-
-    private func select(_ tab: AppTab) {
-        selectedTab = tab
-        withAnimation(.easeInOut) {
-            isPresented = false
-        }
-    }
-}
-
-// MARK: - Main Container View
+// MARK: - Native Apple NavigationSplitView
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
-    @State private var selectedTab: AppTab = .global
+    @State private var selectedTab: AppTab? = .global
+    @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
-    @State private var showSidebar: Bool = false
-    @State private var dummySearchTab: AppTab = .search
 
     var body: some View {
-        ZStack(alignment: .leading) {
-            TabView(selection: $dummySearchTab) {
-                Tab("App", systemImage: "moon.stars.fill", value: AppTab.search) {
-                    NavigationStack {
-                        currentContentView
-                    }
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            List(AppTab.allCases, selection: $selectedTab) { tab in
+                NavigationLink(value: tab) {
+                    Label(tab.title, systemImage: tab.icon)
                 }
             }
-            .tint(.orange)
-
-            if showSidebar {
-                Color.black.opacity(0.35)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.easeInOut) { showSidebar = false }
-                    }
-
-                SidebarMenuView(selectedTab: $selectedTab, isPresented: $showSidebar)
-                    .transition(.move(edge: .leading))
-                    .zIndex(1)
+            .listStyle(.sidebar)
+            .navigationTitle("Pages")
+            .toolbar {
+                ToolbarItem(placement: .bottomBar) {
+    Button {
+        showSearchSheet = true
+    } label: {
+        Label("App Info", systemImage: "moon.stars.fill")
+    }
+    .tint(.orange)
+}
+            }
+        } detail: {
+            NavigationStack {
+                currentContentView
             }
         }
-        .onChange(of: dummySearchTab) { _, _ in
-            showSearchSheet = true
-        }
+        .accentColor(.orange)
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
         }
@@ -331,23 +270,20 @@ struct MainTabView: View {
     @ViewBuilder
     private var currentContentView: some View {
         switch selectedTab {
-        case .global:
-            GlobalView(showSidebar: $showSidebar)
+        case .global, .none:
+            GlobalView()
         case .second:
-            SecondTabView(showSidebar: $showSidebar)
+            SecondTabView()
         case .third:
-            ExploitsTabView(showSidebar: $showSidebar)
+            ExploitsTabView()
         case .fourth:
-            OtherTabView(showSidebar: $showSidebar)
-        case .search:
-            GlobalView(showSidebar: $showSidebar)
+            OtherTabView()
         }
     }
 }
 
 // MARK: - 1st Page: Global
 struct GlobalView: View {
-    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -366,11 +302,6 @@ struct GlobalView: View {
         .navigationTitle("Global")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
-                Button {
-                    withAnimation(.easeInOut) { showSidebar.toggle() }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -385,7 +316,6 @@ struct GlobalView: View {
 
 // MARK: - 2nd Page: Local
 struct SecondTabView: View {
-    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -404,11 +334,6 @@ struct SecondTabView: View {
         .navigationTitle("Local")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
-                Button {
-                    withAnimation(.easeInOut) { showSidebar.toggle() }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -423,7 +348,6 @@ struct SecondTabView: View {
 
 // MARK: - 3rd Page: Exploits
 struct ExploitsTabView: View {
-    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -514,11 +438,6 @@ struct ExploitsTabView: View {
         .navigationTitle("Info about Exploits")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
-                Button {
-                    withAnimation(.easeInOut) { showSidebar.toggle() }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -533,7 +452,6 @@ struct ExploitsTabView: View {
 
 // MARK: - 4th Page: Other
 struct OtherTabView: View {
-    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -552,11 +470,6 @@ struct OtherTabView: View {
         .navigationTitle("Other")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
-                Button {
-                    withAnimation(.easeInOut) { showSidebar.toggle() }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
