@@ -84,7 +84,6 @@ struct ChangelogSheet: View {
 
 struct ExitToolbarButton: View {
     private func exitToHomeScreen() {
-        // Suspends the app; note that calling exit(0) violates App Store Review Guidelines.
         UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -109,6 +108,16 @@ enum AppTab: Hashable {
     case third
     case fourth
     case search
+    
+    var title: String {
+        switch self {
+        case .global: return "Global"
+        case .second: return "Local"
+        case .third: return "Exploits"
+        case .fourth: return "Other"
+        case .search: return "App"
+        }
+    }
 }
 
 struct TestSheet: View {
@@ -201,54 +210,110 @@ struct CreditFormRow: View {
     }
 }
 
-// MARK: - Main TabView Container (iOS 18+)
+// MARK: - Slide-Over Sidebar Drawer
+struct SidebarMenuView: View {
+    @Binding var selectedTab: AppTab
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Pages")
+                    .font(.title2)
+                    .bold()
+                Spacer()
+                Button {
+                    withAnimation(.easeInOut) { isPresented = false }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+
+            Divider()
+
+            List {
+                Button {
+                    select(.global)
+                } label: {
+                    Label("Global", systemImage: "globe")
+                        .foregroundStyle(selectedTab == .global ? .orange : .primary)
+                }
+
+                Button {
+                    select(.second)
+                } label: {
+                    Label("Local", systemImage: "iphone")
+                        .foregroundStyle(selectedTab == .second ? .orange : .primary)
+                }
+
+                Button {
+                    select(.third)
+                } label: {
+                    Label("Exploits", systemImage: "cpu.fill")
+                        .foregroundStyle(selectedTab == .third ? .orange : .primary)
+                }
+
+                Button {
+                    select(.fourth)
+                } label: {
+                    Label("Other", systemImage: "book")
+                        .foregroundStyle(selectedTab == .fourth ? .orange : .primary)
+                }
+            }
+            .listStyle(.plain)
+        }
+        .frame(width: 270)
+        .frame(maxHeight: .infinity)
+        .background(.regularMaterial)
+    }
+
+    private func select(_ tab: AppTab) {
+        selectedTab = tab
+        withAnimation(.easeInOut) {
+            isPresented = false
+        }
+    }
+}
+
+// MARK: - Main Container View (Only "App" in TabView + Sidebar)
 struct MainTabView: View {
     @AppStorage("hasAgreedToTerms") private var hasAgreedToTerms: Bool = false
     @State private var selectedTab: AppTab = .global
     @State private var showSearchSheet: Bool = false
     @State private var showBetaAlert: Bool = false
+    @State private var showSidebar: Bool = false
+    @State private var dummySearchTab: AppTab = .search
 
     var body: some View {
-        ZStack {
-            AppBackgroundView()
-
-            TabView(selection: $selectedTab) {
-            Tab("Global", systemImage: "globe", value: AppTab.global) {
-                NavigationStack {
-                    GlobalView()
+        ZStack(alignment: .leading) {
+            // Main App Container with TabView containing ONLY the "App" tab
+            TabView(selection: $dummySearchTab) {
+                Tab("App", systemImage: "moon.stars.fill", value: AppTab.search) {
+                    NavigationStack {
+                        currentContentView
+                    }
                 }
             }
+            .tint(.orange)
 
-            Tab("Local", systemImage: "iphone", value: AppTab.second) {
-                NavigationStack {
-                    SecondTabView()
-                }
-            }
+            // Sidebar Slide-Over Overlay
+            if showSidebar {
+                Color.black.opacity(0.35)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeInOut) { showSidebar = false }
+                    }
 
-            Tab("Exploits", systemImage: "cpu.fill", value: AppTab.third) {
-                NavigationStack {
-                    ExploitsTabView()
-                }
-            }
-
-            Tab("Other", systemImage: "book", value: AppTab.fourth) {
-                NavigationStack {
-                    OtherTabView()
-                }
-            }
-
-            Tab("App", systemImage: "moon.stars.fill", value: AppTab.search, role: .search) {
-                Color.clear
+                SidebarMenuView(selectedTab: $selectedTab, isPresented: $showSidebar)
+                    .transition(.move(edge: .leading))
+                    .zIndex(1)
             }
         }
-        .tabViewStyle(.sidebarAdaptable)
-        .tint(.orange)
-        }
-        .onChange(of: selectedTab) { oldValue, newValue in
-            if newValue == .search {
-                showSearchSheet = true
-                selectedTab = oldValue
-            }
+        .onChange(of: dummySearchTab) { _, _ in
+            showSearchSheet = true
         }
         .sheet(isPresented: $showSearchSheet) {
             SearchSheetView()
@@ -264,10 +329,27 @@ struct MainTabView: View {
             Text("This app is currently released but some features may change or be incomplete.")
         }
     }
+
+    @ViewBuilder
+    private var currentContentView: View {
+        switch selectedTab {
+        case .global:
+            GlobalView(showSidebar: $showSidebar)
+        case .second:
+            SecondTabView(showSidebar: $showSidebar)
+        case .third:
+            ExploitsTabView(showSidebar: $showSidebar)
+        case .fourth:
+            OtherTabView(showSidebar: $showSidebar)
+        case .search:
+            GlobalView(showSidebar: $showSidebar)
+        }
+    }
 }
 
 // MARK: - 1st Page: Global
 struct GlobalView: View {
+    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -286,6 +368,11 @@ struct GlobalView: View {
         .navigationTitle("Global")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
+                Button {
+                    withAnimation(.easeInOut) { showSidebar.toggle() }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -300,6 +387,7 @@ struct GlobalView: View {
 
 // MARK: - 2nd Page: Local
 struct SecondTabView: View {
+    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -318,6 +406,11 @@ struct SecondTabView: View {
         .navigationTitle("Local")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
+                Button {
+                    withAnimation(.easeInOut) { showSidebar.toggle() }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -332,6 +425,7 @@ struct SecondTabView: View {
 
 // MARK: - 3rd Page: Exploits
 struct ExploitsTabView: View {
+    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -422,6 +516,11 @@ struct ExploitsTabView: View {
         .navigationTitle("Info about Exploits")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
+                Button {
+                    withAnimation(.easeInOut) { showSidebar.toggle() }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
@@ -436,6 +535,7 @@ struct ExploitsTabView: View {
 
 // MARK: - 4th Page: Other
 struct OtherTabView: View {
+    @Binding var showSidebar: Bool
     @State private var showSettingsSheet = false
 
     var body: some View {
@@ -454,6 +554,11 @@ struct OtherTabView: View {
         .navigationTitle("Other")
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
+                Button {
+                    withAnimation(.easeInOut) { showSidebar.toggle() }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
                 CustomToolbarButton()
                 ExitToolbarButton()
             }
