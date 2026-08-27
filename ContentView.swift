@@ -2,30 +2,53 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @State private var showBootScreen = true
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            VStack(spacing: 20) {
-                Text("Welcome!")
-                    .font(.title2)
-                    .bold()
-                
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                
-                Text("Hello, world!")
-            }
-            .tabItem {
-                Label("Home", systemImage: "house.fill")
-            }
-            .tag(0)
-
-            TabBarView()
-                .tabItem {
-                    Label("TabBar", systemImage: "list.dash")
+        ZStack {
+            TabView(selection: $selectedTab) {
+                VStack(spacing: 20) {
+                    Text("Welcome!")
+                        .font(.title2)
+                        .bold()
+                    
+                    Image(systemName: "globe")
+                        .imageScale(.large)
+                        .foregroundStyle(.tint)
+                    
+                    Text("Hello, world!")
                 }
-                .tag(1)
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+
+                TabBarView()
+                    .tabItem {
+                        Label("TabBar", systemImage: "list.dash")
+                    }
+                    .tag(1)
+            }
+            
+            if showBootScreen {
+                ZStack {
+                    Color.black
+                        .ignoresSafeArea()
+                    
+                    Image("iOSbootscr")
+                        .resizable()
+                        .scaledToFit()
+                        .ignoresSafeArea()
+                }
+                .zIndex(10)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            showBootScreen = false
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -49,7 +72,7 @@ struct TabBarView: View {
                     Text("Here's the Overview page!")
                         .font(.headline)
                 } else {
-                        Text("Here's the Settings page!")
+                    Text("Here's the Settings page!")
                         .font(.headline)
                 }
 
