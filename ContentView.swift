@@ -25,7 +25,7 @@ struct ContentView: View {
                 }
                 .tag(1)
             }
-            .tabViewStyle(.page(indexDisplayMode: .none))
+            .tabViewStyle(.page)
         }
         .padding()
     }
