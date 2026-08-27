@@ -5,6 +5,7 @@ options:
     iOS: "26.0"
 
 targets:
+  # 1. Hlavní iOS Aplikace 📱
   iOsApp:
     type: application
     platform: iOS
@@ -13,6 +14,8 @@ targets:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
       - path: Assets.xcassets
+    dependencies:
+      - target: ControlCenterWidgs
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
@@ -24,3 +27,24 @@ targets:
         INFOPLIST_KEY_UIDesignRequiresCompatibility: true
         CODE_SIGNING_ALLOWED: "NO"
         CODE_SIGNING_REQUIRED: "NO"
+
+  # 2. Control Center Extension Target 🎛️ widgety
+  ControlCenterWidgs:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: ControlCenterWidgs
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp.ControlCenterWidgs
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: "Control Center Widget"
+        INFOPLIST_KEY_NSExtension:
+          NSExtensionPointIdentifier: "com.apple.widgetkit-extension"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: AppIntents.framework
