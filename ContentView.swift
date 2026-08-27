@@ -5,17 +5,17 @@ struct ContentView: View {
         VStack {
             TabView {
                 Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-                .tabItem {
-                    Text("Globe")
-                }
-            
-            Text("Hello, world!")
-                .tabItem {
-                    Text("Test")
-                }
-        
+                    .imageScale(.large)
+                    .foregroundStyle(.tint)
+                    .tabItem {
+                        Label("Globe", systemImage: "globe") // Bonus: přidána ikona do tabu! 🌍
+                    }
+                
+                Text("Hello, world!")
+                    .tabItem {
+                        Label("Test", systemImage: "star.fill") // Bonus: přidána ikona do tabu! ⭐
+                    }
+            }
         }
         .padding()
     }
