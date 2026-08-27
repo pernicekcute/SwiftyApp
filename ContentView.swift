@@ -35,7 +35,7 @@ struct ContentView: View {
                     Color.black
                         .ignoresSafeArea()
                     
-                    Image("iOSbootscr")
+                    Image("IMG_0143")
                         .resizable()
                         .scaledToFit()
                         .ignoresSafeArea()
