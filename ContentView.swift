@@ -4,12 +4,19 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // Černé pozadí přes celou obrazovku ⬛️
-            Color(red: 0, green: 0, blue: 0)
+            Color.black
                 .ignoresSafeArea() 
             
-            // Načítací spinner uprostřed ⏳
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle()) // Bílý spinner, aby byl na černém pozadí vidět ⚪️
+            VStack(spacing: 20) {
+                // Skutečný točící se spinner ⏳
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                
+                // Nápis s bílou barvou a hezkým systémovým fontem 🔤
+                Text("Restarting iOS...")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white)
+            }
         }
     }
 }
