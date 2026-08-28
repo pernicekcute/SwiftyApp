@@ -1,4 +1,4 @@
-Name: SwiftyApp
+name: SwiftyApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
