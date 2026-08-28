@@ -14,7 +14,6 @@ targets:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
       - path: Assets.xcassets
-      - path: SysDialog.swift
     dependencies:
       - target: ControlCenterWidgs
     settings:
