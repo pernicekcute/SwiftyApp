@@ -9,7 +9,7 @@ struct ContentView: View {
             
             // Načítací spinner uprostřed ⏳
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Bílý spinner, aby byl na černém pozadí vidět ⚪️
+                .progressViewStyle(CircularProgressViewStyle()) // Bílý spinner, aby byl na černém pozadí vidět ⚪️
         }
     }
 }
