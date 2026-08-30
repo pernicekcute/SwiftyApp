@@ -100,7 +100,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 struct BottomSheetView: View {
     @State private var searchText: String = ""
     @State private var showProfile = false
-    @State private var rawSearchDatabase: [String] = ["Loading from GitHub... ⏳"]
+    @State private var rawSearchDatabase: [String] = []
     
     @Binding var selectedDetent: PresentationDetent
     @Binding var userName: String
@@ -108,7 +108,7 @@ struct BottomSheetView: View {
 
     var filteredResults: [String] {
         if searchText.isEmpty {
-            return rawSearchDatabase
+            return []
         } else {
             return rawSearchDatabase.filter { $0.localizedCaseInsensitiveContains(searchText) }
         }
@@ -120,16 +120,15 @@ struct BottomSheetView: View {
                 if selectedDetent != .height(80) {
                     Divider()
                     
-                    // Form displaying the raw text fetched directly from GitHub search.txt
+                    // Form displays content ONLY when user is actively searching
                     Form {
                         if searchText.isEmpty {
-                            Section(header: Text("From GitHub (search.txt)")) {
-                                ForEach(rawSearchDatabase, id: \.self) { item in
-                                    Text(item)
-                                }
+                            Section {
+                                Text("Type something to search...")
+                                    .foregroundColor(.secondary)
                             }
                         } else {
-                            Section(header: Text("Search Results")) {
+                            Section(header: Text("Search Results (from search.txt)")) {
                                 if filteredResults.isEmpty {
                                     Text("No results found for „\(searchText)“")
                                         .foregroundColor(.secondary)
@@ -148,6 +147,26 @@ struct BottomSheetView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Pinned search bar right in the navigation bar/toolbar area
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        TextField("Search…", text: $searchText)
+                            .textFieldStyle(.plain)
+                        if !searchText.isEmpty {
+                            Button(action: { searchText = "" }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                }
+                
+                // Profile button beside the search bar
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showProfile.toggle()
@@ -160,7 +179,6 @@ struct BottomSheetView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search…")
             .task {
                 await fetchRawSearchFile()
             }
@@ -174,7 +192,7 @@ struct BottomSheetView: View {
 
     // Function to fetch raw search.txt from GitHub repository asynchronously
     func fetchRawSearchFile() async {
-        let urlString = "https://raw.githubusercontent.com/quacky/SwiftyApp/main/search.txt"
+        let urlString = "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/main/search.txt"
         
         guard let url = URL(string: urlString) else { return }
         
@@ -186,7 +204,7 @@ struct BottomSheetView: View {
                     .filter { !$0.isEmpty }
                 
                 await MainActor.run {
-                    self.rawSearchDatabase = lines.isEmpty ? ["search.txt is empty"] : lines
+                    self.rawSearchDatabase = lines
                 }
             }
         } catch {
