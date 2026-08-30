@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 // MARK: - Hlavní pohled aplikace
 struct ContentView: View {
@@ -7,20 +8,60 @@ struct ContentView: View {
     
     @State private var userName: String = "Quacky"
     @State private var userEmail: String = "local.mode@app.local"
+    
+    // Správce lokace pro sledování polohy uživatele
+    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
-        Color(.systemGray5)
-            .ignoresSafeArea()
-            .sheet(isPresented: $showSheet) {
-                BottomSheetView(
-                    selectedDetent: $selectedDetent,
-                    userName: $userName,
-                    userEmail: $userEmail
-                )
-                .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
-                .presentationBackgroundInteraction(.enabled)
-                .interactiveDismissDisabled()
-            }
+        ZStack {
+            // Pozadí tvořené mapou zamknutou na polohu s detailem 12 metrů
+            Map(position: $locationManager.cameraPosition, interactionModes: [])
+                .ignoresSafeArea()
+            
+            // Jemný překryv pro lepší čitelnost, pokud je potřeba
+            Color.black.opacity(0.1)
+                .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showSheet) {
+            BottomSheetView(
+                selectedDetent: $selectedDetent,
+                userName: $userName,
+                userEmail: $userEmail
+            )
+            .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
+            .presentationBackgroundInteraction(.enabled)
+            .interactiveDismissDisabled()
+        }
+    }
+}
+
+// MARK: - Pomocný správce lokace
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    @Published var cameraPosition: MapCameraPosition = .region(
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Výchozí (např. Praha)
+            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Velmi blízký zoom (~12 metrů)
+        )
+    )
+
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.requestWhenInUseAuthorization()
+        manager.startUpdatingLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        // Aktualizuje kameru mapy přesně na polohu uživatele se zachováním 12m zoomu (~0.0001 delta)
+        cameraPosition = .region(
+            MKCoordinateRegion(
+                center: location.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)
+            )
+        )
     }
 }
 
@@ -79,32 +120,25 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        
+                Form {
+                    Section(header: Text("Settings & Input")) {
                         Toggle("Enable super feature", isOn: $toggleValue)
-                            .font(.body)
-                            .padding(.top, 15)
                         
                         TextField("Type something here...", text: $textValue)
-                            .padding()
-                            .background(.ultraThinMaterial) 
-                            .cornerRadius(10)
-                        
+                    }
+                    
+                    Section {
                         Button(action: {
                             print("Button tapped!")
                         }) {
                             Text("Click me!")
                                 .font(.headline)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding() 
+                                .padding(.vertical, 4)
                         }
-                        .buttonStyle(.borderedProminent) 
-                        
+                        .listRowBackground(Color.blue)
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 40)
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
