@@ -117,9 +117,34 @@ struct BottomSheetView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if selectedDetent != .height(80) {
-                    Divider()
+                Divider()
+                
+                // Dlouhé vyhledávací pole přes celou šířku sheetu 🔍
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
                     
+                    TextField("Search…", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .autocorrectionDisabled()
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                
+                if selectedDetent != .height(80) {
                     // Form displaying each search result in its own distinct form row / label
                     Form {
                         if searchText.isEmpty {
@@ -150,31 +175,7 @@ struct BottomSheetView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Pinned search bar vlevo/uprostřed s nativním chováním vyhledávání 🔍
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Search…", text: $searchText)
-                            .autocorrectionDisabled()
-                        
-                        if !searchText.isEmpty {
-                            Button(action: {
-                                searchText = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                
-                // Profile button pinned vpravo (PFP) 👤
+                // Profilové tlačítko je teď v horním toolbaru vpravo jako čistá ikona pod dividerem / v liště
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showProfile.toggle()
@@ -222,6 +223,7 @@ struct BottomSheetView: View {
         }
     }
 }
+
 
 // MARK: - Profile View
 struct ProfileView: View {
