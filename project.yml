@@ -14,8 +14,6 @@ targets:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
       - path: Assets.xcassets
-    dependencies:
-      - target: ControlCenterWidgs
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
