@@ -120,7 +120,7 @@ struct BottomSheetView: View {
                 if selectedDetent != .height(80) {
                     Divider()
                     
-                    // Form displays content ONLY when user is actively searching
+                    // Form displaying each search result in its own distinct form row / label
                     Form {
                         if searchText.isEmpty {
                             Section {
@@ -128,13 +128,16 @@ struct BottomSheetView: View {
                                     .foregroundColor(.secondary)
                             }
                         } else {
-                            Section(header: Text("Search Results (from search.txt)")) {
+                            Section(header: Text("Search Results")) {
                                 if filteredResults.isEmpty {
                                     Text("No results found for „\(searchText)“")
                                         .foregroundColor(.secondary)
                                 } else {
                                     ForEach(filteredResults, id: \.self) { result in
+                                        // Each item is rendered in its own form label row
                                         Text(result)
+                                            .font(.body)
+                                            .padding(.vertical, 2)
                                     }
                                 }
                             }
@@ -146,27 +149,9 @@ struct BottomSheetView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Search…") // Native searchable style restored
             .toolbar {
-                // Pinned search bar right in the navigation bar/toolbar area
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        TextField("Search…", text: $searchText)
-                            .textFieldStyle(.plain)
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                
-                // Profile button beside the search bar
+                // Profile button in the toolbar next to searchable area
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showProfile.toggle()
