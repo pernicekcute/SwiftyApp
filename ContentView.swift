@@ -32,26 +32,10 @@ struct ContentView: View {
                 userName: $userName,
                 userEmail: $userEmail
             )
-            .presentationDetents([.height(80)]) // Locked exclusively to 80pt height
+            .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
             .presentationBackgroundInteraction(.enabled)
             .interactiveDismissDisabled()
         }
-        // Force portrait orientation globally inside the view
-        .onAppear {
-            AppDelegate.orientationLock = .portrait
-        }
-        .onDisappear {
-            AppDelegate.orientationLock = .all
-        }
-    }
-}
-
-// MARK: - Orientation Lock Helper (AppDelegate support)
-class AppDelegate: NSObject, UIApplicationDelegate {
-    static var orientationLock = UIInterfaceOrientationMask.portrait
-
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        return AppDelegate.orientationLock
     }
 }
 
@@ -115,6 +99,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 // MARK: - Bottom Sheet View
 struct BottomSheetView: View {
     @State private var sliderValue: Double = 50
+    @State private var toggleValue: Bool = false
+    @State private var textValue: String = ""
     @State private var showProfile = false
     
     @Binding var selectedDetent: PresentationDetent
@@ -123,25 +109,60 @@ struct BottomSheetView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-            HStack(alignment: .center, spacing: 15) {
-                Slider(value: $sliderValue, in: 0...100)
-                    .tint(.blue)
-                
-                // Account button without .buttonStyle(.glass)
-                Button(action: {
-                    showProfile.toggle()
-                }) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.blue)
+            
+            if selectedDetent == .height(80) {
+                Spacer()
+                HStack(alignment: .center, spacing: 15) {
+                    Slider(value: $sliderValue, in: 0...100)
+                        .tint(.blue)
+                    
+                    Button(action: {
+                        showProfile.toggle()
+                    }) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.blue)
+                    }
                 }
+                .padding(.horizontal)
+                Spacer()
+            } else {
+                HStack(alignment: .center, spacing: 15) {
+                    Slider(value: $sliderValue, in: 0...100)
+                        .tint(.blue)
+                    
+                    Button(action: {
+                        showProfile.toggle()
+                    }) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 20)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal)
-            Spacer()
+            
+            if selectedDetent != .height(80) {
+                Divider()
+                
+                // Form containing settings
+                Form {
+                    Section(header: Text("Settings & Input")) {
+                        Toggle("Enable super feature", isOn: $toggleValue)
+                        
+                        TextField("Type something here...", text: $textValue)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
         .sheet(isPresented: $showProfile) {
             ProfileView(userName: $userName, userEmail: $userEmail)
                 .presentationDetents([.medium])
