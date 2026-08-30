@@ -149,9 +149,32 @@ struct BottomSheetView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search…") // Opraveno: Odstraněn neexistující placement .topBarLeading
             .toolbar {
-                // Profile button in the toolbar next to searchable area
+                // Pinned search bar vlevo/uprostřed s nativním chováním vyhledávání 🔍
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        
+                        TextField("Search…", text: $searchText)
+                            .autocorrectionDisabled()
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                }
+                
+                // Profile button pinned vpravo (PFP) 👤
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showProfile.toggle()
