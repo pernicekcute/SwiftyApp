@@ -104,9 +104,26 @@ struct BottomSheetView: View {
 
     var body: some View {
         NavigationStack {
-            // Úplně prázdný obsah (žádné vyhledávání, žádná tlačítka) 🛑📦
-            Spacer()
-                .navigationBarTitleDisplayMode(.inline)
+            VStack {
+                if selectedDetent != .height(80) {
+                    // Zobrazí se pouze v rozbaleném stavu (medium / large) ⚠️📱
+                    VStack(spacing: 12) {
+                        Image(systemName: "iphone")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        
+                        Text("This sheet is undone and is in this state.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity)
+                } else {
+                    Spacer()
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
