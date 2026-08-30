@@ -98,74 +98,101 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 // MARK: - Bottom Sheet View
 struct BottomSheetView: View {
-    @State private var sliderValue: Double = 50
-    @State private var toggleValue: Bool = false
-    @State private var textValue: String = ""
+    @State private var searchText: String = ""
     @State private var showProfile = false
+    @State private var rawSearchDatabase: [String] = ["Loading from GitHub... ⏳"]
     
     @Binding var selectedDetent: PresentationDetent
     @Binding var userName: String
     @Binding var userEmail: String
 
+    var filteredResults: [String] {
+        if searchText.isEmpty {
+            return rawSearchDatabase
+        } else {
+            return rawSearchDatabase.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            
-            if selectedDetent == .height(80) {
-                Spacer()
-                HStack(alignment: .center, spacing: 15) {
-                    Slider(value: $sliderValue, in: 0...100)
-                        .tint(.blue)
+        NavigationStack {
+            VStack(spacing: 0) {
+                if selectedDetent != .height(80) {
+                    Divider()
                     
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
+                    // Form displaying the raw text fetched directly from GitHub search.txt
+                    Form {
+                        if searchText.isEmpty {
+                            Section(header: Text("From GitHub (search.txt)")) {
+                                ForEach(rawSearchDatabase, id: \.self) { item in
+                                    Text(item)
+                                }
+                            }
+                        } else {
+                            Section(header: Text("Search Results")) {
+                                if filteredResults.isEmpty {
+                                    Text("No results found for „\(searchText)“")
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    ForEach(filteredResults, id: \.self) { result in
+                                        Text(result)
+                                    }
+                                }
+                            }
+                        }
                     }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                } else {
+                    Spacer()
                 }
-                .padding(.horizontal)
-                Spacer()
-            } else {
-                HStack(alignment: .center, spacing: 15) {
-                    Slider(value: $sliderValue, in: 0...100)
-                        .tint(.blue)
-                    
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
             }
-            
-            if selectedDetent != .height(80) {
-                Divider()
-                
-                // Form containing settings
-                Form {
-                    Section(header: Text("Settings & Input")) {
-                        Toggle("Enable super feature", isOn: $toggleValue)
-                        
-                        TextField("Type something here...", text: $textValue)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        showProfile.toggle()
+                    }) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 32, height: 32)
+                            .foregroundColor(.blue)
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            .searchable(text: $searchText, prompt: "Search…")
+            .task {
+                await fetchRawSearchFile()
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
         .sheet(isPresented: $showProfile) {
             ProfileView(userName: $userName, userEmail: $userEmail)
                 .presentationDetents([.medium])
+        }
+    }
+
+    // Function to fetch raw search.txt from GitHub repository asynchronously
+    func fetchRawSearchFile() async {
+        let urlString = "https://raw.githubusercontent.com/quacky/SwiftyApp/main/search.txt"
+        
+        guard let url = URL(string: urlString) else { return }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let content = String(data: data, encoding: .utf8) {
+                let lines = content.components(separatedBy: .newlines)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+                
+                await MainActor.run {
+                    self.rawSearchDatabase = lines.isEmpty ? ["search.txt is empty"] : lines
+                }
+            }
+        } catch {
+            await MainActor.run {
+                self.rawSearchDatabase = ["Failed to load search.txt from GitHub ❌"]
+            }
         }
     }
 }
