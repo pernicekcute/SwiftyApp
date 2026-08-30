@@ -79,36 +79,34 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
-                {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            
-                            Toggle("Enable super feature", isOn: $toggleValue)
-                                .font(.body)
-                                .padding(.top, 15)
-                            
-                            TextField("Type something here...", text: $textValue)
-                                .padding()
-                                .background(.ultraThinMaterial) 
-                                .cornerRadius(10)
-                            
-                            Button(action: {
-                                print("Button tapped!")
-                            }) {
-                                Text("Click me!")
-                                    .font(.headline)
-                                    .foregroundColor(.blue)
-                                    .frame(maxWidth: .infinity)
-                                    .padding() 
-                            }
-                            .buttonStyle(.borderedProminent) 
-                            
+                ScrollView {
+                    VStack(spacing: 20) {
+                        
+                        Toggle("Enable super feature", isOn: $toggleValue)
+                            .font(.body)
+                            .padding(.top, 15)
+                        
+                        TextField("Type something here...", text: $textValue)
+                            .padding()
+                            .background(.ultraThinMaterial) 
+                            .cornerRadius(10)
+                        
+                        Button(action: {
+                            print("Button tapped!")
+                        }) {
+                            Text("Click me!")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                                .frame(maxWidth: .infinity)
+                                .padding() 
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom, 40)
+                        .buttonStyle(.borderedProminent) 
+                        
                     }
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .padding(.horizontal)
+                    .padding(.bottom, 40)
                 }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
