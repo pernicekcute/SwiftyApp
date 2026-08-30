@@ -14,33 +14,17 @@ struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .bottomLeading) {
-                // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
-                Map(position: $locationManager.cameraPosition, interactionModes: []) {
-                    // You can add map markers or overlays here if needed
-                }
-                .mapStyle(locationManager.isOnline ? .imagery : .standard)
-                .ignoresSafeArea()
-                
-                // Subtle overlay for better interface legibility over the map
-                Color.black.opacity(0.1)
-                    .ignoresSafeArea()
-                
-                // Floating Button positioned on the left, exactly 4px above the expanding sheet
-                Button(action: {
-                    print("Floating top-left button tapped!")
-                }) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.white)
-                        .padding(14)
-                }
-                .buttonStyle(.glass)
-                .padding(.leading, 20)
-                // 80pt is the collapsed sheet height, plus 4pt gap requested
-                .padding(.bottom, 80 + 4)
+        ZStack(alignment: .bottomLeading) {
+            // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
+            Map(position: $locationManager.cameraPosition, interactionModes: []) {
+                // You can add map markers or overlays here if needed
             }
+            .mapStyle(locationManager.isOnline ? .imagery : .standard)
+            .ignoresSafeArea()
+            
+            // Subtle overlay for better interface legibility over the map
+            Color.black.opacity(0.1)
+                .ignoresSafeArea()
         }
         .sheet(isPresented: $showSheet) {
             BottomSheetView(
@@ -48,10 +32,26 @@ struct ContentView: View {
                 userName: $userName,
                 userEmail: $userEmail
             )
-            .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
+            .presentationDetents([.height(80)]) // Locked exclusively to 80pt height
             .presentationBackgroundInteraction(.enabled)
             .interactiveDismissDisabled()
         }
+        // Force portrait orientation globally inside the view
+        .onAppear {
+            AppDelegate.orientationLock = .portrait
+        }
+        .onDisappear {
+            AppDelegate.orientationLock = .all
+        }
+    }
+}
+
+// MARK: - Orientation Lock Helper (AppDelegate support)
+class AppDelegate: NSObject, UIApplicationDelegate {
+    static var orientationLock = UIInterfaceOrientationMask.portrait
+
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return AppDelegate.orientationLock
     }
 }
 
@@ -115,8 +115,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 // MARK: - Bottom Sheet View
 struct BottomSheetView: View {
     @State private var sliderValue: Double = 50
-    @State private var toggleValue: Bool = false
-    @State private var textValue: String = ""
     @State private var showProfile = false
     
     @Binding var selectedDetent: PresentationDetent
@@ -125,62 +123,25 @@ struct BottomSheetView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            
-            if selectedDetent == .height(80) {
-                Spacer()
-                HStack(alignment: .center, spacing: 15) {
-                    Slider(value: $sliderValue, in: 0...100)
-                        .tint(.blue)
-                    
-                    // Account button without .buttonStyle(.glass)
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding(.horizontal)
-                Spacer()
-            } else {
-                HStack(alignment: .center, spacing: 15) {
-                    Slider(value: $sliderValue, in: 0...100)
-                        .tint(.blue)
-                    
-                    // Account button without .buttonStyle(.glass)
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
-            }
-            
-            if selectedDetent != .height(80) {
-                Divider()
+            Spacer()
+            HStack(alignment: .center, spacing: 15) {
+                Slider(value: $sliderValue, in: 0...100)
+                    .tint(.blue)
                 
-                // Form containing settings, with the bottom button removed completely
-                Form {
-                    Section(header: Text("Settings & Input")) {
-                        Toggle("Enable super feature", isOn: $toggleValue)
-                        
-                        TextField("Type something here...", text: $textValue)
-                    }
+                // Account button without .buttonStyle(.glass)
+                Button(action: {
+                    showProfile.toggle()
+                }) {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(.blue)
                 }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
+            .padding(.horizontal)
+            Spacer()
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
         .sheet(isPresented: $showProfile) {
             ProfileView(userName: $userName, userEmail: $userEmail)
                 .presentationDetents([.medium])
