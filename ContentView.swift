@@ -18,7 +18,7 @@ struct ContentView: View {
             Map(position: $locationManager.cameraPosition, interactionModes: [])
                 .ignoresSafeArea()
             
-            // Jemný překryv pro lepší čitelnost, pokud je potřeba
+            // Jemný překryv pro lepší čitelnost
             Color.black.opacity(0.1)
                 .ignoresSafeArea()
         }
@@ -40,7 +40,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Výchozí (např. Praha)
+            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Výchozí (Praha)
             span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Velmi blízký zoom (~12 metrů)
         )
     )
@@ -49,13 +49,19 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.requestWhenInUseAuthorization()
+        manager.requestWhenInUseAuthorization() // Aktivně vyžádá oprávnění k poloze
         manager.startUpdatingLocation()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+            manager.startUpdatingLocation()
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        // Aktualizuje kameru mapy přesně na polohu uživatele se zachováním 12m zoomu (~0.0001 delta)
+        // Aktualizuje kameru mapy přesně na polohu uživatele se zachováním 12m zoomu
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: location.coordinate,
@@ -120,6 +126,7 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
+                // Všechno pod dividerem je nyní uvnitř Formu
                 Form {
                     Section(header: Text("Settings & Input")) {
                         Toggle("Enable super feature", isOn: $toggleValue)
