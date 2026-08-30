@@ -2,7 +2,7 @@ import SwiftUI
 import MapKit
 import Network
 
-// MARK: - Hlavní pohled aplikace
+// MARK: - Main App View
 struct ContentView: View {
     @State private var showSheet = true
     @State private var selectedDetent: PresentationDetent = .height(80)
@@ -10,21 +10,34 @@ struct ContentView: View {
     @State private var userName: String = "Quacky"
     @State private var userEmail: String = "local.mode@app.local"
     
-    // Správce lokace a síťového připojení
+    // Location and network manager
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
-        ZStack {
-            // Pozadí tvořené mapou: dynamicky volí satelit (při Wi-Fi / datech) nebo standard (při offline)
+        ZStack(alignment: .bottomLeading) {
+            // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
             Map(position: $locationManager.cameraPosition, interactionModes: []) {
-                // Můžeš zde přidat vlastní značky nebo nechat čistou mapu
+                // You can add map markers or overlays here if needed
             }
             .mapStyle(locationManager.isOnline ? .imagery : .standard)
             .ignoresSafeArea()
             
-            // Jemný překryv pro lepší čitelnost rozhraní nad mapou
+            // Subtle overlay for better interface legibility over the map
             Color.black.opacity(0.1)
                 .ignoresSafeArea()
+            
+            // Floating Button positioned on the left, right above the expandable sheet
+            Button(action: {
+                print("Floating top-left button tapped!")
+            }) {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.white)
+                    .padding(14)
+            }
+            .buttonStyle(.glass)
+            .padding(.leading, 20)
+            .padding(.bottom, 100) // Positioned nicely above the 80pt sheet
         }
         .sheet(isPresented: $showSheet) {
             BottomSheetView(
@@ -39,7 +52,7 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Pomocný správce lokace a sítě
+// MARK: - Location & Network Manager
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private let monitor = NWPathMonitor()
@@ -47,8 +60,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Výchozí (Praha)
-            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Velmi blízký zoom (~12 metrů)
+            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Default (Prague)
+            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Very close zoom (~12 meters)
         )
     )
     
@@ -63,14 +76,14 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private func setupLocationManager() {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.requestWhenInUseAuthorization() // Vyžádá oprávnění k poloze
+        manager.requestWhenInUseAuthorization() // Requests location permission from the user
         manager.startUpdatingLocation()
     }
 
     private func setupNetworkMonitor() {
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                // Kontroluje, zda je aktivní Wi-Fi nebo mobilní data (cellular)
+                // Checks whether Wi-Fi or cellular data is active
                 let hasWifiOrCellular = path.usesInterfaceType(.wifi) || path.usesInterfaceType(.cellular)
                 self?.isOnline = (path.status == .satisfied && hasWifiOrCellular)
             }
@@ -86,7 +99,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        // Aktualizuje kameru mapy přesně na polohu uživatele se zachováním 12m zoomu
+        // Updates the map camera precisely to the user's location while maintaining a ~12m zoom
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: location.coordinate,
@@ -96,7 +109,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 }
 
-// MARK: - Spodní panel (Bottom Sheet)
+// MARK: - Bottom Sheet View
 struct BottomSheetView: View {
     @State private var sliderValue: Double = 50
     @State private var toggleValue: Bool = false
@@ -125,6 +138,7 @@ struct BottomSheetView: View {
                             .frame(width: 40, height: 40)
                             .foregroundColor(.blue)
                     }
+                    .buttonStyle(.glass)
                 }
                 .padding(.horizontal)
                 Spacer()
@@ -142,6 +156,7 @@ struct BottomSheetView: View {
                             .frame(width: 40, height: 40)
                             .foregroundColor(.blue)
                     }
+                    .buttonStyle(.glass)
                 }
                 .padding(.horizontal)
                 .padding(.top, 20)
@@ -151,7 +166,7 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
-                // Všechno pod dividerem je kompletně uvnitř Formu
+                // Everything under the divider is contained inside a Form
                 Form {
                     Section(header: Text("Settings & Input")) {
                         Toggle("Enable super feature", isOn: $toggleValue)
@@ -169,6 +184,7 @@ struct BottomSheetView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
                         }
+                        .buttonStyle(.glass)
                         .listRowBackground(Color.blue)
                     }
                 }
@@ -183,7 +199,7 @@ struct BottomSheetView: View {
     }
 }
 
-// MARK: - Karta Profilu
+// MARK: - Profile View
 struct ProfileView: View {
     @Binding var userName: String
     @Binding var userEmail: String
