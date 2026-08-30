@@ -14,30 +14,33 @@ struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
-            Map(position: $locationManager.cameraPosition, interactionModes: []) {
-                // You can add map markers or overlays here if needed
-            }
-            .mapStyle(locationManager.isOnline ? .imagery : .standard)
-            .ignoresSafeArea()
-            
-            // Subtle overlay for better interface legibility over the map
-            Color.black.opacity(0.1)
+        GeometryReader { geometry in
+            ZStack(alignment: .bottomLeading) {
+                // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
+                Map(position: $locationManager.cameraPosition, interactionModes: []) {
+                    // You can add map markers or overlays here if needed
+                }
+                .mapStyle(locationManager.isOnline ? .imagery : .standard)
                 .ignoresSafeArea()
-            
-            // Floating Button positioned on the left, right above the expandable sheet
-            Button(action: {
-                print("Floating top-left button tapped!")
-            }) {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.white)
-                    .padding(14)
+                
+                // Subtle overlay for better interface legibility over the map
+                Color.black.opacity(0.1)
+                    .ignoresSafeArea()
+                
+                // Floating Button positioned on the left, exactly 4px above the expanding sheet
+                Button(action: {
+                    print("Floating top-left button tapped!")
+                }) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                        .padding(14)
+                }
+                .buttonStyle(.glass)
+                .padding(.leading, 20)
+                // 80pt is the collapsed sheet height, plus 4pt gap requested
+                .padding(.bottom, 80 + 4)
             }
-            .buttonStyle(.glass)
-            .padding(.leading, 20)
-            .padding(.bottom, 100) // Positioned nicely above the 80pt sheet
         }
         .sheet(isPresented: $showSheet) {
             BottomSheetView(
@@ -129,6 +132,7 @@ struct BottomSheetView: View {
                     Slider(value: $sliderValue, in: 0...100)
                         .tint(.blue)
                     
+                    // Account button without .buttonStyle(.glass)
                     Button(action: {
                         showProfile.toggle()
                     }) {
@@ -138,7 +142,6 @@ struct BottomSheetView: View {
                             .frame(width: 40, height: 40)
                             .foregroundColor(.blue)
                     }
-                    .buttonStyle(.glass)
                 }
                 .padding(.horizontal)
                 Spacer()
@@ -147,6 +150,7 @@ struct BottomSheetView: View {
                     Slider(value: $sliderValue, in: 0...100)
                         .tint(.blue)
                     
+                    // Account button without .buttonStyle(.glass)
                     Button(action: {
                         showProfile.toggle()
                     }) {
@@ -156,7 +160,6 @@ struct BottomSheetView: View {
                             .frame(width: 40, height: 40)
                             .foregroundColor(.blue)
                     }
-                    .buttonStyle(.glass)
                 }
                 .padding(.horizontal)
                 .padding(.top, 20)
@@ -166,26 +169,12 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
-                // Everything under the divider is contained inside a Form
+                // Form containing settings, with the bottom button removed completely
                 Form {
                     Section(header: Text("Settings & Input")) {
                         Toggle("Enable super feature", isOn: $toggleValue)
                         
                         TextField("Type something here...", text: $textValue)
-                    }
-                    
-                    Section {
-                        Button(action: {
-                            print("Button tapped!")
-                        }) {
-                            Text("Click me!")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
-                        }
-                        .buttonStyle(.glass)
-                        .listRowBackground(Color.blue)
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
