@@ -149,7 +149,7 @@ struct BottomSheetView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search…") // Native searchable style restored
+            .searchable(text: $searchText, placement: .topBarLeading, prompt: "Search…") // Placed in topBarLeading
             .toolbar {
                 // Profile button in the toolbar next to searchable area
                 ToolbarItem(placement: .topBarTrailing) {
