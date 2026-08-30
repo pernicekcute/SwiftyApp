@@ -149,7 +149,7 @@ struct BottomSheetView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, placement: .topBarLeading, prompt: "Search…") // Placed in topBarLeading
+            .searchable(text: $searchText, prompt: "Search…") // Opraveno: Odstraněn neexistující placement .topBarLeading
             .toolbar {
                 // Profile button in the toolbar next to searchable area
                 ToolbarItem(placement: .topBarTrailing) {
