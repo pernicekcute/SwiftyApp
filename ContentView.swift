@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import Network
 
 // MARK: - Hlavní pohled aplikace
 struct ContentView: View {
@@ -9,16 +10,19 @@ struct ContentView: View {
     @State private var userName: String = "Quacky"
     @State private var userEmail: String = "local.mode@app.local"
     
-    // Správce lokace pro sledování polohy uživatele
+    // Správce lokace a síťového připojení
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         ZStack {
-            // Pozadí tvořené mapou zamknutou na polohu s detailem 12 metrů
-            Map(position: $locationManager.cameraPosition, interactionModes: [])
-                .ignoresSafeArea()
+            // Pozadí tvořené mapou: dynamicky volí satelit (při Wi-Fi / datech) nebo standard (při offline)
+            Map(position: $locationManager.cameraPosition, interactionModes: []) {
+                // Můžeš zde přidat vlastní značky nebo nechat čistou mapu
+            }
+            .mapStyle(locationManager.isOnline ? .imagery : .standard)
+            .ignoresSafeArea()
             
-            // Jemný překryv pro lepší čitelnost
+            // Jemný překryv pro lepší čitelnost rozhraní nad mapou
             Color.black.opacity(0.1)
                 .ignoresSafeArea()
         }
@@ -35,22 +39,43 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Pomocný správce lokace
+// MARK: - Pomocný správce lokace a sítě
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue(label: "NetworkMonitor")
+
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Výchozí (Praha)
             span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Velmi blízký zoom (~12 metrů)
         )
     )
+    
+    @Published var isOnline: Bool = true
 
     override init() {
         super.init()
+        setupLocationManager()
+        setupNetworkMonitor()
+    }
+
+    private func setupLocationManager() {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.requestWhenInUseAuthorization() // Aktivně vyžádá oprávnění k poloze
+        manager.requestWhenInUseAuthorization() // Vyžádá oprávnění k poloze
         manager.startUpdatingLocation()
+    }
+
+    private func setupNetworkMonitor() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                // Kontroluje, zda je aktivní Wi-Fi nebo mobilní data (cellular)
+                let hasWifiOrCellular = path.usesInterfaceType(.wifi) || path.usesInterfaceType(.cellular)
+                self?.isOnline = (path.status == .satisfied && hasWifiOrCellular)
+            }
+        }
+        monitor.start(queue: queue)
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -126,7 +151,7 @@ struct BottomSheetView: View {
             if selectedDetent != .height(80) {
                 Divider()
                 
-                // Všechno pod dividerem je nyní uvnitř Formu
+                // Všechno pod dividerem je kompletně uvnitř Formu
                 Form {
                     Section(header: Text("Settings & Input")) {
                         Toggle("Enable super feature", isOn: $toggleValue)
