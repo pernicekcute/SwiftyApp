@@ -4,18 +4,26 @@ import AuthenticationServices
 struct ContentView: View {
     @State private var showSheet = true
     
+    // 📏 Sledování aktuální velikosti panelu
+    @State private var selectedDetent: PresentationDetent = .fraction(0.15)
+    
     @State private var userName: String = "Neznámý uživatel"
     @State private var userEmail: String = "Nepřihlášeno"
     @State private var isLoggedIn: Bool = false
 
     var body: some View {
-        Color(.systemGray5)
+        Color(.systemGray5) // 🎨 Pozadí
             .ignoresSafeArea()
             .sheet(isPresented: $showSheet) {
-                BottomSheetView(userName: $userName, userEmail: $userEmail, isLoggedIn: $isLoggedIn)
-                    .presentationDetents([.fraction(0.20), .medium, .large]) // Mírně zvětšeno pro lepší zobrazení hlavičky
-                    .presentationBackgroundInteraction(.enabled)
-                    .interactiveDismissDisabled()
+                BottomSheetView(
+                    selectedDetent: $selectedDetent,
+                    userName: $userName,
+                    userEmail: $userEmail,
+                    isLoggedIn: $isLoggedIn
+                )
+                .presentationDetents([.fraction(0.15), .medium, .large], selection: $selectedDetent)
+                .presentationBackgroundInteraction(.enabled)
+                .interactiveDismissDisabled()
             }
     }
 }
@@ -26,6 +34,8 @@ struct BottomSheetView: View {
     @State private var textValue: String = ""
     @State private var showProfile = false
     
+    @Binding var selectedDetent: PresentationDetent
+    
     @Binding var userName: String
     @Binding var userEmail: String
     @Binding var isLoggedIn: Bool
@@ -33,71 +43,69 @@ struct BottomSheetView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 📌 UZAMČENÁ HLAVIČKA (Vždy nahoře)
-            VStack(spacing: 15) {
+            // 📌 UZAMČENÁ HLAVIČKA
+            HStack(spacing: 15) {
+                // 🎚️ Náš Slider
+                Slider(value: $sliderValue, in: 0...100)
+                    .tint(.blue)
                 
-                // Hledáček / Slider a Profilovka
-                HStack(spacing: 15) {
-                    // 🎚️ Náš Slider místo vyhledávací lišty
-                    Slider(value: $sliderValue, in: 0...100)
-                        .tint(.blue)
-                    
-                    // 🖼️ Profilovka uzamčená vpravo nahoře
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: isLoggedIn ? "person.crop.circle.fill" : "person.crop.circle.badge.questionmark")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(isLoggedIn ? .blue : .gray)
-                    }
+                // 🖼️ Profilovka
+                Button(action: {
+                    showProfile.toggle()
+                }) {
+                    Image(systemName: isLoggedIn ? "person.crop.circle.fill" : "person.crop.circle.badge.questionmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(isLoggedIn ? .blue : .gray)
                 }
-                
-                // 🟢 Přepínač (Toggle) uzamčený hned pod profilovkou
-                Toggle("Zapnout super funkci ✨", isOn: $toggleValue)
-                    .font(.body)
-                    .padding(.bottom, 5)
             }
             .padding(.horizontal)
-            .padding(.top, 25) // Mezera od horní hrany sheetu
+            .padding(.top, 25)
             .padding(.bottom, 15)
-            .background(Color(UIColor.systemBackground)) // Plné pozadí, aby přes hlavičku neprosvítal text ze ScrollView
+            .background(Color(UIColor.systemBackground))
             
-            // ➖ Oddělovací linka (jako v Apple Mapách)
+            // ➖ Oddělovací linka
             Divider()
             
-            // 📜 SCROLLOVACÍ OBSAH (Tady bude všechno ostatní)
-            ScrollView {
-                VStack(spacing: 20) {
-                    
-                    // ✍️ Textové pole
-                    TextField("Napiš něco sem...", text: $textValue)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .padding(.top, 15)
-                    
-                    // 🔘 Tlačítko
-                    Button(action: {
-                        print("Tlačítko bylo stisknuto! 🎉")
-                    }) {
-                        Text("Klikni na mě! 🚀")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
+            // 🙈 ZOBRAZÍ SE POUZE KDYŽ JE PANEL ROZBALENÝ
+            if selectedDetent != .fraction(0.15) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        
+                        // 🟢 Přepínač (Toggle)
+                        Toggle("Zapnout super funkci ✨", isOn: $toggleValue)
+                            .font(.body)
+                            .padding(.top, 15)
+                        
+                        // ✍️ Textové pole (zatím nechávám defaultní sklo, pokud máš v GitHubu i .textFieldStyle(.glass), klidně ho sem doplň!)
+                        TextField("Napiš něco sem...", text: $textValue)
                             .padding()
-                            .background(Color.blue)
-                            .cornerRadius(12)
+                            .background(.ultraThinMaterial) 
+                            .cornerRadius(10)
+                        
+                        // 🔘 Tlačítko používající TVŮJ .glass styl přes GitHub! 🧊
+                        Button(action: {
+                            print("Skleněné tlačítko funguje! 🎉")
+                        }) {
+                            Text("Klikni na mě! 🚀")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                                .frame(maxWidth: .infinity)
+                                .padding() // Přidal jsem padding dovnitř, aby tlačítko nebylo moc hubené
+                        }
+                        .buttonStyle(.glass) // 👈 Tvoje magie! 🪄
+                        
                     }
-
-                    // Tady můžeš přidávat další a další obsah a vše bude pěkně scrollovat 
-                    // dolů, zatímco hlavička zůstane uzamčená nahoře! 🧱
+                    .padding(.horizontal)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 40)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            } else {
+                Spacer() 
             }
         }
+        .animation(.spring(), value: selectedDetent)
         .sheet(isPresented: $showProfile) {
             ProfileView(userName: $userName, userEmail: $userEmail, isLoggedIn: $isLoggedIn)
                 .presentationDetents([.medium])
@@ -105,7 +113,7 @@ struct BottomSheetView: View {
     }
 }
 
-// 👤 Okno Profilu a Přihlášení (Zůstává stejné)
+// 👤 Okno Profilu a Přihlášení
 struct ProfileView: View {
     @Binding var userName: String
     @Binding var userEmail: String
@@ -148,20 +156,15 @@ struct ProfileView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                Text("Pro zobrazení profilu se přihlas pomocí svého Apple ID. 🍎")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.gray)
-                    .padding(.horizontal)
-                
                 SignInWithAppleButton(.signIn) { request in
                     request.requestedScopes = [.fullName, .email]
                 } onCompletion: { result in
                     switch result {
                     case .success(let authResults):
                         if let appleIDCredential = authResults.credential as? ASAuthorizationAppleIDCredential {
-                            let firstName = appleIDCredential.fullName?.givenName ?? "Skvělý"
-                            let lastName = appleIDCredential.fullName?.familyName ?? "Uživatel"
-                            let email = appleIDCredential.email ?? "Skrytý e-mail 🕵️‍♂️"
+                            let firstName = appleIDCredential.fullName?.givenName ?? "🦆 Quacky"
+                            let lastName = appleIDCredential.fullName?.familyName ?? "🎮"
+                            let email = appleIDCredential.email ?? "quacky@apple.com"
                             
                             self.userName = "\(firstName) \(lastName)"
                             self.userEmail = email
@@ -175,12 +178,20 @@ struct ProfileView: View {
                 .frame(height: 50)
                 .padding(.horizontal, 30)
                 .padding(.top, 10)
+                
+                // 🧪 NOUZOVÉ TLAČÍTKO PRO TESTOVÁNÍ NA GITHUB ACTIONS 
+                Button(action: {
+                    self.userName = "🦆 Quacky 🎮"
+                    self.userEmail = "quacky@test.com"
+                    self.isLoggedIn = true
+                }) {
+                    Text("Testovací přihlášení (Bypass) 🧪")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                }
+                .padding(.top, 10)
             }
             Spacer()
         }
     }
-}
-
-#Preview {
-    ContentView()
 }
