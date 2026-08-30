@@ -4,15 +4,15 @@ import AuthenticationServices
 struct ContentView: View {
     @State private var showSheet = true
     
-    // 📏 Sledování aktuální velikosti panelu
-    @State private var selectedDetent: PresentationDetent = .fraction(0.15)
+    // 📏 Nastaveno na přesnou výšku 80, což je úplně to nejmenší pro Slider a profilovku!
+    @State private var selectedDetent: PresentationDetent = .height(80)
     
     @State private var userName: String = "Neznámý uživatel"
     @State private var userEmail: String = "Nepřihlášeno"
     @State private var isLoggedIn: Bool = false
 
     var body: some View {
-        Color(.systemGray5) // 🎨 Pozadí
+        Color(.systemGray5) // 🎨 Pozadí aplikace
             .ignoresSafeArea()
             .sheet(isPresented: $showSheet) {
                 BottomSheetView(
@@ -21,7 +21,8 @@ struct ContentView: View {
                     userEmail: $userEmail,
                     isLoggedIn: $isLoggedIn
                 )
-                .presentationDetents([.fraction(0.15), .medium, .large], selection: $selectedDetent)
+                // 🪄 Zde je teď .height(80) místo zlomku, aby to bylo fakt maličké!
+                .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
                 .presentationBackgroundInteraction(.enabled)
                 .interactiveDismissDisabled()
             }
@@ -43,7 +44,7 @@ struct BottomSheetView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 📌 UZAMČENÁ HLAVIČKA
+            // 📌 HLAVIČKA (Vždy viditelná)
             HStack(spacing: 15) {
                 // 🎚️ Náš Slider
                 Slider(value: $sliderValue, in: 0...100)
@@ -61,15 +62,17 @@ struct BottomSheetView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.top, 25)
-            .padding(.bottom, 15)
-            .background(Color(UIColor.systemBackground))
+            // 📏 Přesně spočítaný padding, aby se to hezky vešlo do height(80)
+            .padding(.top, 20) 
+            .padding(.bottom, 20)
+            // ❌ Bílé pozadí JE PRYČ! 👻
             
-            // ➖ Oddělovací linka
-            Divider()
-            
-            // 🙈 ZOBRAZÍ SE POUZE KDYŽ JE PANEL ROZBALENÝ
-            if selectedDetent != .fraction(0.15) {
+            // 🙈 ZOBRAZÍ SE POUZE KDYŽ JE PANEL ROZBALENÝ (Větší než 80)
+            if selectedDetent != .height(80) {
+                
+                // ➖ Oddělovací linka se objeví až po rozbalení
+                Divider()
+                
                 ScrollView {
                     VStack(spacing: 20) {
                         
@@ -78,13 +81,13 @@ struct BottomSheetView: View {
                             .font(.body)
                             .padding(.top, 15)
                         
-                        // ✍️ Textové pole (zatím nechávám defaultní sklo, pokud máš v GitHubu i .textFieldStyle(.glass), klidně ho sem doplň!)
+                        // ✍️ Textové pole
                         TextField("Napiš něco sem...", text: $textValue)
                             .padding()
                             .background(.ultraThinMaterial) 
                             .cornerRadius(10)
                         
-                        // 🔘 Tlačítko používající TVŮJ .glass styl přes GitHub! 🧊
+                        // 🔘 Tlačítko používající TVŮJ .glass styl! 🧊
                         Button(action: {
                             print("Skleněné tlačítko funguje! 🎉")
                         }) {
@@ -92,9 +95,9 @@ struct BottomSheetView: View {
                                 .font(.headline)
                                 .foregroundColor(.blue)
                                 .frame(maxWidth: .infinity)
-                                .padding() // Přidal jsem padding dovnitř, aby tlačítko nebylo moc hubené
+                                .padding() 
                         }
-                        .buttonStyle(.glass) // 👈 Tvoje magie! 🪄
+                        .buttonStyle(.glass) // 👈 Skleněný GitHub styl! 💎
                         
                     }
                     .padding(.horizontal)
@@ -102,10 +105,10 @@ struct BottomSheetView: View {
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             } else {
-                Spacer() 
+                Spacer() // Vyplní zbytek, když je panel dole
             }
         }
-        .animation(.spring(), value: selectedDetent)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent) // 🌸 Ještě plynulejší animace
         .sheet(isPresented: $showProfile) {
             ProfileView(userName: $userName, userEmail: $userEmail, isLoggedIn: $isLoggedIn)
                 .presentationDetents([.medium])
