@@ -98,162 +98,16 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 // MARK: - Bottom Sheet View
 struct BottomSheetView: View {
-    @State private var searchText: String = ""
-    @State private var showProfile = false
-    @State private var rawSearchDatabase: [String] = []
-    
     @Binding var selectedDetent: PresentationDetent
     @Binding var userName: String
     @Binding var userEmail: String
 
-    var filteredResults: [String] {
-        if searchText.isEmpty {
-            return []
-        } else {
-            return rawSearchDatabase.filter { $0.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                Divider()
-                
-                // Dlouhé vyhledávací pole přes celou šířku sheetu 🔍
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    
-                    TextField("Search…", text: $searchText)
-                        .textFieldStyle(.plain)
-                        .autocorrectionDisabled()
-                    
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                
-                if selectedDetent != .height(80) {
-                    // Form displaying each search result in its own distinct form row / label
-                    Form {
-                        if searchText.isEmpty {
-                            Section {
-                                Text("Type something to search...")
-                                    .foregroundColor(.secondary)
-                            }
-                        } else {
-                            Section(header: Text("Search Results")) {
-                                if filteredResults.isEmpty {
-                                    Text("No results found for „\(searchText)“")
-                                        .foregroundColor(.secondary)
-                                } else {
-                                    ForEach(filteredResults, id: \.self) { result in
-                                        // Each item is rendered in its own form label row
-                                        Text(result)
-                                            .font(.body)
-                                            .padding(.vertical, 2)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                } else {
-                    Spacer()
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                // Profilové tlačítko je teď v horním toolbaru vpravo jako čistá ikona pod dividerem / v liště
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        showProfile.toggle()
-                    }) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 32, height: 32)
-                            .foregroundColor(.blue)
-                    }
-                }
-            }
-            .task {
-                await fetchRawSearchFile()
-            }
+            // Úplně prázdný obsah (žádné vyhledávání, žádná tlačítka) 🛑📦
+            Spacer()
+                .navigationBarTitleDisplayMode(.inline)
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
-        .sheet(isPresented: $showProfile) {
-            ProfileView(userName: $userName, userEmail: $userEmail)
-                .presentationDetents([.medium])
-        }
-    }
-
-    // Function to fetch raw search.txt from GitHub repository asynchronously
-    func fetchRawSearchFile() async {
-        let urlString = "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/main/search.txt"
-        
-        guard let url = URL(string: urlString) else { return }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            if let content = String(data: data, encoding: .utf8) {
-                let lines = content.components(separatedBy: .newlines)
-                    .map { $0.trimmingCharacters(in: .whitespaces) }
-                    .filter { !$0.isEmpty }
-                
-                await MainActor.run {
-                    self.rawSearchDatabase = lines
-                }
-            }
-        } catch {
-            await MainActor.run {
-                self.rawSearchDatabase = ["Failed to load search.txt from GitHub ❌"]
-            }
-        }
-    }
-}
-
-
-// MARK: - Profile View
-struct ProfileView: View {
-    @Binding var userName: String
-    @Binding var userEmail: String
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "person.crop.circle.fill")
-                .resizable()
-                .frame(width: 90, height: 90)
-                .foregroundColor(.blue)
-                .padding(.top, 40)
-
-            Text(userName)
-                .font(.title2)
-                .fontWeight(.bold)
-
-            Text(userEmail)
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            
-            Text("Sign in is not available. Running in local mode.")
-                .font(.footnote)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .padding(.top, 10)
-                
-            Spacer()
-        }
     }
 }
