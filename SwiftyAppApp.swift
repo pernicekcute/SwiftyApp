@@ -3,36 +3,37 @@ import UIKit
 
 class ThemeManager {
     static func configureTheme(useOldStyle: Bool) {
-        if useOldStyle {
-            // 🧱 Starý neprůhledný vzhled
-            let navAppearance = UINavigationBarAppearance()
-            navAppearance.configureWithOpaqueBackground()
+    if useOldStyle {
+        // 🧱 OLD STYLE
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
 
-            UINavigationBar.appearance().standardAppearance = navAppearance
-            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-            UINavigationBar.appearance().compactAppearance = navAppearance
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
 
-            let tabAppearance = UITabBarAppearance()
-            tabAppearance.configureWithOpaqueBackground()
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithOpaqueBackground()
 
-            UITabBar.appearance().standardAppearance = tabAppearance
-            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+        UITabBar.appearance().standardAppearance = tabAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
 
-            UIView.appearance(
-                whenContainedInInstancesOf: [UIAlertController.self]
-            ).backgroundColor = .systemBackground
+    } else {
+        // 🌟 SYSTEM STYLE
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithDefaultBackground()
 
-        } else {
-            // 🌟 DEFAULTNÍ SYSTÉMOVÝ VZHLED
-            //
-            // Nic nenastavujeme.
-            // UIKit + SwiftUI si použijí aktuální systémový vzhled.
-            //
-            // iOS 27 → iOS 27 systémový vzhled
-            // iOS 28 → iOS 28 systémový vzhled
-            // atd.
-        }
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
+
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithDefaultBackground()
+
+        UITabBar.appearance().standardAppearance = tabAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
     }
+}
 
     static func parseBool(from content: String) -> Bool {
         let lines = content.components(separatedBy: .newlines)
