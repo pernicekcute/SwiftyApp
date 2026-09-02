@@ -118,6 +118,15 @@ struct BottomSheetView: View {
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
             }
+            
+            // Tab 3: Settings
+            NavigationStack {
+                SettingsView()
+                    .navigationTitle("Settings")
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gearshape.fill")
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
@@ -153,7 +162,7 @@ struct BottomSheetContentView: View {
                 ContentUnavailableView("Start Searching", systemImage: "magnifyingglass", description: Text("Tap the search bar above"))
             }
         }
-        .onChange(of: isSearching) { newValue in
+        .onChange(of: isSearching) { _, newValue in
             if newValue && rawLines.isEmpty {
                 fetchRemoteData()
             }
@@ -206,6 +215,30 @@ struct ProfileView: View {
                         .multilineTextAlignment(.trailing)
                 }
             }
+        }
+    }
+}
+
+// MARK: - Settings View
+struct SettingsView: View {
+    @AppStorage("useNewStyle") private var useNewStyle: Bool = true
+    @State private var showAlert = false
+
+    var body: some View {
+        Form {
+            Section(header: Text("Appearance"), footer: Text("Changing the style requires restarting the app.")) {
+                Toggle("Use New Style", isOn: $useNewStyle)
+                    .onChange(of: useNewStyle) { _, _ in
+                        showAlert = true
+                    }
+            }
+        }
+        .alert("Restart Required", isPresented: $showAlert) {
+            Button("Restart Now", role: .destructive) {
+                exit(0)
+            }
+        } message: {
+            Text("The app needs to close to apply the new UI style. Please reopen it manually.")
         }
     }
 }
