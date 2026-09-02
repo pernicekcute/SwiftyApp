@@ -118,15 +118,6 @@ struct BottomSheetView: View {
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
             }
-            
-            // Tab 3: Settings
-            NavigationStack {
-                SettingsView()
-                    .navigationTitle("Settings")
-            }
-            .tabItem {
-                Label("Settings", systemImage: "gearshape.fill")
-            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
@@ -215,34 +206,6 @@ struct ProfileView: View {
                         .multilineTextAlignment(.trailing)
                 }
             }
-        }
-    }
-}
-
-// MARK: - Settings View
-struct SettingsView: View {
-    @AppStorage("useiOS26Style") private var useiOS26Style: Bool = true
-    @State private var showAlert = false
-
-    var body: some View {
-        Form {
-            Section(
-                header: Text("Appearance"),
-                footer: Text("Switch between the legacy opaque style and the iOS 26 translucent look. Requires restarting the app to apply UI changes fully.")
-            ) {
-                Toggle("iOS 26 Style", isOn: $useiOS26Style)
-                    .onChange(of: useiOS26Style) { _, newValue in
-                        ThemeManager.applyTheme(useiOS26Style: newValue)
-                        showAlert = true
-                    }
-            }
-        }
-        .alert("Restart Required", isPresented: $showAlert) {
-            Button("Restart Now", role: .destructive) {
-                exit(0)
-            }
-        } message: {
-            Text("The app needs to close to re-initialize system bars. Please open it manually again.")
         }
     }
 }
