@@ -3,39 +3,42 @@ import UIKit
 
 @main
 struct SwiftyAppApp: App {
+    @AppStorage("useNewStyle") private var useNewStyle: Bool = true
     
     init() {
-        // 1. Klasický neprůhledný vzhled pro Navigation Bar (horní lišta) 📱
-        let navAppearance = UINavigationBarAppearance()
-        navAppearance.configureWithOpaqueBackground()
+        // Přečtení nastavení při startu
+        let isNewStyle = UserDefaults.standard.bool(forKey: "useNewStyle")
         
-        UINavigationBar.appearance().standardAppearance = navAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-        UINavigationBar.appearance().compactAppearance = navAppearance // 🛠️ Opraveno zde!
+        if isNewStyle {
+            // Nový styl: Obnovení výchozího iOS vzhledu
+            UINavigationBar.appearance().standardAppearance = UINavigationBarAppearance()
+            UINavigationBar.appearance().scrollEdgeAppearance = nil
+            UINavigationBar.appearance().compactAppearance = nil
+            
+            UITabBar.appearance().standardAppearance = UITabBarAppearance()
+            UITabBar.appearance().scrollEdgeAppearance = nil
+        } else {
+            // Starý styl: Neprůhledný vzhled
+            let navAppearance = UINavigationBarAppearance()
+            navAppearance.configureWithOpaqueBackground()
+            
+            UINavigationBar.appearance().standardAppearance = navAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+            UINavigationBar.appearance().compactAppearance = navAppearance
 
-        // 2. Klasický neprůhledný vzhled pro Tab Bar (dolní lišta) 🔽
-        let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithOpaqueBackground()
-        
-        UITabBar.appearance().standardAppearance = tabAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
-
-        // 3. Vypnutí průhlednosti a skleněných efektů 🎨
-        UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
+            let tabAppearance = UITabBarAppearance()
+            tabAppearance.configureWithOpaqueBackground()
+            
+            UITabBar.appearance().standardAppearance = tabAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+            
+            UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
+        }
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-    }
-}
-
-// AppDelegate pro zamknutí orientace na výšku 🔄
-class AppDelegate: NSObject, UIApplicationDelegate {
-    static var orientationLock = UIInterfaceOrientationMask.portrait
-
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        return AppDelegate.orientationLock
     }
 }
