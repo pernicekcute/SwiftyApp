@@ -1,5 +1,5 @@
 <div align="center">
-   <img width="217" height="217" src="test" alt="Logo">
+   <img width="217" height="217" src="Assets.xcassets/AppIcon.appiconset/AppIcon_Dark.png" alt="Logo">
 </div>
    
 
