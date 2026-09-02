@@ -46,3 +46,36 @@
     <img src="https://img.shields.io/github/last-commit/pernicekcute/SwiftyApp?style=for-the-badge&logo=git&color=5AC8FA&label=Last%20Commit" alt="Last Commit">
   </p>
 </div>
+
+---
+
+## ✨ Features
+
+- 📱 **Moderní SwiftUI rozhraní** – Nativní design s podporou nejnovějších iOS prvků a plynulými animacemi.
+- 🌓 **Automatický Dark/Light režim** – Perfektně se přizpůsobí vzhledu tvého zařízení.
+- ⚡ **Automatizované CI/CD** – Využívá GitHub Actions pro rychlé kompilování a vytváření `.ipa` balíčků.
+- 🛠️ **Testovací sandbox** – Skvělý základ a playground pro zkoušení nových Swift konceptů a komponent.
+
+---
+
+## 📦 Installation
+
+Aplikaci si můžeš snadno stáhnout nebo zkompilovat podle sebe:
+
+### 1. Stažení hotového release (Pro uživatele)
+1. Přejdi do sekce [Releases](https://github.com/pernicekcute/SwiftyApp/releases).
+2. Stáhni si nejnovější `.ipa` soubor nebo zazipovaný zdroják.
+3. Nainstaluj do svého zařízení pomocí preferovaného nástroje (např. AltStore, Sideloadly nebo přes Xcode).
+
+### 2. Spuštění ze zdrojového kódu (Pro vývojáře)
+Pokud si chceš projekt upravit nebo otevřít v Xcode, postupuj následovně:
+
+```bash
+# Klonování repozitáře
+git clone [https://github.com/pernicekcute/SwiftyApp.git](https://github.com/pernicekcute/SwiftyApp.git)
+
+# Přechod do složky projektu
+cd SwiftyApp
+
+# Otevření projektu v Xcode (nebo použití XcodeGen, pokud ho projekt využívá)
+open SwiftyApp.xcodeproj
