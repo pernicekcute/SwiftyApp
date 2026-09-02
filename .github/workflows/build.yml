@@ -63,4 +63,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="v1.0.${{ github.run_number }}"
-          gh release create "$TAG_NAME" SwiftyApp.ipa --title "Build #${{ github.run_number }}" --notes "Automaticky vygenerovaný IPA soubor pro build #${{ github.run_number }}."
+          gh release create "$TAG_NAME" SwiftyApp.ipa --title "Build #${{ github.run_number }}" --notes "Automatic build for #${{ github.run_number }}."
