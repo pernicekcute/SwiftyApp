@@ -221,27 +221,28 @@ struct ProfileView: View {
 
 // MARK: - Settings View
 struct SettingsView: View {
-    @AppStorage("useNewStyle") private var useNewStyle: Bool = true
+    @AppStorage("useiOS26Style") private var useiOS26Style: Bool = true
+    @State private var showAlert = false
 
     var body: some View {
         Form {
-            Section(header: Text("Appearance"), footer: Text("Toggling this changes between the classic opaque look and the standard system look.")) {
-                Toggle("Use New Style", isOn: $useNewStyle)
-                    .onChange(of: useNewStyle) { _, newValue in
-                        // Aplikování nového tématu okamžitě
-                        ThemeManager.applyTheme(useNewStyle: newValue)
-                        
-                        // Obnovení UI v hlavním vláknu
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            for window in windowScene.windows {
-                                for subview in window.subviews {
-                                    subview.removeFromSuperview()
-                                    window.addSubview(subview)
-                                }
-                            }
-                        }
+            Section(
+                header: Text("Appearance"),
+                footer: Text("Switch between the legacy opaque style and the iOS 26 translucent look. Requires restarting the app to apply UI changes fully.")
+            ) {
+                Toggle("iOS 26 Style", isOn: $useiOS26Style)
+                    .onChange(of: useiOS26Style) { _, newValue in
+                        ThemeManager.applyTheme(useiOS26Style: newValue)
+                        showAlert = true
                     }
             }
+        }
+        .alert("Restart Required", isPresented: $showAlert) {
+            Button("Restart Now", role: .destructive) {
+                exit(0)
+            }
+        } message: {
+            Text("The app needs to close to re-initialize system bars. Please open it manually again.")
         }
     }
 }
