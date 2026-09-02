@@ -101,22 +101,20 @@ struct BottomSheetView: View {
     var body: some View {
         NavigationStack {
             BottomSheetContentView(searchText: $searchText)
-                .navigationTitle("") // Prazdny titulek zajisti vycentrovani vyhledavace nahore
-                .navigationBarTitleDisplayMode(.inline)
+                .toolbar(.hidden, for: .navigationBar)
                 .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
 }
 
-// MARK: - Bottom Sheet Content (SubView pro cteni @Environment(\.isSearching))
+// MARK: - Bottom Sheet Content
 struct BottomSheetContentView: View {
     @Binding var searchText: String
     
     @State private var rawLines: [String] = []
     @State private var isLoading: Bool = false
     
-    // Nativni sledovani, zda je vyhledavani aktivni
     @Environment(\.isSearching) private var isSearching
 
     var body: some View {
@@ -137,7 +135,6 @@ struct BottomSheetContentView: View {
                     }
                 }
             } else {
-                // Prazdne zobrazeni, kdyz uzivatel nevyhledava
                 Color.clear
             }
         }
