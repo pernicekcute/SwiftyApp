@@ -7,7 +7,7 @@
   <h1><b>SwiftyApp</b></h1>
   <p><i>A test app made by @pernicekcute</i></p>
 
-  <a href="https://github.com/pernicekcute/SwiftyApp/releases/latest">
+  <a href="https://github.com/pernicekcute/SwiftyApp/releases">
     <img src="https://img.shields.io/github/v/release/pernicekcute/SwiftyApp?style=for-the-badge&logo=github&color=007AFF&label=Newest%20Release" alt="Newest Release">
   </a>
 </div>
