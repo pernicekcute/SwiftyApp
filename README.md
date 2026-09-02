@@ -1,3 +1,14 @@
+<div align="center">
+   <img width="217" height="217" src="test" alt="Logo">
+</div>
+   
+
+<div align="center">
+  <h1><b>SwiftyApp</b></h1>
+  <p><i>A test app made by @pernicekcute</i></p>
+</div>
+<h6 align="center">
+
 # 🦆 SwiftyApp 📱✨
 
 *Moderní iOS aplikace napsaná ve Swiftu a SwiftUI s automatizovaným CI/CD sestavováním.* 🛠️⚡
