@@ -1,3 +1,6 @@
+> [!WARNING]
+> The developer has taken a break from this app and won't do updates until 10/30/26.
+
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="Assets.xcassets/AppIcon.appiconset/IMG_0230.png">
