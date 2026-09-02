@@ -1,11 +1,5 @@
 <div align="center">
-   <img width="217" height="217" src="Assets.xcassets/AppIcon.appiconset/AppIcon_Dark.png" alt="Logo" style="border-radius: 50%;">
-</div>
-
-   
-
-<div align="center">
+  <img src="Assets.xcassets/AppIcon.appiconset/AppIcon_Dark.png" width="180" height="180" alt="SwiftyApp Logo" style="border-radius: 22%;">
   <h1><b>SwiftyApp</b></h1>
   <p><i>A test app made by @pernicekcute</i></p>
 </div>
-
