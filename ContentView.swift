@@ -102,35 +102,61 @@ struct BottomSheetView: View {
     @Binding var userName: String
     @Binding var userEmail: String
     
-    // Stav pro vyhledávání 🔍
     @State private var searchText: String = ""
+    @State private var rawLines: [String] = []
+    @State private var isLoading: Bool = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: "iphone")
-                    .font(.system(size: 40))
-                    .foregroundColor(.secondary)
-                
-                Text("Content is now always visible! 🎉")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                
-                if !searchText.isEmpty {
-                    Text("Hledáš: '\(searchText)' 🔎")
-                        .font(.caption)
-                        .foregroundColor(.blue)
+            Form {
+                if isLoading {
+                    Section {
+                        ProgressView("Načítám data z GitHubu...")
+                    }
+                } else {
+                    Section {
+                        ForEach(filteredLines, id: \.self) { line in
+                            Text(line)
+                        }
+                    }
                 }
-                
-                Spacer()
             }
-            .padding(.top, 10)
-            .navigationTitle("Search View")
-            .navigationBarTitleDisplayMode(.inline)
-            // Přidání vyhledávacího pole, které je stále k dispozici 🌟
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    EmptyView()
+                }
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
+        .onAppear {
+            fetchRemoteData()
+        }
+    }
+
+    var filteredLines: [String] {
+        if searchText.isEmpty {
+            return rawLines
+        } else {
+            return rawLines.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+
+    func fetchRemoteData() {
+        guard let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/search.txt") else { return }
+        isLoading = true
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                isLoading = false
+                guard let data = data, let content = String(data: data, encoding: .utf8) else { return }
+                
+                // Rozdělení textu na jednotlivé řádky a odstranění prázdných řádků
+                rawLines = content.components(separatedBy: .newlines)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+            }
+        }.resume()
     }
 }
