@@ -101,29 +101,35 @@ struct BottomSheetView: View {
     @Binding var selectedDetent: PresentationDetent
     @Binding var userName: String
     @Binding var userEmail: String
+    
+    // Stav pro vyhledávání 🔍
+    @State private var searchText: String = ""
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if selectedDetent != .height(80) {
-                    // Zobrazí se pouze v rozbaleném stavu (medium / large) ⚠️📱
-                    VStack(spacing: 12) {
-                        Image(systemName: "iphone")
-                            .font(.system(size: 40))
-                            .foregroundColor(.secondary)
-                        
-                        Text("This sheet is undone and is in this state.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.opacity)
-                } else {
-                    Spacer()
+            VStack(spacing: 16) {
+                Image(systemName: "iphone")
+                    .font(.system(size: 40))
+                    .foregroundColor(.secondary)
+                
+                Text("Content is now always visible! 🎉")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
+                if !searchText.isEmpty {
+                    Text("Hledáš: '\(searchText)' 🔎")
+                        .font(.caption)
+                        .foregroundColor(.blue)
                 }
+                
+                Spacer()
             }
+            .padding(.top, 10)
+            .navigationTitle("Search View")
             .navigationBarTitleDisplayMode(.inline)
+            // Přidání vyhledávacího pole, které je stále k dispozici 🌟
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
