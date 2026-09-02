@@ -19,6 +19,8 @@ class ThemeManager {
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
+        } else {
+        
         }
     }
     
@@ -45,8 +47,11 @@ struct SwiftyAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        // Synchronní načtení konfiguračního souboru při startu
-        if let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt"),
+        // Obcházení cache pomocí časového razítka v URL
+        let timestamp = Date().timeIntervalSince1970
+        let urlString = "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt?nocache=\(timestamp)"
+        
+        if let url = URL(string: urlString),
            let content = try? String(contentsOf: url, encoding: .utf8) {
             let useOldStyle = ThemeManager.parseBool(from: content)
             ThemeManager.configureTheme(useOldStyle: useOldStyle)
