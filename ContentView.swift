@@ -10,19 +10,15 @@ struct ContentView: View {
     @State private var userName: String = "Quacky"
     @State private var userEmail: String = "local.mode@app.local"
     
-    // Location and network manager
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Background map: dynamically picks satellite (when on Wi-Fi / cellular) or standard (when offline)
             Map(position: $locationManager.cameraPosition, interactionModes: []) {
-                // You can add map markers or overlays here if needed
             }
             .mapStyle(locationManager.isOnline ? .imagery : .standard)
             .ignoresSafeArea()
             
-            // Subtle overlay for better interface legibility over the map
             Color.black.opacity(0.1)
                 .ignoresSafeArea()
         }
@@ -47,8 +43,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378), // Default (Prague)
-            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)   // Very close zoom (~12 meters)
+            center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378),
+            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)
         )
     )
     
@@ -63,14 +59,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private func setupLocationManager() {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.requestWhenInUseAuthorization() // Requests location permission from the user
+        manager.requestWhenInUseAuthorization()
         manager.startUpdatingLocation()
     }
 
     private func setupNetworkMonitor() {
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                // Checks whether Wi-Fi or cellular data is active
                 let hasWifiOrCellular = path.usesInterfaceType(.wifi) || path.usesInterfaceType(.cellular)
                 self?.isOnline = (path.status == .satisfied && hasWifiOrCellular)
             }
@@ -86,7 +81,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        // Updates the map camera precisely to the user's location while maintaining a ~12m zoom
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: location.coordinate,
@@ -103,48 +97,36 @@ struct BottomSheetView: View {
     @Binding var userEmail: String
     
     @State private var searchText: String = ""
-    @State private var rawLines: [String] = []
-    @State private var isLoading: Bool = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // ZCEROVANÉ VYHLEDÁVÁNÍ NA X A Y OSE NA VRCHOLU
-                ZStack {
-                    HStack {
-                        Spacer()
-                    }
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Search...", text: $searchText)
-                            .textFieldStyle(.plain)
-                        
-                        if !searchText.isEmpty {
-                            Button(action: {
-                                searchText = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .frame(width: 320)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 12)
-                .padding(.bottom, 8)
-                
+            BottomSheetContentView(searchText: $searchText)
+                .navigationTitle("") // Prazdny titulek zajisti vycentrovani vyhledavace nahore
+                .navigationBarTitleDisplayMode(.inline)
+                .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
+        }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
+    }
+}
+
+// MARK: - Bottom Sheet Content (SubView pro cteni @Environment(\.isSearching))
+struct BottomSheetContentView: View {
+    @Binding var searchText: String
+    
+    @State private var rawLines: [String] = []
+    @State private var isLoading: Bool = false
+    
+    // Nativni sledovani, zda je vyhledavani aktivni
+    @Environment(\.isSearching) private var isSearching
+
+    var body: some View {
+        Group {
+            if isSearching {
                 Form {
                     if isLoading {
                         Section {
-                            ProgressView("Načítám data z GitHubu...")
+                            ProgressView("Nacitam data z GitHubu...")
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                     } else {
                         Section {
@@ -154,12 +136,15 @@ struct BottomSheetView: View {
                         }
                     }
                 }
+            } else {
+                // Prazdne zobrazeni, kdyz uzivatel nevyhledava
+                Color.clear
             }
-            .navigationBarHidden(true)
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
-        .onAppear {
-            fetchRemoteData()
+        .onChange(of: isSearching) { newValue in
+            if newValue && rawLines.isEmpty {
+                fetchRemoteData()
+            }
         }
     }
 
