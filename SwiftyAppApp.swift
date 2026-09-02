@@ -2,11 +2,11 @@ import SwiftUI
 import UIKit
 
 class ThemeManager {
-    static func applyTheme(useNewStyle: Bool) {
-        if useNewStyle {
-            // Obnovení nového/systémového vzhledu
+    static func applyTheme(useiOS26Style: Bool) {
+        if useiOS26Style {
+            // iOS 26 Style: Průhledný / moderní systémovýzhled
             let navAppearance = UINavigationBarAppearance()
-            navAppearance.configureWithDefaultBackground()
+            navAppearance.configureWithTransparentBackground()
             
             UINavigationBar.appearance().standardAppearance = navAppearance
             UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
@@ -20,7 +20,7 @@ class ThemeManager {
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = nil
         } else {
-            // Starý neprůhledný vzhled
+            // Old Style: Klasický neprůhledný blokový vzhled
             let navAppearance = UINavigationBarAppearance()
             navAppearance.configureWithOpaqueBackground()
             
@@ -41,11 +41,12 @@ class ThemeManager {
 
 @main
 struct SwiftyAppApp: App {
-    @AppStorage("useNewStyle") private var useNewStyle: Bool = true
+    @AppStorage("useiOS26Style") private var useiOS26Style: Bool = true
 
     init() {
-        let isNewStyle = UserDefaults.standard.bool(forKey: "useNewStyle")
-        ThemeManager.applyTheme(useNewStyle: isNewStyle)
+        // Načtení hodnoty z UserDefaults při startu aplikace
+        let isNewStyle = UserDefaults.standard.object(forKey: "useiOS26Style") as? Bool ?? true
+        ThemeManager.applyTheme(useiOS26Style: isNewStyle)
     }
 
     var body: some Scene {
