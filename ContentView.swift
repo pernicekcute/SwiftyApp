@@ -222,23 +222,26 @@ struct ProfileView: View {
 // MARK: - Settings View
 struct SettingsView: View {
     @AppStorage("useNewStyle") private var useNewStyle: Bool = true
-    @State private var showAlert = false
 
     var body: some View {
         Form {
-            Section(header: Text("Appearance"), footer: Text("Changing the style requires restarting the app.")) {
+            Section(header: Text("Appearance"), footer: Text("Toggling this changes between the classic opaque look and the standard system look.")) {
                 Toggle("Use New Style", isOn: $useNewStyle)
-                    .onChange(of: useNewStyle) { _, _ in
-                        showAlert = true
+                    .onChange(of: useNewStyle) { _, newValue in
+                        // Aplikování nového tématu okamžitě
+                        ThemeManager.applyTheme(useNewStyle: newValue)
+                        
+                        // Obnovení UI v hlavním vláknu
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                            for window in windowScene.windows {
+                                for subview in window.subviews {
+                                    subview.removeFromSuperview()
+                                    window.addSubview(subview)
+                                }
+                            }
+                        }
                     }
             }
-        }
-        .alert("Restart Required", isPresented: $showAlert) {
-            Button("Restart Now", role: .destructive) {
-                exit(0)
-            }
-        } message: {
-            Text("The app needs to close to apply the new UI style. Please reopen it manually.")
         }
     }
 }
