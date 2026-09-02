@@ -59,5 +59,6 @@ jobs:
       - name: Nahrání SwiftyApp.ipa do GitHub Artifacts 📤
         uses: actions/upload-artifact@v4
         with:
-          name: SwiftyApp
+          name: SwiftyApp.ipa
           path: SwiftyApp.ipa
+          compression-level: 0
