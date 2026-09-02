@@ -105,15 +105,37 @@ struct BottomSheetView: View {
     @State private var searchText: String = ""
     @State private var rawLines: [String] = []
     @State private var isLoading: Bool = false
-    @Environment(\.isSearching) private var isSearching
 
     var body: some View {
         NavigationStack {
-            Form {
-                if isSearching {
+            VStack(spacing: 0) {
+                // Vlastní vyhledávací pole připnuté nahoře a centrované
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Search...", text: $searchText)
+                        .textFieldStyle(.plain)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                
+                Form {
                     if isLoading {
                         Section {
-                            ProgressView("Loading data from GitHub.")
+                            ProgressView("Načítám data z GitHubu...")
                         }
                     } else {
                         Section {
@@ -124,19 +146,11 @@ struct BottomSheetView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    EmptyView()
-                }
-            }
+            .navigationBarHidden(true)
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
-        .onChange(of: isSearching) { newValue in
-            if newValue && rawLines.isEmpty {
-                fetchRemoteData()
-            }
+        .onAppear {
+            fetchRemoteData()
         }
     }
 
