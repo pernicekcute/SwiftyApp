@@ -24,21 +24,13 @@ class ThemeManager {
 
         } else {
             // 🌟 DEFAULTNÍ SYSTÉMOVÝ VZHLED
-            // Necháváme iOS, aby si vzhled řídil samo.
-            // iOS 27 → iOS 27 styl
-            // iOS 28 → iOS 28 styl
+            //
+            // Nic nenastavujeme.
+            // UIKit + SwiftUI si použijí aktuální systémový vzhled.
+            //
+            // iOS 27 → iOS 27 systémový vzhled
+            // iOS 28 → iOS 28 systémový vzhled
             // atd.
-
-            UINavigationBar.appearance().standardAppearance = nil
-            UINavigationBar.appearance().scrollEdgeAppearance = nil
-            UINavigationBar.appearance().compactAppearance = nil
-
-            UITabBar.appearance().standardAppearance = nil
-            UITabBar.appearance().scrollEdgeAppearance = nil
-
-            UIView.appearance(
-                whenContainedInInstancesOf: [UIAlertController.self]
-            ).backgroundColor = nil
         }
     }
 
@@ -50,6 +42,7 @@ class ThemeManager {
                 in: .whitespacesAndNewlines
             )
 
+            // Přeskočit prázdné řádky a komentáře
             if trimmedLine.isEmpty ||
                 trimmedLine.hasPrefix("#") ||
                 trimmedLine.hasPrefix("//") {
