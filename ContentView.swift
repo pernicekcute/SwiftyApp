@@ -105,18 +105,21 @@ struct BottomSheetView: View {
     @State private var searchText: String = ""
     @State private var rawLines: [String] = []
     @State private var isLoading: Bool = false
+    @Environment(\.isSearching) private var isSearching
 
     var body: some View {
         NavigationStack {
             Form {
-                if isLoading {
-                    Section {
-                        ProgressView("Načítám data z GitHubu...")
-                    }
-                } else {
-                    Section {
-                        ForEach(filteredLines, id: \.self) { line in
-                            Text(line)
+                if isSearching {
+                    if isLoading {
+                        Section {
+                            ProgressView("Loading data from GitHub.")
+                        }
+                    } else {
+                        Section {
+                            ForEach(filteredLines, id: \.self) { line in
+                                Text(line)
+                            }
                         }
                     }
                 }
@@ -130,8 +133,10 @@ struct BottomSheetView: View {
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
-        .onAppear {
-            fetchRemoteData()
+        .onChange(of: isSearching) { newValue in
+            if newValue && rawLines.isEmpty {
+                fetchRemoteData()
+            }
         }
     }
 
@@ -152,7 +157,6 @@ struct BottomSheetView: View {
                 isLoading = false
                 guard let data = data, let content = String(data: data, encoding: .utf8) else { return }
                 
-                // Rozdělení textu na jednotlivé řádky a odstranění prázdných řádků
                 rawLines = content.components(separatedBy: .newlines)
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .filter { !$0.isEmpty }
