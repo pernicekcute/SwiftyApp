@@ -19,14 +19,6 @@ class ThemeManager {
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
-        } else {
-            // Nový výchozí styl
-            UINavigationBar.appearance().standardAppearance = UINavigationBarAppearance()
-            UINavigationBar.appearance().scrollEdgeAppearance = nil
-            UINavigationBar.appearance().compactAppearance = nil
-            
-            UITabBar.appearance().standardAppearance = UITabBarAppearance()
-            UITabBar.appearance().scrollEdgeAppearance = nil
         }
     }
     
