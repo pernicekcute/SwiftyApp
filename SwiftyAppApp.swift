@@ -2,16 +2,8 @@ import SwiftUI
 import UIKit
 
 class ThemeManager {
-    static func configureTheme(useNewStyle: Bool) {
-        if useNewStyle {
-            // Nový / moderní vzhled (starý kód je vynechaný)
-            UINavigationBar.appearance().standardAppearance = UINavigationBarAppearance()
-            UINavigationBar.appearance().scrollEdgeAppearance = nil
-            UINavigationBar.appearance().compactAppearance = nil
-            
-            UITabBar.appearance().standardAppearance = UITabBarAppearance()
-            UITabBar.appearance().scrollEdgeAppearance = nil
-        } else {
+    static func configureTheme(useOldStyle: Bool) {
+        if useOldStyle {
             // Starý neprůhledný vzhled
             let navAppearance = UINavigationBarAppearance()
             navAppearance.configureWithOpaqueBackground()
@@ -27,37 +19,48 @@ class ThemeManager {
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
+        } else {
+            // Nový výchozí styl
+            UINavigationBar.appearance().standardAppearance = UINavigationBarAppearance()
+            UINavigationBar.appearance().scrollEdgeAppearance = nil
+            UINavigationBar.appearance().compactAppearance = nil
+            
+            UITabBar.appearance().standardAppearance = UITabBarAppearance()
+            UITabBar.appearance().scrollEdgeAppearance = nil
         }
     }
     
-    static func fetchRemoteStyle() {
-        guard let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt") else { return }
+    static func parseBool(from content: String) -> Bool {
+        let lines = content.components(separatedBy: .newlines)
         
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, let content = String(data: data, encoding: .utf8) else { return }
+        for line in lines {
+            let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            let isTrue = content.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "true"
-            
-            DispatchQueue.main.async {
-                configureTheme(useNewStyle: isTrue)
+            // Přeskočení prázdných řádků a komentářů
+            if trimmedLine.isEmpty || trimmedLine.hasPrefix("#") || trimmedLine.hasPrefix("//") {
+                continue
             }
+            
+            return trimmedLine.lowercased() == "true"
         }
-        task.resume()
+        
+        return false
     }
 }
 
 @main
 struct SwiftyAppApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        // Synchronní pokus o načtení textu z remote URL
+        // Synchronní načtení konfiguračního souboru při startu
         if let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt"),
            let content = try? String(contentsOf: url, encoding: .utf8) {
-            let isTrue = content.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "true"
-            ThemeManager.configureTheme(useNewStyle: isTrue)
+            let useOldStyle = ThemeManager.parseBool(from: content)
+            ThemeManager.configureTheme(useOldStyle: useOldStyle)
         } else {
-            // Výchozí starý styl, pokud se soubor nenačte
-            ThemeManager.configureTheme(useNewStyle: false)
+            // Výchozí starý styl v případě selhání sítě
+            ThemeManager.configureTheme(useOldStyle: true)
         }
     }
 
@@ -68,7 +71,7 @@ struct SwiftyAppApp: App {
     }
 }
 
-// AppDelegate pro zamknutí orientace na výšku
+// AppDelegate pro zamykání orientace displeje
 class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock = UIInterfaceOrientationMask.portrait
 
