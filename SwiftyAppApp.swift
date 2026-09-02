@@ -4,7 +4,7 @@ import UIKit
 class ThemeManager {
     static func configureTheme(useOldStyle: Bool) {
         if useOldStyle {
-            // 🧱 Starý neprůhledný vzhled (iOS 14 a starší styl)
+            // 🧱 Starý neprůhledný vzhled 🧱
             let navAppearance = UINavigationBarAppearance()
             navAppearance.configureWithOpaqueBackground()
             
@@ -20,30 +20,21 @@ class ThemeManager {
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
         } else {
-            // 🌟 SKUTEČNÝ VÝCHOZÍ iOS STYL (Průhledné okraje, blur až při scrollování) 🌟
+            // 🌟 ZBRUSU NOVÝ iOS 27 STYL (Aktivní moderní systémový vzhled) 🌟
+            let navAppearance = UINavigationBarAppearance()
+            navAppearance.configureWithDefaultBackground() // Vynutí moderní iOS 27 chování lišty
             
-            // --- Navigation Bar (Nahoře) ---
-            let standardNav = UINavigationBarAppearance()
-            standardNav.configureWithDefaultBackground() // Blur efekt při posunu
-            
-            let transparentNav = UINavigationBarAppearance()
-            transparentNav.configureWithTransparentBackground() // Zcela průhledné na začátku
-            
-            UINavigationBar.appearance().standardAppearance = standardNav
-            UINavigationBar.appearance().scrollEdgeAppearance = transparentNav
-            UINavigationBar.appearance().compactAppearance = standardNav
+            UINavigationBar.appearance().standardAppearance = navAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance // Tady necháme stejný, aby byl styl konzistentní a plný
+            UINavigationBar.appearance().compactAppearance = navAppearance
 
-            // --- Tab Bar (Dole) ---
-            let standardTab = UITabBarAppearance()
-            standardTab.configureWithDefaultBackground() // Blur efekt při posunu
+            let tabAppearance = UITabBarAppearance()
+            tabAppearance.configureWithDefaultBackground() // Moderní iOS 27 styl pro dolní Tab Bar
             
-            let transparentTab = UITabBarAppearance()
-            transparentTab.configureWithTransparentBackground() // Zcela průhledné, když obsah nedosahuje až sem
+            UITabBar.appearance().standardAppearance = tabAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
             
-            UITabBar.appearance().standardAppearance = standardTab
-            UITabBar.appearance().scrollEdgeAppearance = transparentTab
-            
-            // Výchozí Alerts
+            // Moderní systémové pozadí pro alerty
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = nil
         }
     }
