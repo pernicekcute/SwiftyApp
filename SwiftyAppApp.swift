@@ -4,7 +4,7 @@ import UIKit
 class ThemeManager {
     static func configureTheme(useOldStyle: Bool) {
         if useOldStyle {
-            // 🧱 Starý neprůhledný vzhled 🧱
+            // 🧱 Starý neprůhledný vzhled (iOS 14 a starší styl)
             let navAppearance = UINavigationBarAppearance()
             navAppearance.configureWithOpaqueBackground()
             
@@ -20,21 +20,30 @@ class ThemeManager {
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
         } else {
-            // 🌟 Nový moderní iOS 27 skleněný (translucent) vzhled 🌟
-            let navAppearance = UINavigationBarAppearance()
-            navAppearance.configureWithDefaultBackground() // Vytvoří ten hezký blur efekt! ✨
+            // 🌟 SKUTEČNÝ VÝCHOZÍ iOS STYL (Průhledné okraje, blur až při scrollování) 🌟
             
-            UINavigationBar.appearance().standardAppearance = navAppearance
-            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-            UINavigationBar.appearance().compactAppearance = navAppearance
+            // --- Navigation Bar (Nahoře) ---
+            let standardNav = UINavigationBarAppearance()
+            standardNav.configureWithDefaultBackground() // Blur efekt při posunu
+            
+            let transparentNav = UINavigationBarAppearance()
+            transparentNav.configureWithTransparentBackground() // Zcela průhledné na začátku
+            
+            UINavigationBar.appearance().standardAppearance = standardNav
+            UINavigationBar.appearance().scrollEdgeAppearance = transparentNav
+            UINavigationBar.appearance().compactAppearance = standardNav
 
-            let tabAppearance = UITabBarAppearance()
-            tabAppearance.configureWithDefaultBackground()
+            // --- Tab Bar (Dole) ---
+            let standardTab = UITabBarAppearance()
+            standardTab.configureWithDefaultBackground() // Blur efekt při posunu
             
-            UITabBar.appearance().standardAppearance = tabAppearance
-            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+            let transparentTab = UITabBarAppearance()
+            transparentTab.configureWithTransparentBackground() // Zcela průhledné, když obsah nedosahuje až sem
             
-            // Vrátí Alertům jejich přirozený systémový iOS 27 vzhled 🎨
+            UITabBar.appearance().standardAppearance = standardTab
+            UITabBar.appearance().scrollEdgeAppearance = transparentTab
+            
+            // Výchozí Alerts
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = nil
         }
     }
@@ -45,7 +54,7 @@ class ThemeManager {
         for line in lines {
             let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // Přeskočení prázdných řádků a komentářů 🛑📝
+            // Přeskočení prázdných řádků a komentářů
             if trimmedLine.isEmpty || trimmedLine.hasPrefix("#") || trimmedLine.hasPrefix("//") {
                 continue
             }
@@ -53,7 +62,7 @@ class ThemeManager {
             return trimmedLine.lowercased() == "true"
         }
         
-        return false // Pokud tam není "true", hodí false a zapne iOS 27 styl! 😎
+        return false 
     }
 }
 
@@ -62,7 +71,7 @@ struct SwiftyAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        // 🚀 Obcházení cache pomocí časového razítka v URL, ať se změny projeví hned! 🚀
+        // Obcházení cache pomocí časového razítka v URL
         let timestamp = Date().timeIntervalSince1970
         let urlString = "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt?nocache=\(timestamp)"
         
@@ -71,7 +80,7 @@ struct SwiftyAppApp: App {
             let useOldStyle = ThemeManager.parseBool(from: content)
             ThemeManager.configureTheme(useOldStyle: useOldStyle)
         } else {
-            // 📡 Výchozí starý styl v případě selhání sítě (když není internet) 📡
+            // Výchozí starý styl v případě selhání sítě
             ThemeManager.configureTheme(useOldStyle: true)
         }
     }
@@ -83,7 +92,7 @@ struct SwiftyAppApp: App {
     }
 }
 
-// 🔄 AppDelegate pro zamykání orientace displeje na výšku 🔄
+// AppDelegate pro zamykání orientace displeje
 class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock = UIInterfaceOrientationMask.portrait
 
