@@ -4,7 +4,7 @@ import UIKit
 class ThemeManager {
     static func configureTheme(useOldStyle: Bool) {
         if useOldStyle {
-            // Starý neprůhledný vzhled
+            // 🧱 Starý neprůhledný vzhled 🧱
             let navAppearance = UINavigationBarAppearance()
             navAppearance.configureWithOpaqueBackground()
             
@@ -20,7 +20,22 @@ class ThemeManager {
             
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
         } else {
-        
+            // 🌟 Nový moderní iOS 27 skleněný (translucent) vzhled 🌟
+            let navAppearance = UINavigationBarAppearance()
+            navAppearance.configureWithDefaultBackground() // Vytvoří ten hezký blur efekt! ✨
+            
+            UINavigationBar.appearance().standardAppearance = navAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+            UINavigationBar.appearance().compactAppearance = navAppearance
+
+            let tabAppearance = UITabBarAppearance()
+            tabAppearance.configureWithDefaultBackground()
+            
+            UITabBar.appearance().standardAppearance = tabAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+            
+            // Vrátí Alertům jejich přirozený systémový iOS 27 vzhled 🎨
+            UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = nil
         }
     }
     
@@ -30,7 +45,7 @@ class ThemeManager {
         for line in lines {
             let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // Přeskočení prázdných řádků a komentářů
+            // Přeskočení prázdných řádků a komentářů 🛑📝
             if trimmedLine.isEmpty || trimmedLine.hasPrefix("#") || trimmedLine.hasPrefix("//") {
                 continue
             }
@@ -38,7 +53,7 @@ class ThemeManager {
             return trimmedLine.lowercased() == "true"
         }
         
-        return false
+        return false // Pokud tam není "true", hodí false a zapne iOS 27 styl! 😎
     }
 }
 
@@ -47,7 +62,7 @@ struct SwiftyAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        // Obcházení cache pomocí časového razítka v URL
+        // 🚀 Obcházení cache pomocí časového razítka v URL, ať se změny projeví hned! 🚀
         let timestamp = Date().timeIntervalSince1970
         let urlString = "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/iosstyle.txt?nocache=\(timestamp)"
         
@@ -56,7 +71,7 @@ struct SwiftyAppApp: App {
             let useOldStyle = ThemeManager.parseBool(from: content)
             ThemeManager.configureTheme(useOldStyle: useOldStyle)
         } else {
-            // Výchozí starý styl v případě selhání sítě
+            // 📡 Výchozí starý styl v případě selhání sítě (když není internet) 📡
             ThemeManager.configureTheme(useOldStyle: true)
         }
     }
@@ -68,7 +83,7 @@ struct SwiftyAppApp: App {
     }
 }
 
-// AppDelegate pro zamykání orientace displeje
+// 🔄 AppDelegate pro zamykání orientace displeje na výšku 🔄
 class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock = UIInterfaceOrientationMask.portrait
 
