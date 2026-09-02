@@ -1,5 +1,7 @@
 > [!WARNING]
 > The developer has taken a break from this app and won't do updates until 10/30/26.
+>
+> Note from developer: "I'm just tired, the theme won't switch and it's getting boring..."
 
 <div align="center">
   <picture>
