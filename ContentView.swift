@@ -109,28 +109,37 @@ struct BottomSheetView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Vlastní vyhledávací pole připnuté nahoře a centrované
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
+                // ZCEROVANÉ VYHLEDÁVÁNÍ NA X A Y OSE NA VRCHOLU
+                ZStack {
+                    HStack {
+                        Spacer()
+                    }
                     
-                    TextField("Search...", text: $searchText)
-                        .textFieldStyle(.plain)
-                    
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        
+                        TextField("Search...", text: $searchText)
+                            .textFieldStyle(.plain)
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .frame(width: 320)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
-                .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
-                .padding(.top, 8)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
                 
                 Form {
                     if isLoading {
