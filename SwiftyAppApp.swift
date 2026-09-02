@@ -5,20 +5,22 @@ import UIKit
 struct SwiftyAppApp: App {
     
     init() {
-        // 1. Klasický neprůhledný vzhled pro Navigation Bar (horní lišta)
+        // 1. Klasický neprůhledný vzhled pro Navigation Bar (horní lišta) 📱
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
+        
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-        navAppearance.compactAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance // 🛠️ Opraveno zde!
 
-        // 2. Klasický neprůhledný vzhled pro Tab Bar (dolní lišta)
+        // 2. Klasický neprůhledný vzhled pro Tab Bar (dolní lišta) 🔽
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithOpaqueBackground()
+        
         UITabBar.appearance().standardAppearance = tabAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabAppearance
 
-        // 3. Vypnutí průhlednosti a skleněných efektů u systémových oken a prvků
+        // 3. Vypnutí průhlednosti a skleněných efektů 🎨
         UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).backgroundColor = .systemBackground
     }
 
@@ -29,8 +31,7 @@ struct SwiftyAppApp: App {
     }
 }
 
-
-// AppDelegate to globally enforce portrait mode
+// AppDelegate pro zamknutí orientace na výšku 🔄
 class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock = UIInterfaceOrientationMask.portrait
 
