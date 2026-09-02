@@ -58,11 +58,9 @@ jobs:
           cp -r "$APP_PATH" Payload/
           zip -r SwiftyApp.ipa Payload
 
-      - name: Nahrání SwiftyApp.ipa do GitHub Release 🚀
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-${{ github.run_number }}
-          name: Build #${{ github.run_number }}
-          files: SwiftyApp.ipa
+      - name: Nahrání SwiftyApp.ipa do GitHub Releases 🚀
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          gh release create "$TAG_NAME" SwiftyApp.ipa --title "Build #${{ github.run_number }}" --notes "Automaticky vygenerovaný IPA soubor pro build #${{ github.run_number }}."
