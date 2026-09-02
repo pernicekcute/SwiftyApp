@@ -18,7 +18,7 @@
 
   <p>
     <img src="https://img.shields.io/badge/Swift-5.9-F05138?style=for-the-badge&logo=swift&logoColor=white" alt="Swift 5.9">
-    <img src="https://img.shields.io/badge/iOS-16.0%2B-000000?style=for-the-badge&logo=apple&logoColor=white" alt="iOS 16.0+">
+    <img src="https://img.shields.io/badge/iOS-26.0%2B-000000?style=for-the-badge&logo=apple&logoColor=white" alt="iOS 16.0+">
     <a href="https://github.com/pernicekcute/SwiftyApp/blob/main/LICENSE">
       <img src="https://img.shields.io/github/license/pernicekcute/SwiftyApp?style=for-the-badge&color=AF52DE" alt="License">
     </a>
