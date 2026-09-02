@@ -5,7 +5,7 @@ import Network
 // MARK: - Main App View
 struct ContentView: View {
     @State private var showSheet = true
-    @State private var selectedDetent: PresentationDetent = .height(80)
+    @State private var selectedDetent: PresentationDetent = .medium
     
     @State private var userName: String = "Quacky"
     @State private var userEmail: String = "local.mode@app.local"
@@ -28,7 +28,7 @@ struct ContentView: View {
                 userName: $userName,
                 userEmail: $userEmail
             )
-            .presentationDetents([.height(80), .medium, .large], selection: $selectedDetent)
+            .presentationDetents([.medium, .large], selection: $selectedDetent)
             .presentationBackgroundInteraction(.enabled)
             .interactiveDismissDisabled()
         }
@@ -99,10 +99,25 @@ struct BottomSheetView: View {
     @State private var searchText: String = ""
 
     var body: some View {
-        NavigationStack {
-            BottomSheetContentView(searchText: $searchText)
-                .toolbar(.hidden, for: .navigationBar)
-                .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
+        TabView {
+            // Tab 1: Search
+            NavigationStack {
+                BottomSheetContentView(searchText: $searchText)
+                    .toolbar(.hidden, for: .navigationBar)
+                    .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search...")
+            }
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
+            
+            // Tab 2: Profile
+            NavigationStack {
+                ProfileView(userName: $userName, userEmail: $userEmail)
+                    .navigationTitle("Profile")
+            }
+            .tabItem {
+                Label("Profile", systemImage: "person.fill")
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
@@ -123,7 +138,7 @@ struct BottomSheetContentView: View {
                 Form {
                     if isLoading {
                         Section {
-                            ProgressView("Nacitam data z GitHubu...")
+                            ProgressView("Loading data from GitHub...")
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }
                     } else {
@@ -135,7 +150,7 @@ struct BottomSheetContentView: View {
                     }
                 }
             } else {
-                Color.clear
+                ContentUnavailableView("Start Searching", systemImage: "magnifyingglass", description: Text("Tap the search bar above"))
             }
         }
         .onChange(of: isSearching) { newValue in
@@ -167,5 +182,30 @@ struct BottomSheetContentView: View {
                     .filter { !$0.isEmpty }
             }
         }.resume()
+    }
+}
+
+// MARK: - Profile View
+struct ProfileView: View {
+    @Binding var userName: String
+    @Binding var userEmail: String
+
+    var body: some View {
+        Form {
+            Section(header: Text("User Info")) {
+                HStack {
+                    Text("Name")
+                    Spacer()
+                    TextField("Name", text: $userName)
+                        .multilineTextAlignment(.trailing)
+                }
+                HStack {
+                    Text("Email")
+                    Spacer()
+                    TextField("Email", text: $userEmail)
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+        }
     }
 }
