@@ -120,48 +120,99 @@ struct BottomSheetView: View {
                 Label("Profile", systemImage: "person.fill")
             }
             
-            // Tab 3: Sliders and More
+            // Tab 3: Scroll Slider (z videa)
             NavigationStack {
-                SlidersAndMoreView()
-                    .navigationTitle("Sliders")
+                ScrollSliderView()
+                    .navigationTitle("Scroll Slider")
             }
             .tabItem {
-                Label("Sliders", systemImage: "slider.horizontal.3")
+                Label("Slider", systemImage: "timer")
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
     }
 }
 
-// MARK: - Sliders and More View
-struct SlidersAndMoreView: View {
-    @State private var selectedMinutes: Double = 15.0
+// MARK: - Scroll-Style Minute Slider View (Inspirováno videem)
+struct ScrollSliderView: View {
+    @State private var selectedMinutes: Int = 15
+    @State private var dragOffset: CGFloat = 0
+    @State private var baseOffset: CGFloat = 0
+
+    let tickSpacing: CGFloat = 12
+    let maxMinutes = 60
 
     var body: some View {
-        Form {
-            Section(header: Text("Time Setting")) {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("Minutes:")
-                            .font(.headline)
-                        Spacer()
-                        // Číslo zobrazené nad/vedle slideru
-                        Text("\(Int(selectedMinutes)) min")
-                            .font(.title3)
-                            .bold()
-                            .foregroundColor(.accentColor)
-                    }
-                    
-                    Slider(value: $selectedMinutes, in: 0...60, step: 1) {
-                        Text("Minutes")
-                    } minimumValueLabel: {
-                        Text("0m")
-                    } maximumValueLabel: {
-                        Text("60m")
-                    }
-                }
-                .padding(.vertical, 8)
+        VStack(spacing: 30) {
+            Spacer()
+            
+            // Číslo zobrazené nad sliderem
+            VStack(spacing: 4) {
+                Text("\(selectedMinutes)")
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .foregroundColor(.accentColor)
+                    .contentTransition(.numericText())
+                Text("minutes")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
+            
+            // Vizuální rolovací lišta (tick marks)
+            ZStack {
+                // Ukazatel aktuální hodnoty uprostřed
+                Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: 3, height: 40)
+                    .cornerRadius(1.5)
+                    .zIndex(1)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: tickSpacing) {
+                        ForEach(0...maxMinutes, id: \.self) { minute in
+                            Rectangle()
+                                .fill(minute == selectedMinutes ? Color.accentColor : Color.secondary.opacity(0.4))
+                                .frame(width: minute % 5 == 0 ? 3 : 1.5, height: minute % 5 == 0 ? 24 : 14)
+                                .cornerRadius(1)
+                                .onTapGesture {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        selectedMinutes = minute
+                                    }
+                                }
+                        }
+                    }
+                    .padding(.horizontal, UIScreen.main.bounds.width / 2 - 16)
+                }
+                .scrollDisabled(true) // Ovládáme skrze vlastního drag gesture pro přesné chování
+            }
+            .frame(height: 60)
+            .background(Color(.systemGray6))
+            .cornerRadius(16)
+            .padding(.horizontal)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        let translation = -value.translation.width + baseOffset
+                        let rawIndex = Int(round(translation / tickSpacing))
+                        let clamped = max(0, min(maxMinutes, rawIndex))
+                        
+                        if clamped != selectedMinutes {
+                            selectedMinutes = clamped
+                            // Můžeš přidat haptiku: UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
+                    }
+                    .onEnded { _ in
+                        baseOffset = CGFloat(selectedMinutes) * tickSpacing
+                    }
+            )
+
+            // Klasický slider jako záloha pod tím pro snadné skákání
+            Slider(value: Binding(
+                get: { Double(selectedMinutes) },
+                set: { selectedMinutes = Int($0); baseOffset = CGFloat(selectedMinutes) * tickSpacing }
+            ), in: 0...60, step: 1)
+            .padding(.horizontal, 32)
+
+            Spacer()
         }
     }
 }
@@ -172,83 +223,4 @@ struct BottomSheetContentView: View {
     
     @State private var rawLines: [String] = []
     @State private var isLoading: Bool = false
-    
-    @Environment(\.isSearching) private var isSearching
-
-    var body: some View {
-        Group {
-            if isSearching {
-                Form {
-                    if isLoading {
-                        Section {
-                            ProgressView("Loading data from GitHub...")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-                    } else {
-                        Section {
-                            ForEach(filteredLines, id: \.self) { line in
-                                Text(line)
-                            }
-                        }
-                    }
-                }
-            } else {
-                ContentUnavailableView("Start Searching", systemImage: "magnifyingglass", description: Text("Tap the search bar above"))
-            }
-        }
-        .onChange(of: isSearching) { _, newValue in
-            if newValue && rawLines.isEmpty {
-                fetchRemoteData()
-            }
-        }
-    }
-
-    var filteredLines: [String] {
-        if searchText.isEmpty {
-            return rawLines
-        } else {
-            return rawLines.filter { $0.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-
-    func fetchRemoteData() {
-        guard let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/search.txt") else { return }
-        isLoading = true
-        
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                isLoading = false
-                guard let data = data, let content = String(data: data, encoding: .utf8) else { return }
-                
-                rawLines = content.components(separatedBy: .newlines)
-                    .map { $0.trimmingCharacters(in: .whitespaces) }
-                    .filter { !$0.isEmpty }
-            }
-        }.resume()
-    }
-}
-
-// MARK: - Profile View
-struct ProfileView: View {
-    @Binding var userName: String
-    @Binding var userEmail: String
-
-    var body: some View {
-        Form {
-            Section(header: Text("User Info")) {
-                HStack {
-                    Text("Name")
-                    Spacer()
-                    TextField("Name", text: $userName)
-                        .multilineTextAlignment(.trailing)
-                }
-                HStack {
-                    Text("Email")
-                    Spacer()
-                    TextField("Email", text: $userEmail)
-                        .multilineTextAlignment(.trailing)
-                }
-            }
-        }
-    }
-}
+...
