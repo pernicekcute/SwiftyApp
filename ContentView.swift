@@ -7,8 +7,8 @@ struct ContentView: View {
     @State private var showSheet = true
     @State private var selectedDetent: PresentationDetent = .medium
     
-    @State private var userName: String = "Quacky"
-    @State private var userEmail: String = "local.mode@app.local"
+    @State private var userName: String = "SwiftUI"
+    @State private var userEmail: String = "SwiftyApp@local"
     
     @StateObject private var locationManager = LocationManager()
 
@@ -41,7 +41,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")
 
-    // Upravený výchozí zoom (0.02 místo 0.0001)
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378),
@@ -83,7 +82,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
-        // Upravený zoom při aktualizaci polohy GPS (0.02 místo 0.0001)
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: location.coordinate,
@@ -121,8 +119,50 @@ struct BottomSheetView: View {
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
             }
+            
+            // Tab 3: Sliders and More
+            NavigationStack {
+                SlidersAndMoreView()
+                    .navigationTitle("Sliders")
+            }
+            .tabItem {
+                Label("Sliders", systemImage: "slider.horizontal.3")
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDetent)
+    }
+}
+
+// MARK: - Sliders and More View
+struct SlidersAndMoreView: View {
+    @State private var selectedMinutes: Double = 15.0
+
+    var body: some View {
+        Form {
+            Section(header: Text("Time Setting")) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("Minutes:")
+                            .font(.headline)
+                        Spacer()
+                        // Číslo zobrazené nad/vedle slideru
+                        Text("\(Int(selectedMinutes)) min")
+                            .font(.title3)
+                            .bold()
+                            .foregroundColor(.accentColor)
+                    }
+                    
+                    Slider(value: $selectedMinutes, in: 0...60, step: 1) {
+                        Text("Minutes")
+                    } minimumValueLabel: {
+                        Text("0m")
+                    } maximumValueLabel: {
+                        Text("60m")
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+        }
     }
 }
 
