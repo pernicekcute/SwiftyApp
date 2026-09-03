@@ -120,7 +120,7 @@ struct BottomSheetView: View {
                 Label("Profile", systemImage: "person.fill")
             }
             
-            // Tab 3: Scroll Slider (z videa)
+            // Tab 3: Scroll Slider
             NavigationStack {
                 ScrollSliderView()
                     .navigationTitle("Scroll Slider")
@@ -133,10 +133,9 @@ struct BottomSheetView: View {
     }
 }
 
-// MARK: - Scroll-Style Minute Slider View (Inspirováno videem)
+// MARK: - Scroll-Style Minute Slider View
 struct ScrollSliderView: View {
     @State private var selectedMinutes: Int = 15
-    @State private var dragOffset: CGFloat = 0
     @State private var baseOffset: CGFloat = 0
 
     let tickSpacing: CGFloat = 12
@@ -146,7 +145,6 @@ struct ScrollSliderView: View {
         VStack(spacing: 30) {
             Spacer()
             
-            // Číslo zobrazené nad sliderem
             VStack(spacing: 4) {
                 Text("\(selectedMinutes)")
                     .font(.system(size: 56, weight: .bold, design: .rounded))
@@ -157,9 +155,7 @@ struct ScrollSliderView: View {
                     .foregroundColor(.secondary)
             }
             
-            // Vizuální rolovací lišta (tick marks)
             ZStack {
-                // Ukazatel aktuální hodnoty uprostřed
                 Rectangle()
                     .fill(Color.accentColor)
                     .frame(width: 3, height: 40)
@@ -182,7 +178,7 @@ struct ScrollSliderView: View {
                     }
                     .padding(.horizontal, UIScreen.main.bounds.width / 2 - 16)
                 }
-                .scrollDisabled(true) // Ovládáme skrze vlastního drag gesture pro přesné chování
+                .scrollDisabled(true)
             }
             .frame(height: 60)
             .background(Color(.systemGray6))
@@ -197,7 +193,6 @@ struct ScrollSliderView: View {
                         
                         if clamped != selectedMinutes {
                             selectedMinutes = clamped
-                            // Můžeš přidat haptiku: UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         }
                     }
                     .onEnded { _ in
@@ -205,7 +200,6 @@ struct ScrollSliderView: View {
                     }
             )
 
-            // Klasický slider jako záloha pod tím pro snadné skákání
             Slider(value: Binding(
                 get: { Double(selectedMinutes) },
                 set: { selectedMinutes = Int($0); baseOffset = CGFloat(selectedMinutes) * tickSpacing }
@@ -223,4 +217,83 @@ struct BottomSheetContentView: View {
     
     @State private var rawLines: [String] = []
     @State private var isLoading: Bool = false
-...
+    
+    @Environment(\.isSearching) private var isSearching
+
+    var body: some View {
+        Group {
+            if isSearching {
+                Form {
+                    if isLoading {
+                        Section {
+                            ProgressView("Loading data from GitHub...")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                    } else {
+                        Section {
+                            ForEach(filteredLines, id: \.self) { line in
+                                Text(line)
+                            }
+                        }
+                    }
+                }
+            } else {
+                ContentUnavailableView("Start Searching", systemImage: "magnifyingglass", description: Text("Tap the search bar above"))
+            }
+        }
+        .onChange(of: isSearching) { _, newValue in
+            if newValue && rawLines.isEmpty {
+                fetchRemoteData()
+            }
+        }
+    }
+
+    var filteredLines: [String] {
+        if searchText.isEmpty {
+            return rawLines
+        } else {
+            return rawLines.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+
+    func fetchRemoteData() {
+        guard let url = URL(string: "https://raw.githubusercontent.com/pernicekcute/SwiftyApp/refs/heads/main/search.txt") else { return }
+        isLoading = true
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                isLoading = false
+                guard let data = data, let content = String(data: data, encoding: .utf8) else { return }
+                
+                rawLines = content.components(separatedBy: .newlines)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+            }
+        }.resume()
+    }
+}
+
+// MARK: - Profile View
+struct ProfileView: View {
+    @Binding var userName: String
+    @Binding var userEmail: String
+
+    var body: some View {
+        Form {
+            Section(header: Text("User Info")) {
+                HStack {
+                    Text("Name")
+                    Spacer()
+                    TextField("Name", text: $userName)
+                        .multilineTextAlignment(.trailing)
+                }
+                HStack {
+                    Text("Email")
+                    Spacer()
+                    TextField("Email", text: $userEmail)
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+        }
+    }
+}
