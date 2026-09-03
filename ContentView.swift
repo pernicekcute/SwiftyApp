@@ -41,10 +41,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")
 
+    // Upravený výchozí zoom (0.02 místo 0.0001)
     @Published var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 50.0755, longitude: 14.4378),
-            span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)
+            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
         )
     )
     
@@ -81,10 +82,12 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        
+        // Upravený zoom při aktualizaci polohy GPS (0.02 místo 0.0001)
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: location.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.0001, longitudeDelta: 0.0001)
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
             )
         )
     }
