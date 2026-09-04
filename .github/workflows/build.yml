@@ -14,12 +14,15 @@ concurrency:
 
 jobs:
   release:
-    runs-on: xcode-27
+    runs-on: macos-latest
     timeout-minutes: 30
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Build unsigned archive
         run: |
@@ -43,7 +46,7 @@ jobs:
           zip -qry "GestaltEdit-${GITHUB_REF_NAME}-unsigned.ipa" Payload
 
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           name: GestaltEdit ${{ github.ref_name }}
           generate_release_notes: true
