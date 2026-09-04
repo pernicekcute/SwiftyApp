@@ -17,8 +17,46 @@ jobs:
       - name: Checkout repozitáře 📥
         uses: actions/checkout@v4
 
-      - name: Instalace XcodeGen 🛠️
-        run: brew install xcodegen
+      - name: Instalace nástrojů 🛠️
+        run: brew install xcodegen librsvg
+
+      - name: Příprava AppIcon z icon.icon 🎨
+        run: |
+          SVG_FILE=$(find icon.icon/Assets -name "*.svg" 2>/dev/null | head -n 1)
+
+          if [ -n "$SVG_FILE" ]; then
+            echo "Nalezen SVG soubor ikony: $SVG_FILE"
+            
+            ASSETS_DIR=$(find . -name "Assets.xcassets" -type d | head -n 1)
+            if [ -z "$ASSETS_DIR" ]; then
+              ASSETS_DIR="Assets.xcassets"
+            fi
+            
+            ICONSET_DIR="$ASSETS_DIR/AppIcon.appiconset"
+            mkdir -p "$ICONSET_DIR"
+
+            rsvg-convert -w 1024 -h 1024 "$SVG_FILE" -o "$ICONSET_DIR/AppIcon-1024.png"
+
+            cat << 'EOF' > "$ICONSET_DIR/Contents.json"
+          {
+            "images" : [
+              {
+                "filename" : "AppIcon-1024.png",
+                "idiom" : "universal",
+                "platform" : "ios",
+                "size" : "1024x1024"
+              }
+            ],
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          EOF
+            echo "AppIcon byla úspěšně vygenerována do $ICONSET_DIR"
+          else
+            echo "Upozornění: SVG soubor v icon.icon/Assets nebyl nalezen."
+          fi
 
       - name: Generování Xcode Projektu 🏗️
         run: xcodegen generate
