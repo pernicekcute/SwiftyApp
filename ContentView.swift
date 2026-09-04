@@ -15,8 +15,8 @@ struct ContentView: View {
                 Tab2View()
             }
             
-            // 🔹 Třetí Tab (role .prominent s ikonou čtverečku 🟦)
-            Tab("Tab 3", systemImage: "square.fill", role: .prominent) {
+            // 🔹 Třetí Tab
+            Tab("Tab 3", systemImage: "square.fill") {
                 Tab3View()
             }
         }
@@ -55,7 +55,7 @@ struct Tab1View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 2 🔴 (Kopie Tab 1)
+// MARK: - Stránka pro Tab 2 🔴
 struct Tab2View: View {
     var body: some View {
         NavigationStack {
@@ -87,7 +87,7 @@ struct Tab2View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj slider)
+// MARK: - Stránka pro Tab 3 ⬛️
 struct Tab3View: View {
     @State private var value: Double = 0
     @State private var tempValue: Double = 0
