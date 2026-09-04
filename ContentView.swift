@@ -5,7 +5,7 @@ import UIKit // 👈 UIImpactFeedbackGenerator to potřebuje! 📳
 struct ContentView: View {
     var body: some View {
         TabView {
-            // 🔹 První Tab (Nová syntaxe Tab()! 🎉)
+            // 🔹 První Tab
             Tab("Tab 1", systemImage: "rhombus.fill") {
                 Tab1View()
             }
@@ -15,9 +15,9 @@ struct ContentView: View {
                 Tab2View()
             }
             
-            // 🔹 Třetí Tab (Tvůj nabušený slider! 🎛️)
-            // Necháváme bez textu, přesně jako na originálu
-            Tab("", systemImage: "square.fill") {
+            // 🔹 Třetí Tab (Teď s rolí .search! 🔍🔥)
+            // SwiftUI automaticky přidá text "Search" (nebo "Hledat" podle jazyka systému) a ikonku lupy!
+            Tab(role: .search) {
                 Tab3View()
             }
         }
@@ -45,7 +45,6 @@ struct Tab1View: View {
             .frame(maxWidth: .infinity, alignment: .leading) 
             .navigationTitle("Tab 1") 
             .toolbar {
-                // Stejný toolbar pro všechny! 🛠️✨
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         // Tvoje akce 🎯
@@ -60,7 +59,7 @@ struct Tab1View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 2 🔴 (Nyní kopie Tab 1! 👯‍♂️)
+// MARK: - Stránka pro Tab 2 🔴 (Kopie Tab 1! 👯‍♂️)
 struct Tab2View: View {
     var body: some View {
         NavigationStack {
@@ -79,9 +78,8 @@ struct Tab2View: View {
             .padding(.horizontal)
             .padding(.top, 8)
             .frame(maxWidth: .infinity, alignment: .leading) 
-            .navigationTitle("Tab 2") // Jediná změna oproti Tab 1 ✍️
+            .navigationTitle("Tab 2") 
             .toolbar {
-                // Stejný toolbar pro všechny! 🛠️✨
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         // Tvoje akce 🎯
@@ -96,7 +94,7 @@ struct Tab2View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj vlastní kód s toolbarem! 👑)
+// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj nadupaný slider! 👑)
 struct Tab3View: View {
     // 1. Core state values
     @State private var value: Double = 0
@@ -106,7 +104,6 @@ struct Tab3View: View {
     // Konfigurace haptiky 📳
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    // Tady můžeš jednoduše změnit maximální počet minut 🚀
     let maxMinutes: Double = 60
     let stepWidth: CGFloat = 20
     
@@ -185,9 +182,8 @@ struct Tab3View: View {
                 .frame(height: 120)
             }
             .padding()
-            .navigationTitle("Tab 3") 
+            .navigationTitle("Hledat") // 👈 Nadpis stránky ✍️
             .toolbar {
-                // Přidán stejný toolbar, jaký mají ostatní! 🛠️✨
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         // Tvoje akce 🎯
@@ -198,7 +194,7 @@ struct Tab3View: View {
                     }
                 }
             }
-            .preferredColorScheme(.dark) // 🖤 Udržujeme dark mode pro tvůj slider!
+            .preferredColorScheme(.dark) // 🖤 Dark mode
             .onAppear {
                 feedbackGenerator.prepare()
                 tempValue = value
