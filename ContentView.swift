@@ -1,12 +1,88 @@
 import SwiftUI
+import UIKit // 👈 Přidáno kvůli UIImpactFeedbackGenerator, abys neměl chybu! 🛠️
 
+// MARK: - Hlavní ContentView 📱
 struct ContentView: View {
+    var body: some View {
+        TabView {
+            // 🔹 První Tab
+            Tab1View()
+                .tabItem {
+                    Image(systemName: "rhombus.fill")
+                    Text("Tab 1")
+                }
+            
+            // 🔹 Druhý Tab
+            Tab2View()
+                .tabItem {
+                    Image(systemName: "circle.fill")
+                    Text("Tab 2")
+                }
+            
+            // 🔹 Třetí Tab (Tvůj super slider! 🎛️)
+            Tab3View()
+                .tabItem {
+                    Image(systemName: "square.fill")
+                }
+                // Tady v iOS 18 můžeš použít novou syntaxi: Tab(role: .search) { ... }, 
+                // ale .tabItem je klasika, co funguje všude! 😉
+        }
+    }
+}
+
+// MARK: - Stránka pro Tab 1 💎
+struct Tab1View: View {
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 20) {
+                
+                Text("Default tab bar appearance")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text("Content area")
+                    .font(.body)
+                    .fontWeight(.medium)
+                
+                Spacer() 
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .leading) 
+            .navigationTitle("Tab 1") 
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        // Akce pro tlačítko 🎯
+                    }) {
+                        Image(systemName: "square.dashed")
+                            .foregroundColor(.primary)
+                            .font(.title3)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Stránka pro Tab 2 🔴
+struct Tab2View: View {
+    var body: some View {
+        NavigationStack {
+            Text("Tady bude obsah pro Tab 2 🚀")
+                .navigationTitle("Tab 2")
+        }
+    }
+}
+
+// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj vlastní kód! 👑)
+struct Tab3View: View {
     // 1. Core state values
     @State private var value: Double = 0
     @State private var tempValue: Double = 0
     @State private var dragOffset: CGFloat = 0
     
-    // Konfigurace haptiky
+    // Konfigurace haptiky 📳
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     // Tady můžeš jednoduše změnit maximální počet minut 🚀
@@ -54,7 +130,7 @@ struct ContentView: View {
                             .frame(width: stepWidth)
                         }
                     }
-                    // ZMĚNA 3: Perfektní matematický výpočet posunu (odečteme stepWidth / 2 pro přesný střed nultého dílku)
+                    // ZMĚNA 3: Perfektní matematický výpočet posunu
                     .offset(x: center - (stepWidth / 2) - (CGFloat(value) * stepWidth) + dragOffset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -105,6 +181,7 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Pomocná extension 🛠️
 // Helper extension for clamping values safely
 extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
