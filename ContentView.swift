@@ -6,7 +6,7 @@ struct ContentView: View {
     @State private var tempValue: Double = 0
     @State private var dragOffset: CGFloat = 0
     
-    // Konfigurace haptiky (lehký dopad - "light impact")
+    // Konfigurace haptiky
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     // Configuration constants
@@ -28,19 +28,23 @@ struct ContentView: View {
                 ZStack {
                     HStack(spacing: stepWidth) {
                         ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
-                            VStack(spacing: 8) {
-                                Rectangle()
+                            VStack(spacing: 6) {
+                                // Zaoblený indikátor pomocí Capsule()
+                                Capsule()
                                     .fill(tick == Int(tempValue) ? Color.white : Color.gray.opacity(0.5))
                                     .frame(width: tick == Int(tempValue) ? 3 : 2, 
                                            height: tick % 5 == 0 ? 30 : 15)
                                 
+                                // Čísla pod delšími ryskami bez ořezávání
                                 if tick % 5 == 0 {
                                     Text("\(tick)")
-                                        .font(.caption)
+                                        .font(.caption2)
                                         .foregroundColor(.gray)
+                                        .fixedSize()
                                 } else {
                                     Text("")
-                                        .font(.caption)
+                                        .font(.caption2)
+                                        .opacity(0)
                                 }
                             }
                         }
@@ -78,19 +82,17 @@ struct ContentView: View {
                         }
                 )
             }
-            .frame(height: 100)
+            .frame(height: 120) // Zvětšeno z 100 na 120 pro dostatek místa na texty
         }
         .preferredColorScheme(.dark)
         .padding()
-        // Připravení generátoru haptiky při startu
         .onAppear {
             feedbackGenerator.prepare()
         }
-        // Spuštění haptiky pokaždé, když se změní hodnota tempValue
         .onChange(of: Int(tempValue)) { oldValue, newValue in
             if oldValue != newValue {
                 feedbackGenerator.impactOccurred()
-                feedbackGenerator.prepare() // Připraví ho pro další okamžité použití
+                feedbackGenerator.prepare()
             }
         }
     }
