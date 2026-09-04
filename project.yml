@@ -13,7 +13,6 @@ targets:
     sources:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
-      - path: icon.icon
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
