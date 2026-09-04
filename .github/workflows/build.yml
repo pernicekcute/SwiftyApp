@@ -58,6 +58,9 @@ jobs:
             echo "Upozornění: SVG soubor v icon.icon/Assets nebyl nalezen."
           fi
 
+      - name: Odstranění složky icon.icon před generováním projektu 🧹
+        run: rm -rf icon.icon
+
       - name: Generování Xcode Projektu 🏗️
         run: xcodegen generate
 
