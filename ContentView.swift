@@ -9,8 +9,8 @@ struct ContentView: View {
     // Konfigurace haptiky
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    // ZDE MŮŽEŠ ZMĚNIT MAXIMÁLNÍ POČET MINUT (např. na 90, 120 atd.) 🚀
-    let maxMinutes: Double = 60
+    // Tady můžeš jednoduše změnit maximální počet minut 🚀
+    let maxMinutes: Double = 180
     let stepWidth: CGFloat = 20
     
     var body: some View {
@@ -27,7 +27,7 @@ struct ContentView: View {
             GeometryReader { geometry in
                 let center = geometry.size.width / 2
                 
-                ZStack(alignment: .leading) {
+                ZStack {
                     HStack(spacing: stepWidth) {
                         ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
                             VStack(spacing: 6) {
@@ -51,8 +51,8 @@ struct ContentView: View {
                             }
                         }
                     }
-                    // Správné vycentrování počáteční pozice na střed obrazovky
-                    .offset(x: center - (CGFloat(value) * stepWidth) + dragOffset)
+                    // Správné vycentrování: začátek se odvíjí od středu mínus aktuální hodnota vynásobená šířkou kroku
+                    .offset(x: center - (CGFloat(value) * stepWidth) - (stepWidth / 2) + dragOffset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
@@ -91,7 +91,7 @@ struct ContentView: View {
         .padding()
         .onAppear {
             feedbackGenerator.prepare()
-            tempValue = value // Inicializace
+            tempValue = value
         }
         .onChange(of: Int(tempValue)) { oldValue, newValue in
             if oldValue != newValue {
