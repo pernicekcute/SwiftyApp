@@ -1,107 +1,51 @@
-name: Build SwiftyApp IPA 🚀
+name: Release unsigned IPA
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unsigned-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: macos-latest
-    permissions:
-      contents: write
+  release:
+    runs-on: xcode-27
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout repozitáře 📥
-        uses: actions/checkout@v4
+      - name: Check out source
+        uses: actions/checkout@v7
 
-      - name: Instalace nástrojů 🛠️
-        run: brew install xcodegen librsvg
-
-      - name: Příprava AppIcon z icon.icon 🎨
+      - name: Build unsigned archive
         run: |
-          SVG_FILE=$(find icon.icon/Assets -name "*.svg" 2>/dev/null | head -n 1)
-
-          if [ -n "$SVG_FILE" ]; then
-            echo "Nalezen SVG soubor ikony: $SVG_FILE"
-            
-            ASSETS_DIR=$(find . -name "Assets.xcassets" -type d | head -n 1)
-            if [ -z "$ASSETS_DIR" ]; then
-              ASSETS_DIR="Assets.xcassets"
-            fi
-            
-            ICONSET_DIR="$ASSETS_DIR/AppIcon.appiconset"
-            mkdir -p "$ICONSET_DIR"
-
-            rsvg-convert -w 1024 -h 1024 "$SVG_FILE" -o "$ICONSET_DIR/AppIcon-1024.png"
-
-            cat << 'EOF' > "$ICONSET_DIR/Contents.json"
-          {
-            "images" : [
-              {
-                "filename" : "AppIcon-1024.png",
-                "idiom" : "universal",
-                "platform" : "ios",
-                "size" : "1024x1024"
-              }
-            ],
-            "info" : {
-              "author" : "xcode",
-              "version" : 1
-            }
-          }
-          EOF
-            echo "AppIcon byla úspěšně vygenerována do $ICONSET_DIR"
-          else
-            echo "Upozornění: SVG soubor v icon.icon/Assets nebyl nalezen."
-          fi
-
-      - name: Odstranění složky icon.icon před generováním projektu 🧹
-        run: rm -rf icon.icon
-
-      - name: Generování Xcode Projektu 🏗️
-        run: xcodegen generate
-
-      - name: Kontrola vygenerovaných souborů 🔍
-        run: ls -la
-
-      - name: Sestavení iOS aplikace (Build Unsigned) 📱
-        run: |
-          XCODEPROJ=$(find . -maxdepth 1 -name "*.xcodeproj" | head -n 1)
-          SCHEME=$(xcodebuild -list -project "$XCODEPROJ" | awk '/Schemes:/{flag=1; next} /^[[:space:]]*$/{flag=0} flag' | xargs | awk '{print $1}')
-          
-          echo "Používám projekt: $XCODEPROJ"
-          echo "Používám scheme: $SCHEME"
-
-          xcodebuild build \
-            -project "$XCODEPROJ" \
-            -scheme "$SCHEME" \
-            -sdk iphoneos \
-            -destination "generic/platform=iOS" \
+          xcodebuild archive \
+            -project GestaltEdit.xcodeproj \
+            -scheme GestaltEdit \
             -configuration Release \
-            CODE_SIGNING_ALLOWED=NO \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/GestaltEdit.xcarchive" \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Vytvoření SwiftyApp.ipa balíčku 📦
+      - name: Package unsigned IPA
         run: |
-          mkdir -p Payload
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.app" -type d | grep -v "Index" | head -n 1)
-          
-          if [ -z "$APP_PATH" ]; then
-            echo "Chyba: .app soubor nebyl nalezen!"
-            exit 1
-          fi
-          
-          echo "Nalezeno .app na: $APP_PATH"
-          cp -r "$APP_PATH" Payload/
-          zip -r SwiftyApp.ipa Payload
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R \
+            "$RUNNER_TEMP/GestaltEdit.xcarchive/Products/Applications/GestaltEdit.app" \
+            "$RUNNER_TEMP/Payload/"
+          cd "$RUNNER_TEMP"
+          zip -qry "GestaltEdit-${GITHUB_REF_NAME}-unsigned.ipa" Payload
 
-      - name: Nahrání SwiftyApp.ipa do GitHub Releases 🚀
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG_NAME="v1.0.${{ github.run_number }}"
-          gh release create "$TAG_NAME" SwiftyApp.ipa --title "Build #${{ github.run_number }}" --notes "Automatic build for #${{ github.run_number }}."
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: GestaltEdit ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: ${{ runner.temp }}/GestaltEdit-${{ github.ref_name }}-unsigned.ipa
