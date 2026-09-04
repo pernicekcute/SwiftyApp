@@ -1,5 +1,5 @@
 import SwiftUI
-import UIKit // 👈 UIImpactFeedbackGenerator to potřebuje! 📳
+import UIKit
 
 // MARK: - Hlavní ContentView 📱
 struct ContentView: View {
@@ -15,9 +15,8 @@ struct ContentView: View {
                 Tab2View()
             }
             
-            // 🔹 Třetí Tab (Teď s rolí .search! 🔍🔥)
-            // SwiftUI automaticky přidá text "Search" (nebo "Hledat" podle jazyka systému) a ikonku lupy!
-            Tab(role: .search) {
+            // 🔹 Třetí Tab (role .prominent s ikonou čtverečku 🟦)
+            Tab("Tab 3", systemImage: "square.fill", role: .prominent) {
                 Tab3View()
             }
         }
@@ -29,7 +28,6 @@ struct Tab1View: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
-                
                 Text("Default tab bar appearance")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -46,9 +44,7 @@ struct Tab1View: View {
             .navigationTitle("Tab 1") 
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        // Tvoje akce 🎯
-                    }) {
+                    Button(action: {}) {
                         Image(systemName: "square.dashed")
                             .foregroundColor(.primary)
                             .font(.title3)
@@ -59,12 +55,11 @@ struct Tab1View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 2 🔴 (Kopie Tab 1! 👯‍♂️)
+// MARK: - Stránka pro Tab 2 🔴 (Kopie Tab 1)
 struct Tab2View: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
-                
                 Text("Default tab bar appearance")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -81,9 +76,7 @@ struct Tab2View: View {
             .navigationTitle("Tab 2") 
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        // Tvoje akce 🎯
-                    }) {
+                    Button(action: {}) {
                         Image(systemName: "square.dashed")
                             .foregroundColor(.primary)
                             .font(.title3)
@@ -94,14 +87,12 @@ struct Tab2View: View {
     }
 }
 
-// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj nadupaný slider! 👑)
+// MARK: - Stránka pro Tab 3 ⬛️ (Tvůj slider)
 struct Tab3View: View {
-    // 1. Core state values
     @State private var value: Double = 0
     @State private var tempValue: Double = 0
     @State private var dragOffset: CGFloat = 0
     
-    // Konfigurace haptiky 📳
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     let maxMinutes: Double = 60
@@ -112,13 +103,11 @@ struct Tab3View: View {
         
         NavigationStack {
             VStack(spacing: 40) {
-                // Selected value display label with smooth transition
                 Text("\(Int(tempValue)) min")
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .contentTransition(.numericText())
                     .animation(.snappy, value: tempValue)
                 
-                // Slider component using GeometryReader
                 GeometryReader { geometry in
                     let center = geometry.size.width / 2
                     
@@ -126,13 +115,11 @@ struct Tab3View: View {
                         HStack(spacing: 0) {
                             ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
                                 VStack(spacing: 6) {
-                                    // Zaoblený indikátor
                                     Capsule()
                                         .fill(tick == Int(tempValue) ? Color.white : Color.gray.opacity(0.5))
                                         .frame(width: tick == Int(tempValue) ? 3 : 2,
                                                height: tick % 5 == 0 ? 30 : 15)
                                     
-                                    // Čísla pod ryskami
                                     if tick % 5 == 0 {
                                         Text("\(tick)")
                                             .font(.caption2)
@@ -155,7 +142,6 @@ struct Tab3View: View {
                         DragGesture(minimumDistance: 0)
                             .onChanged { gesture in
                                 let rawOffset = gesture.translation.width
-                                
                                 let projected = value - Double(rawOffset / stepWidth)
                                 if projected < range.lowerBound {
                                     let excess = range.lowerBound - projected
@@ -166,7 +152,6 @@ struct Tab3View: View {
                                 } else {
                                     dragOffset = rawOffset
                                 }
-                                
                                 tempValue = projected.clamped(to: range).rounded()
                             }
                             .onEnded { _ in
@@ -182,19 +167,17 @@ struct Tab3View: View {
                 .frame(height: 120)
             }
             .padding()
-            .navigationTitle("Hledat") // 👈 Nadpis stránky ✍️
+            .navigationTitle("Tab 3")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        // Tvoje akce 🎯
-                    }) {
+                    Button(action: {}) {
                         Image(systemName: "square.dashed")
                             .foregroundColor(.primary)
                             .font(.title3)
                     }
                 }
             }
-            .preferredColorScheme(.dark) // 🖤 Dark mode
+            .preferredColorScheme(.dark)
             .onAppear {
                 feedbackGenerator.prepare()
                 tempValue = value
@@ -209,7 +192,6 @@ struct Tab3View: View {
     }
 }
 
-// MARK: - Pomocná extension 🛠️
 extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
         return min(max(self, limits.lowerBound), limits.upperBound)
