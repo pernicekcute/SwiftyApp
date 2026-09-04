@@ -48,13 +48,17 @@ jobs:
 
       - name: Package .app and .ipa
         run: |
-          # Package .app bundle into a .zip
-          cd "$RUNNER_TEMP/SwiftyApp.xcarchive/Products/Applications"
-          zip -qry "$RUNNER_TEMP/SwiftyApp-${GITHUB_SHA::7}.app.zip" SwiftyApp.app
+          APP_DIR="$RUNNER_TEMP/SwiftyApp.xcarchive/Products/Applications"
+          APP_PATH=$(find "$APP_DIR" -maxdepth 1 -name "*.app" | head -n 1)
+          APP_NAME=$(basename "$APP_PATH")
+
+          # Package .app.zip
+          cd "$APP_DIR"
+          zip -qry "$RUNNER_TEMP/SwiftyApp-${GITHUB_SHA::7}.app.zip" "$APP_NAME"
 
           # Package .ipa payload
           mkdir -p "$RUNNER_TEMP/Payload"
-          cp -R SwiftyApp.app "$RUNNER_TEMP/Payload/"
+          cp -R "$APP_NAME" "$RUNNER_TEMP/Payload/"
           cd "$RUNNER_TEMP"
           zip -qry "SwiftyApp-${GITHUB_SHA::7}-unsigned.ipa" Payload
 
