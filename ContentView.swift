@@ -10,7 +10,7 @@ struct ContentView: View {
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     // Tady můžeš jednoduše změnit maximální počet minut 🚀
-    let maxMinutes: Double = 180
+    let maxMinutes: Double = 60
     let stepWidth: CGFloat = 20
     
     var body: some View {
@@ -27,7 +27,8 @@ struct ContentView: View {
             GeometryReader { geometry in
                 let center = geometry.size.width / 2
                 
-                ZStack {
+                // KLÍČOVÁ OPRAVA: alignment: .leading zajistí správný počátek osy zleva
+                ZStack(alignment: .leading) {
                     HStack(spacing: stepWidth) {
                         ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
                             VStack(spacing: 6) {
@@ -51,8 +52,8 @@ struct ContentView: View {
                             }
                         }
                     }
-                    // Správné vycentrování: začátek se odvíjí od středu mínus aktuální hodnota vynásobená šířkou kroku
-                    .offset(x: center - (CGFloat(value) * stepWidth) - (stepWidth / 2) + dragOffset)
+                    // Přesný posun tak, aby vybraná hodnota byla přesně uprostřed
+                    .offset(x: center - (CGFloat(value) * stepWidth) + dragOffset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
