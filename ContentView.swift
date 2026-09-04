@@ -27,9 +27,9 @@ struct ContentView: View {
             GeometryReader { geometry in
                 let center = geometry.size.width / 2
                 
-                // KLÍČOVÁ OPRAVA: alignment: .leading zajistí správný počátek osy zleva
                 ZStack(alignment: .leading) {
-                    HStack(spacing: stepWidth) {
+                    // ZMĚNA 1: spacing je teď 0!
+                    HStack(spacing: 0) {
                         ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
                             VStack(spacing: 6) {
                                 // Zaoblený indikátor
@@ -45,15 +45,17 @@ struct ContentView: View {
                                         .foregroundColor(.gray)
                                         .fixedSize()
                                 } else {
-                                    Text("")
+                                    Text("\(tick)") // Necháme tu text kvůli stejné výšce, ale bude neviditelný
                                         .font(.caption2)
                                         .opacity(0)
                                 }
                             }
+                            // ZMĚNA 2: Natvrdo vnutíme šířku 20 bodů pro celý blok
+                            .frame(width: stepWidth)
                         }
                     }
-                    // Přesný posun tak, aby vybraná hodnota byla přesně uprostřed
-                    .offset(x: center - (CGFloat(value) * stepWidth) + dragOffset)
+                    // ZMĚNA 3: Perfektní matematický výpočet posunu (odečteme stepWidth / 2 pro přesný střed nultého dílku)
+                    .offset(x: center - (stepWidth / 2) - (CGFloat(value) * stepWidth) + dragOffset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
