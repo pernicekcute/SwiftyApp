@@ -9,11 +9,13 @@ struct ContentView: View {
     // Konfigurace haptiky
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    // Configuration constants
-    let range: ClosedRange<Double> = 0...60
+    // ZDE MŮŽEŠ ZMĚNIT MAXIMÁLNÍ POČET MINUT (např. na 90, 120 atd.) 🚀
+    let maxMinutes: Double = 60
     let stepWidth: CGFloat = 20
     
     var body: some View {
+        let range: ClosedRange<Double> = 0...maxMinutes
+        
         VStack(spacing: 40) {
             // Selected value display label with smooth transition
             Text("\(Int(tempValue)) min")
@@ -25,17 +27,17 @@ struct ContentView: View {
             GeometryReader { geometry in
                 let center = geometry.size.width / 2
                 
-                ZStack {
+                ZStack(alignment: .leading) {
                     HStack(spacing: stepWidth) {
                         ForEach(Int(range.lowerBound)...Int(range.upperBound), id: \.self) { tick in
                             VStack(spacing: 6) {
-                                // Zaoblený indikátor pomocí Capsule()
+                                // Zaoblený indikátor
                                 Capsule()
                                     .fill(tick == Int(tempValue) ? Color.white : Color.gray.opacity(0.5))
-                                    .frame(width: tick == Int(tempValue) ? 3 : 2, 
+                                    .frame(width: tick == Int(tempValue) ? 3 : 2,
                                            height: tick % 5 == 0 ? 30 : 15)
                                 
-                                // Čísla pod delšími ryskami bez ořezávání
+                                // Čísla pod ryskami
                                 if tick % 5 == 0 {
                                     Text("\(tick)")
                                         .font(.caption2)
@@ -49,6 +51,7 @@ struct ContentView: View {
                             }
                         }
                     }
+                    // Správné vycentrování počáteční pozice na střed obrazovky
                     .offset(x: center - (CGFloat(value) * stepWidth) + dragOffset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -82,12 +85,13 @@ struct ContentView: View {
                         }
                 )
             }
-            .frame(height: 120) // Zvětšeno z 100 na 120 pro dostatek místa na texty
+            .frame(height: 120)
         }
         .preferredColorScheme(.dark)
         .padding()
         .onAppear {
             feedbackGenerator.prepare()
+            tempValue = value // Inicializace
         }
         .onChange(of: Int(tempValue)) { oldValue, newValue in
             if oldValue != newValue {
