@@ -1,4 +1,4 @@
-name: Build and Release unsigned IPA
+name: Build and Release App and IPA
 
 on:
   push:
@@ -46,20 +46,25 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Package unsigned IPA
+      - name: Package .app and .ipa
         run: |
+          # Package .app bundle into a .zip
+          cd "$RUNNER_TEMP/SwiftyApp.xcarchive/Products/Applications"
+          zip -qry "$RUNNER_TEMP/SwiftyApp-${GITHUB_SHA::7}.app.zip" SwiftyApp.app
+
+          # Package .ipa payload
           mkdir -p "$RUNNER_TEMP/Payload"
-          cp -R \
-            "$RUNNER_TEMP/SwiftyApp.xcarchive/Products/Applications/SwiftyApp.app" \
-            "$RUNNER_TEMP/Payload/"
+          cp -R SwiftyApp.app "$RUNNER_TEMP/Payload/"
           cd "$RUNNER_TEMP"
           zip -qry "SwiftyApp-${GITHUB_SHA::7}-unsigned.ipa" Payload
 
-      - name: Upload Build Artifact
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: SwiftyApp-unsigned-IPA
-          path: ${{ runner.temp }}/SwiftyApp-*-unsigned.ipa
+          name: SwiftyApp-Build-Files
+          path: |
+            ${{ runner.temp }}/*.app.zip
+            ${{ runner.temp }}/*.ipa
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
@@ -68,4 +73,6 @@ jobs:
           name: SwiftyApp ${{ github.ref_name }}
           generate_release_notes: true
           fail_on_unmatched_files: true
-          files: ${{ runner.temp }}/SwiftyApp-*-unsigned.ipa
+          files: |
+            ${{ runner.temp }}/*.app.zip
+            ${{ runner.temp }}/*.ipa
