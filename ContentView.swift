@@ -7,116 +7,53 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-
-                // MARK: - Jailbreak Software
-
-                Section {
-                    Button {
-                        // Pouze UI / mockup
-                        showWarning = true
-                    } label: {
-                        HStack {
-                            Text("Install Jailbreak")
-                                .foregroundStyle(.blue)
-
-                            Spacer()
-
-                            Text("This voids your warranty!")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-
-                    Text("Jailbreak your Device and also install Cydia")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                } header: {
-                    Text("JAILBREAK SOFTWARE")
-                }
-
-                // MARK: - iPadOS UI
-
-                Section {
-                    HStack {
-                        Text("iPadOS UI")
-                            .foregroundStyle(.orange)
-
-                        Spacer()
-
-                        Toggle("", isOn: $iPadOSUIEnabled)
-                            .labelsHidden()
-                    }
-
-                    HStack {
-                        Text("Custom Wallpapers")
-
-                        Spacer()
-
-                        Text("Import .tendies")
-                            .foregroundStyle(.secondary)
-
-                        Image(systemName: "info.circle")
-                            .foregroundStyle(.blue)
-                    }
-
-                    if iPadOSUIEnabled {
-                        Text("Custom Wallpapers are unavailable with iPadOS UI!")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Custom Wallpapers are unavailable right now!")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                } header: {
-                    Text("iPadOS UI")
-                }
-            }
-            .navigationTitle("SmI3H8t3r")
+Section {
+    Button {
+        showWarning = true
+    } label: {
+        HStack {
+            Text("Test Button")
+                .foregroundStyle(.blue)
+        }
+    }
+    .buttonStyle(.plain)
+} footer: {
+    Text("Shows a test dialog")
+}
+            .navigationTitle("SwiftyApp - Nightly Release")
             .navigationBarTitleDisplayMode(.inline)
-
-            // MARK: - Navigation Bar
 
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        // Pouze vizuální back button
                     } label: {
                         HStack(spacing: 3) {
                             Image(systemName: "chevron.left")
-                            Text("Label")
+                            Text("Back")
                         }
                     }
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // Pouze placeholder
                     } label: {
-                        Image(systemName: "rectangle.on.rectangle")
+                        Image(systemName: "square.dashed")
                     }
                 }
             }
 
-            // MARK: - Warning
-
             .alert(
-                "SmI3H8t3r Jailbreak",
+                "SwiftyApp Dialog",
                 isPresented: $showWarning
             ) {
-                Button("Cancel", role: .cancel) {
-                    // Zavřít dialog
+                Button("Close", role: .cancel) {
                 }
 
-                Button("Install", role: .destructive) {
-                    // Pouze mockup.
-                    // Žádná skutečná instalace ani ukončení aplikace.
+                Button("Continue", role: .destructive) {
                 }
             } message: {
                 Text(
-                    "Sm1l3H8t3r will install jailbreak using TrollRestore, BookRestore, and SparseRestore. Back up your device before installing."
+                    "This is a test dialog!"
                 )
             }
         }
