@@ -2,13 +2,13 @@ name: SwiftyApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "17.0"
 
 targets:
   SwiftyApp:
     type: application
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "17.0"
     sources:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
