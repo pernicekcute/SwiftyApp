@@ -24,7 +24,7 @@ struct ContentView: View {
                 
                 Section {
                     Button {
-                        aboutApp = true
+                        showAbout = true
                     } label: {
                         HStack {
                             Text("About SwiftyApp")
@@ -73,7 +73,7 @@ struct ContentView: View {
 
             .alert(
                 "About",
-                isPresented: $aboutApp
+                isPresented: $showAbout
             ) {
                 Button("Close", role: .cancel) {
                 }
