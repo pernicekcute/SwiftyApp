@@ -1,3 +1,4 @@
+```swift
 import SwiftUI
 
 struct ContentView: View {
@@ -7,19 +8,20 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-Section {
-    Button {
-        showWarning = true
-    } label: {
-        HStack {
-            Text("Test Button")
-                .foregroundStyle(.blue)
-        }
-    }
-    .buttonStyle(.plain)
-} footer: {
-    Text("Shows a test dialog")
-}
+                Section {
+                    Button {
+                        showWarning = true
+                    } label: {
+                        HStack {
+                            Text("Test Button")
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } footer: {
+                    Text("Shows a test dialog")
+                }
+            }
             .navigationTitle("SwiftyApp - Nightly Release")
             .navigationBarTitleDisplayMode(.inline)
 
@@ -52,9 +54,7 @@ Section {
                 Button("Continue", role: .destructive) {
                 }
             } message: {
-                Text(
-                    "This is a test dialog!"
-                )
+                Text("This is a test dialog!")
             }
         }
     }
@@ -63,3 +63,4 @@ Section {
 #Preview {
     ContentView()
 }
+```
