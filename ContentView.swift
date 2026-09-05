@@ -1,3 +1,4 @@
+```swift
 import SwiftUI
 
 struct ContentView: View {
@@ -7,12 +8,13 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-                
+
                 // MARK: - Jailbreak Software
-                
+
                 Section {
                     Button {
-                        // Pouze layout
+                        // Pouze UI / mockup
+                        showWarning = true
                     } label: {
                         HStack {
                             Text("Install Jailbreak")
@@ -29,13 +31,13 @@ struct ContentView: View {
                     Text("Jailbreak your Device and also install Cydia")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+
                 } header: {
                     Text("JAILBREAK SOFTWARE")
                 }
 
-                
                 // MARK: - iPadOS UI
-                
+
                 Section {
                     HStack {
                         Text("iPadOS UI")
@@ -45,52 +47,39 @@ struct ContentView: View {
 
                         Toggle("", isOn: $iPadOSUIEnabled)
                             .labelsHidden()
-                            .onChange(of: iPadOSUIEnabled) { _, newValue in
-                                if !newValue {
-                                    // Pouze vizuální stav
-                                }
-                            }
+                    }
+
+                    HStack {
+                        Text("Custom Wallpapers")
+
+                        Spacer()
+
+                        Text("Import .tendies")
+                            .foregroundStyle(.secondary)
+
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(.blue)
                     }
 
                     if iPadOSUIEnabled {
-                        HStack {
-                            Text("Custom Wallpapers")
-
-                            Spacer()
-
-                            Text("Import .tendies")
-                                .foregroundStyle(.secondary)
-
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.blue)
-                        }
-
                         Text("Custom Wallpapers are unavailable with iPadOS UI!")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        HStack {
-                            Text("Custom Wallpapers")
-
-                            Spacer()
-
-                            Text("Import .tendies")
-                                .foregroundStyle(.secondary)
-
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.blue)
-                        }
-
                         Text("Custom Wallpapers are unavailable right now!")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+
+                } header: {
+                    Text("iPadOS UI")
                 }
+            }
             .navigationTitle("SmI3H8t3r")
             .navigationBarTitleDisplayMode(.inline)
 
             // MARK: - Navigation Bar
-            
+
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -113,8 +102,11 @@ struct ContentView: View {
             }
 
             // MARK: - Warning
-            
-            .alert("SmI3H8t3r Jailbreak", isPresented: $showWarning) {
+
+            .alert(
+                "SmI3H8t3r Jailbreak",
+                isPresented: $showWarning
+            ) {
                 Button("Cancel", role: .cancel) {
                     // Zavřít dialog
                 }
@@ -124,7 +116,9 @@ struct ContentView: View {
                     exit(0)
                 }
             } message: {
-                Text("Sm1l3H8t3r will install jailbreak using TrollRestore, BookRestore, and SparseRestore. Back up your device before installing.")
+                Text(
+                    "Sm1l3H8t3r will install jailbreak using TrollRestore, BookRestore, and SparseRestore. Back up your device before installing."
+                )
             }
         }
     }
@@ -133,3 +127,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+```
