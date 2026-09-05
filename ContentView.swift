@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var iPadOSUIEnabled = true
     @State private var showWarning = false
+    @State private var showAbout = false
 
     var body: some View {
         NavigationStack {
@@ -20,8 +21,22 @@ struct ContentView: View {
                 } footer: {
                     Text("Shows a test dialog")
                 }
+                
+                Section {
+                    Button {
+                        aboutApp = true
+                    } label: {
+                        HStack {
+                            Text("About SwiftyApp")
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } footer: {
+                    Text("Shows a dialog about the app")
+                }
             }
-            .navigationTitle("SwiftyApp - Nightly Release")
+            .navigationTitle("SwiftyApp")
             .navigationBarTitleDisplayMode(.inline)
 
             .toolbar {
@@ -54,6 +69,16 @@ struct ContentView: View {
                 }
             } message: {
                 Text("This is a test dialog!")
+            }
+
+            .alert(
+                "About",
+                isPresented: $aboutApp
+            ) {
+                Button("Close", role: .cancel) {
+                }
+            } message: {
+                Text("SwiftyApp is an app designed for development and ui, @pernicekcute developed this app for over a month and over 300 commits.")
             }
         }
     }
