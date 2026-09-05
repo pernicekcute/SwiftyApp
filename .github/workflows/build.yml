@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 30
 
     steps:
@@ -38,7 +38,7 @@ jobs:
         run: |
           xcodebuild archive \
             -project SwiftyApp.xcodeproj \
-            -scheme iOsApp \
+            -scheme SwiftyApp \
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath "$RUNNER_TEMP/SwiftyApp.xcarchive" \
