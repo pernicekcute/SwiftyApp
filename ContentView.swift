@@ -1,4 +1,3 @@
-```swift
 import SwiftUI
 
 struct ContentView: View {
@@ -83,7 +82,7 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        // Vizuální back button
+                        // Pouze vizuální back button
                     } label: {
                         HStack(spacing: 3) {
                             Image(systemName: "chevron.left")
@@ -112,8 +111,8 @@ struct ContentView: View {
                 }
 
                 Button("Install", role: .destructive) {
-                    // Pouze ukončení mockup aplikace.
-                    exit(0)
+                    // Pouze mockup.
+                    // Žádná skutečná instalace ani ukončení aplikace.
                 }
             } message: {
                 Text(
@@ -127,4 +126,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-```
