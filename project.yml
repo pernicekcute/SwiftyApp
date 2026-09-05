@@ -5,7 +5,7 @@ options:
     iOS: "26.0"
 
 targets:
-  iOsApp:
+  SwiftyApp:
     type: application
     platform: iOS
     deploymentTarget: "26.0"
