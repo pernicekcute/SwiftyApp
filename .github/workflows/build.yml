@@ -22,20 +22,37 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      # ─────────────────────────────────────────────
+      # Checkout
+      # ─────────────────────────────────────────────
       - name: Check out source
         uses: actions/checkout@v4
 
+      # ─────────────────────────────────────────────
+      # XcodeGen
+      # ─────────────────────────────────────────────
       - name: Install XcodeGen
         run: brew install xcodegen
 
       - name: Generate Xcode Project
         run: xcodegen generate
 
+      # ─────────────────────────────────────────────
+      # Xcode
+      # ─────────────────────────────────────────────
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+          xcodebuild -showsdks
 
+      # ─────────────────────────────────────────────
+      # Build unsigned archive
+      # ─────────────────────────────────────────────
       - name: Build unsigned archive
         run: |
+          set -o pipefail
+
           xcodebuild archive \
             -project SwiftyApp.xcodeproj \
             -scheme SwiftyApp \
@@ -44,32 +61,137 @@ jobs:
             -archivePath "$RUNNER_TEMP/SwiftyApp.xcarchive" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            | tee "$RUNNER_TEMP/xcodebuild.log"
 
+      # ─────────────────────────────────────────────
+      # Show compiler errors if build fails
+      # ─────────────────────────────────────────────
+      - name: Show Swift compiler errors
+        if: failure()
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "       SWIFT / XCODE COMPILER ERRORS"
+          echo "=========================================="
+          echo ""
+
+          if [ -f "$RUNNER_TEMP/xcodebuild.log" ]; then
+            grep -n -E \
+              "error:|fatal error:|Command CompileSwift failed|Command SwiftCompile failed" \
+              "$RUNNER_TEMP/xcodebuild.log" || true
+
+            echo ""
+            echo "=========================================="
+            echo "             LAST 200 LOG LINES"
+            echo "=========================================="
+            echo ""
+
+            tail -n 200 "$RUNNER_TEMP/xcodebuild.log"
+          else
+            echo "xcodebuild.log was not created."
+          fi
+
+      # ─────────────────────────────────────────────
+      # Verify archive
+      # ─────────────────────────────────────────────
+      - name: Verify archive
+        run: |
+          ARCHIVE="$RUNNER_TEMP/SwiftyApp.xcarchive"
+          APP_DIR="$ARCHIVE/Products/Applications"
+
+          if [ ! -d "$ARCHIVE" ]; then
+            echo "ERROR: Archive was not created."
+            exit 1
+          fi
+
+          if [ ! -d "$APP_DIR" ]; then
+            echo "ERROR: Applications directory was not found."
+            exit 1
+          fi
+
+          APP_PATH=$(find "$APP_DIR" -maxdepth 1 -name "*.app" -print -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No .app was found in the archive."
+            exit 1
+          fi
+
+          echo "Archive:"
+          echo "$ARCHIVE"
+          echo ""
+          echo "App:"
+          echo "$APP_PATH"
+
+      # ─────────────────────────────────────────────
+      # Package .app and .ipa
+      # ─────────────────────────────────────────────
       - name: Package .app and .ipa
         run: |
-          APP_DIR="$RUNNER_TEMP/SwiftyApp.xcarchive/Products/Applications"
-          APP_PATH=$(find "$APP_DIR" -maxdepth 1 -name "*.app" | head -n 1)
+          set -e
+
+          ARCHIVE="$RUNNER_TEMP/SwiftyApp.xcarchive"
+          APP_DIR="$ARCHIVE/Products/Applications"
+
+          APP_PATH=$(find "$APP_DIR" -maxdepth 1 -name "*.app" -print -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No .app found."
+            exit 1
+          fi
+
           APP_NAME=$(basename "$APP_PATH")
+          SHA="${GITHUB_SHA::7}"
 
-          # Package .app.zip
+          echo "Packaging:"
+          echo "$APP_NAME"
+
+          # ─────────────────────────────────────────
+          # .app.zip
+          # ─────────────────────────────────────────
           cd "$APP_DIR"
-          zip -qry "$RUNNER_TEMP/SwiftyApp-${GITHUB_SHA::7}.app.zip" "$APP_NAME"
 
-          # Package .ipa payload
+          zip -qry \
+            "$RUNNER_TEMP/SwiftyApp-${SHA}.app.zip" \
+            "$APP_NAME"
+
+          # ─────────────────────────────────────────
+          # Unsigned .ipa
+          # ─────────────────────────────────────────
+          rm -rf "$RUNNER_TEMP/Payload"
           mkdir -p "$RUNNER_TEMP/Payload"
-          cp -R "$APP_NAME" "$RUNNER_TEMP/Payload/"
-          cd "$RUNNER_TEMP"
-          zip -qry "SwiftyApp-${GITHUB_SHA::7}-unsigned.ipa" Payload
 
+          cp -R \
+            "$APP_PATH" \
+            "$RUNNER_TEMP/Payload/"
+
+          cd "$RUNNER_TEMP"
+
+          zip -qry \
+            "SwiftyApp-${SHA}-unsigned.ipa" \
+            Payload
+
+          echo ""
+          echo "Created files:"
+          ls -lh \
+            "$RUNNER_TEMP/SwiftyApp-${SHA}.app.zip" \
+            "$RUNNER_TEMP/SwiftyApp-${SHA}-unsigned.ipa"
+
+      # ─────────────────────────────────────────────
+      # Upload artifacts
+      # ─────────────────────────────────────────────
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SwiftyApp-Build-Files
+          if-no-files-found: error
           path: |
             ${{ runner.temp }}/*.app.zip
             ${{ runner.temp }}/*.ipa
 
+      # ─────────────────────────────────────────────
+      # GitHub Release
+      # ─────────────────────────────────────────────
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
