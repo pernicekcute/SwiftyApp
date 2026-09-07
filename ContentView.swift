@@ -8,7 +8,7 @@ struct ContentView: View {
                 .ignoresSafeArea()
             
             // Image with white color rendering, transparent blacks, and 50% opacity
-            Image("A-90JUMPSCARE")
+            Image("A90JUMPSCARE")
                 .resizable()
                 .renderingMode(.template)
                 .scaledToFit()
