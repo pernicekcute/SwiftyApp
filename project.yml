@@ -3,21 +3,21 @@ name: SwiftyApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "26.0"
 
 targets:
   SwiftyApp:
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "26.0"
 
     sources:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
-      - path: A90JUMPSCARE.png
 
     resources:
       - path: icon.icon
+      - path: A90JUMPSCARE.png
 
     settings:
       base:
