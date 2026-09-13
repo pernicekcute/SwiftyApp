@@ -1,29 +1,29 @@
 import SwiftUI
 
 struct ContentView: View {
-    private var rootImage: UIImage? {
-        if let path = Bundle.main.path(forResource: "A90JUMPSCARE", ofType: "png") {
-            return UIImage(contentsOfFile: path)
-        }
-        return nil
-    }
+    @State private var isSheetPresented = true
 
     var body: some View {
-        ZStack {
-            Color.red
-                .ignoresSafeArea()
-            
-            if let uiImage = rootImage {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .renderingMode(.template)
-                    .scaledToFit()
-                    .foregroundColor(.white)
-                    .opacity(0.5)
-                    .ignoresSafeArea()
-            } else {
-                Text("Image not found in root")
-                    .foregroundColor(.white)
+        NavigationStack {
+            VStack {
+                Button("Show Sheet") {
+                    isSheetPresented = true
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .navigationTitle("Main View")
+            .sheet(isPresented: $isSheetPresented) {
+                VStack(spacing: 20) {
+                    Text("Locked Medium Sheet")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("This sheet cannot be dismissed by swiping down.")
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .presentationDetents([.medium])
+                .interactiveDismissDisabled(true)
             }
         }
     }
