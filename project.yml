@@ -15,9 +15,6 @@ targets:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
 
-    resources:
-      - path: A90JUMPSCARE.png
-
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quacky.iOsApp
