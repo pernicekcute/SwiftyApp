@@ -1,54 +1,129 @@
 import SwiftUI
 
-struct PagedContentView: View {
+struct ContentView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        TabView {
-            PageOne()
-            PageTwo()
-            PageThree()
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+            
+            ExploreView()
+                .tabItem {
+                    Label("Explore", systemImage: "magnifyingglass")
+                }
+                .tag(1)
+            
+            NotificationsView()
+                .tabItem {
+                    Label("Alerts", systemImage: "bell.fill")
+                }
+                .badge(3) // Optional badge count
+                .tag(2)
+            
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person.crop.circle.fill")
+                }
+                .tag(3)
         }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-        .indexViewStyle(.page(backgroundDisplayMode: .always))
-        .ignoresSafeArea()
+        .tint(.indigo) // Sets active tab color
     }
 }
 
-struct PageOne: View {
+// MARK: - Sample Page Views
+
+struct HomeView: View {
     var body: some View {
-        ZStack {
-            Color.blue.ignoresSafeArea()
-            Text("Page 1")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "house.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.indigo)
+                    
+                    Text("Home Page")
+                        .font(.title)
+                        .fontWeight(.bold)
+                }
+            }
+            .navigationTitle("Home")
         }
     }
 }
 
-struct PageTwo: View {
+struct ExploreView: View {
     var body: some View {
-        ZStack {
-            Color.purple.ignoresSafeArea()
-            Text("Page 2")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.indigo)
+                    
+                    Text("Explore Page")
+                        .font(.title)
+                        .fontWeight(.bold)
+                }
+            }
+            .navigationTitle("Explore")
         }
     }
 }
 
-struct PageThree: View {
+struct NotificationsView: View {
     var body: some View {
-        ZStack {
-            Color.orange.ignoresSafeArea()
-            Text("Page 3")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.indigo)
+                    
+                    Text("Notifications Page")
+                        .font(.title)
+                        .fontWeight(.bold)
+                }
+            }
+            .navigationTitle("Notifications")
+        }
+    }
+}
+
+struct ProfileView: View {
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.indigo)
+                    
+                    Text("Profile Page")
+                        .font(.title)
+                        .fontWeight(.bold)
+                }
+            }
+            .navigationTitle("Profile")
         }
     }
 }
 
 #Preview {
-    PagedContentView()
+    ContentView()
 }
