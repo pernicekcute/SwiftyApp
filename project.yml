@@ -3,20 +3,19 @@ name: SwiftyApp
 options:
   bundleIdPrefix: com.quacky
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "18.0"
 
 targets:
   SwiftyApp:
     type: application
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "18.0"
 
     sources:
       - path: ContentView.swift
       - path: SwiftyAppApp.swift
 
     resources:
-      - path: icon.icon
       - path: A90JUMPSCARE.png
 
     settings:
@@ -25,7 +24,7 @@ targets:
 
         GENERATE_INFOPLIST_FILE: "YES"
 
-        INFOPLIST_KEY_CFBundleDisplayName: SwiftyApp
+        INFOPLIST_KEY_CFBundleDisplayName: Videos
 
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
