@@ -30,7 +30,7 @@ struct ContentView: View {
                 }
                 .tag(3)
         }
-        .tint(.indigo) // Sets active tab color
+        .tint(.blue) // Sets active tab color
     }
 }
 
@@ -46,7 +46,7 @@ struct HomeView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "house.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.blue)
                     
                     Text("Home Page")
                         .font(.title)
@@ -68,7 +68,7 @@ struct ExploreView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 60))
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.blue)
                     
                     Text("Explore Page")
                         .font(.title)
@@ -90,7 +90,7 @@ struct NotificationsView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "bell.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.blue)
                     
                     Text("Notifications Page")
                         .font(.title)
@@ -112,7 +112,7 @@ struct ProfileView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "person.crop.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.blue)
                     
                     Text("Profile Page")
                         .font(.title)
