@@ -23,7 +23,7 @@ struct ContentView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                 
-                Text("Forces a SpringBoard reload by rapidly exhausting available RAM.")
+                Text("Forces a SpringBoard reloa.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
