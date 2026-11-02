@@ -1,34 +1,54 @@
 import SwiftUI
 
-struct ContentView: View {
-    @State private var isSheetPresented = true
-
+struct PagedContentView: View {
     var body: some View {
-        NavigationStack {
-            VStack {
-                Button("Show Sheet") {
-                    isSheetPresented = true
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .navigationTitle("Main View")
-            .sheet(isPresented: $isSheetPresented) {
-                VStack(spacing: 20) {
-                    Text("Locked Medium Sheet")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("This sheet cannot be dismissed by swiping down.")
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .presentationDetents([.medium])
-                .interactiveDismissDisabled(true)
-            }
+        TabView {
+            PageOne()
+            PageTwo()
+            PageThree()
+        }
+        .tabViewStyle(.page(indexDisplayMode: .always))
+        .indexViewStyle(.page(backgroundDisplayMode: .always))
+        .ignoresSafeArea()
+    }
+}
+
+struct PageOne: View {
+    var body: some View {
+        ZStack {
+            Color.blue.ignoresSafeArea()
+            Text("Page 1")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+        }
+    }
+}
+
+struct PageTwo: View {
+    var body: some View {
+        ZStack {
+            Color.purple.ignoresSafeArea()
+            Text("Page 2")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+        }
+    }
+}
+
+struct PageThree: View {
+    var body: some View {
+        ZStack {
+            Color.orange.ignoresSafeArea()
+            Text("Page 3")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
         }
     }
 }
 
 #Preview {
-    ContentView()
+    PagedContentView()
 }
