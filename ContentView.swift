@@ -1,125 +1,76 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab = 0
+    @State private var isRespringing = false
+    @State private var showConfirmation = false // Controls the dialog state
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
-                .tag(0)
+        ZStyleView()
+    }
+    
+    @ViewBuilder
+    func ZStyleView() -> some View {
+        VStack(spacing: 25) {
+            // Visual Anchor Icon
+            Image(systemName: "arrow.clockwise.circle.fill")
+                .font(.system(size: 70))
+                .foregroundColor(isRespringing ? .red : .blue)
+                .rotationEffect(.degrees(isRespringing ? 360 : 0))
+                .animation(isRespringing ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRespringing)
             
-            ExploreView()
-                .tabItem {
-                    Label("Explore", systemImage: "magnifyingglass")
-                }
-                .tag(1)
+            VStack(spacing: 8) {
+                Text("System Respring")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Text("Forces a SpringBoard reload by rapidly exhausting available RAM.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
+            }
             
-            NotificationsView()
-                .tabItem {
-                    Label("Alerts", systemImage: "bell.fill")
-                }
-                .badge(3) // Optional badge count
-                .tag(2)
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.crop.circle.fill")
-                }
-                .tag(3)
+            // The Trigger Button
+            Button(action: {
+                // Open the confirmation dialog instead of firing immediately
+                showConfirmation = true
+            }) {
+                Text(isRespringing ? "Respringing..." : "Trigger Respring")
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(isRespringing ? Color.red : Color.blue)
+                    .cornerRadius(12)
+                    .shadow(radius: 4)
+            }
+            .disabled(isRespringing)
+            .padding(.horizontal, 40)
         }
-        .tint(.blue) // Sets active tab color
-    }
-}
-
-// MARK: - Sample Page Views
-
-struct HomeView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
+        .padding()
+        // Confirmation Dialog Configuration
+        .alert("Confirm Respring", isPresented: &showConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Confirm", role: .destructive) {
+                isRespringing = true
                 
-                VStack(spacing: 12) {
-                    Image(systemName: "house.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.blue)
-                    
-                    Text("Home Page")
-                        .font(.title)
-                        .fontWeight(.bold)
+                // Brief pause so the UI registers the tap before the memory freeze
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    executeMemoryPanic()
                 }
             }
-            .navigationTitle("Home")
+        } message: {
+            Text("This will instantly crash the SpringBoard UI and lock your device. Ensure you don't have unsaved data open in other apps.")
         }
     }
-}
-
-struct ExploreView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 12) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.blue)
-                    
-                    Text("Explore Page")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
+    
+    // Core Logic: Rapidly requests 100MB chunks of memory in an infinite loop
+    private func executeMemoryPanic() {
+        while true {
+            let chunkSize = 1024 * 1024 * 100 // 100 Megabytes
+            if let pointer = malloc(chunkSize) {
+                memset(pointer, 1, chunkSize)
             }
-            .navigationTitle("Explore")
-        }
-    }
-}
-
-struct NotificationsView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 12) {
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.blue)
-                    
-                    Text("Notifications Page")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
-            }
-            .navigationTitle("Notifications")
-        }
-    }
-}
-
-struct ProfileView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 12) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.blue)
-                    
-                    Text("Profile Page")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
-            }
-            .navigationTitle("Profile")
         }
     }
 }
