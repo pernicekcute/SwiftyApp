@@ -49,20 +49,22 @@ struct ContentView: View {
         }
         .padding()
         // Confirmation Dialog Configuration
-        .alert("Confirm Respring", isPresented: &showConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Confirm", role: .destructive) {
-                isRespringing = true
-                
-                // Brief pause so the UI registers the tap before the memory freeze
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    executeMemoryPanic()
-                }
-            }
-        } message: {
-            Text("This will instantly crash the SpringBoard UI and lock your device. Ensure you don't have unsaved data open in other apps.")
+                // Universal Confirmation Dialog Configuration
+        .alert(isPresented: $showConfirmation) {
+            Alert(
+                title: Text("Confirm Respring"),
+                message: Text("This will instantly crash the SpringBoard UI and lock your device. Ensure you don't have unsaved data open in other apps."),
+                primaryButton: .destructive(Text("Confirm")) {
+                    isRespringing = true
+                    
+                    // Brief pause so the UI registers the tap before the memory freeze
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        executeMemoryPanic()
+                    }
+                },
+                secondaryButton: .cancel()
+            )
         }
-    }
     
     // Core Logic: Rapidly requests 100MB chunks of memory in an infinite loop
     private func executeMemoryPanic() {
