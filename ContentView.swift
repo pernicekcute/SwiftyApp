@@ -23,7 +23,7 @@ struct ContentView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                 
-                Text("Forces a SpringBoard reloa.")
+                Text("Forces a SpringBoard reload.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -48,23 +48,21 @@ struct ContentView: View {
             .padding(.horizontal, 40)
         }
         .padding()
-        // Confirmation Dialog Configuration
-                // Universal Confirmation Dialog Configuration
-        .alert(isPresented: $showConfirmation) {
-            Alert(
-                title: Text("Confirm Respring"),
-                message: Text("This will instantly crash the SpringBoard UI and lock your device. Ensure you don't have unsaved data open in other apps."),
-                primaryButton: .destructive(Text("Confirm")) {
-                    isRespringing = true
-                    
-                    // Brief pause so the UI registers the tap before the memory freeze
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        executeMemoryPanic()
-                    }
-                },
-                secondaryButton: .cancel()
-            )
+        // Modern iOS 18 Confirmation Dialog Configuration
+        .confirmationDialog("Confirm Respring", isPresented: $showConfirmation, titleVisibility: .visible) {
+            Button("Confirm", role: .destructive) {
+                isRespringing = true
+                
+                // Brief pause so the UI registers the tap before the memory freeze
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    executeMemoryPanic()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will instantly crash the SpringBoard UI and lock your device. Ensure you don't have unsaved data open in other apps.")
         }
+    } // 👈 Added missing closing brace for ZStyleView
     
     // Core Logic: Rapidly requests 100MB chunks of memory in an infinite loop
     private func executeMemoryPanic() {
