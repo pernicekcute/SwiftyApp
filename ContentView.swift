@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isRespringing = false
-    @State private var showConfirmation = false // Controls the dialog state
+    @State private var showConfirmation = false // Controls the dialog
     
     var body: some View {
         ZStyleView()
