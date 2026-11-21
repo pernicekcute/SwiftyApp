@@ -21,7 +21,7 @@ targets:
 
         GENERATE_INFOPLIST_FILE: "YES"
 
-        INFOPLIST_KEY_CFBundleDisplayName: Videos
+        INFOPLIST_KEY_CFBundleDisplayName: rkyPanel
 
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
