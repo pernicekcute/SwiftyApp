@@ -115,9 +115,7 @@ struct ContentView: View {
         NavigationStack {
             ZStack(alignment: .top) {
                 mainList
-
                 toastOverlay
-
                 customDialogOverlay
             }
             .navigationTitle("iOS Dev Panel (96)")
@@ -369,22 +367,16 @@ struct ContentView: View {
 
     private var controlsSection: some View {
         Section("Live Native Controls Sandbox (8 Inline Widgets)") {
-            Toggle(
-                "Feature Flag: New Renderer",
-                isOn: $devToggle1
-            )
-            .onChange(of: devToggle1) { _, value in
-                log("Toggle Renderer = \(value)")
-            }
+            Toggle("Feature Flag: New Renderer", isOn: $devToggle1)
+                .onChange(of: devToggle1) { _, value in
+                    log("Toggle Renderer = \(value)")
+                }
 
-            Toggle(
-                "Force Offline Mode",
-                isOn: $devToggle2
-            )
-            .tint(.orange)
-            .onChange(of: devToggle2) { _, value in
-                log("Offline Mode = \(value)")
-            }
+            Toggle("Force Offline Mode", isOn: $devToggle2)
+                .tint(.orange)
+                .onChange(of: devToggle2) { _, value in
+                    log("Offline Mode = \(value)")
+                }
 
             VStack(alignment: .leading) {
                 Text("Animation Speed: \(String(format: "%.2fx", devSlider))")
@@ -406,16 +398,10 @@ struct ContentView: View {
             }
             .pickerStyle(.segmented)
 
-            ColorPicker(
-                "Accent Override",
-                selection: $devColor
-            )
+            ColorPicker("Accent Override", selection: $devColor)
 
-            DatePicker(
-                "Mock System Clock",
-                selection: $devDate
-            )
-            .font(.subheadline)
+            DatePicker("Mock System Clock", selection: $devDate)
+                .font(.subheadline)
 
             HStack {
                 Text("Payload:")
@@ -585,31 +571,16 @@ struct ContentView: View {
 
         switch item.actionType {
         case let .alert(title, message, destructive, hasTextField):
-            activeAlert = (
-                title,
-                message,
-                destructive,
-                hasTextField
-            )
+            activeAlert = (title, message, destructive, hasTextField)
             alertInputText = ""
             showAlert = true
 
         case let .confirmation(title, options, hasDestructive):
-            activeConfirmation = (
-                title,
-                options,
-                hasDestructive
-            )
+            activeConfirmation = (title, options, hasDestructive)
             showConfirmation = true
 
         case let .sheet(title, detents, showGrabber, interactiveDismiss, bgStyle):
-            activeSheet = (
-                title,
-                detents,
-                showGrabber,
-                interactiveDismiss,
-                bgStyle
-            )
+            activeSheet = (title, detents, showGrabber, interactiveDismiss, bgStyle)
             showSheet = true
 
         case let .fullScreen(title, color):
@@ -760,8 +731,16 @@ struct DevFullScreenView: View {
 
     var body: some View {
         ZStack {
-            color.gradient
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [
+                    color.opacity(0.75),
+                    color,
+                    color.opacity(0.85)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 20) {
                 Image(systemName: "macwindow.on.rectangle")
