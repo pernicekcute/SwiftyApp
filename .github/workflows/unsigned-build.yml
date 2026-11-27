@@ -1,3 +1,4 @@
+
 name: Build App and IPA
 
 on:
@@ -18,21 +19,12 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-15 # Supported Sequoia runner image
+    runs-on: macos-latest
     timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Select Xcode 16.4 (matches the pre-installed iOS 18 SDK on macos-15)
-      - name: Select Xcode 16.4
-        run: |
-          if [ -d "/Applications/Xcode_16.4.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
-          else
-            echo "Xcode_16.4.app not found, keeping runner default Xcode"
-          fi
 
       - name: Show Xcode & SDK versions
         run: |
